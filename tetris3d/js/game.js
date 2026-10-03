@@ -13,6 +13,8 @@ export const CUBES_PER_LEVEL = 125; // 이만큼 칸을 지울 때마다 레벨�
 export const MAX_LEVEL = 15;
 export const PIT_SIZES = [3, 4, 5];
 export const PIT_HEIGHT = 12;
+export const BASE_INTERVAL = 1.6; // 레벨 1 에서 한 칸 떨어지는 간격(초)
+export const MIN_INTERVAL = 0.2; // 아무리 레벨이 올라도 이보다 빨라지지 않는다
 
 // 회전했는데 막히면 이 순서로 옮겨 보며 들어갈 자리를 찾는다
 const KICKS = [
@@ -34,7 +36,7 @@ const KICKS = [
 
 /** 레벨별 한 칸 떨어지는 간격(초) */
 export function gravityInterval(level) {
-  return Math.max(0.1, 0.8 ** (level - 1));
+  return Math.max(MIN_INTERVAL, BASE_INTERVAL * 0.87 ** (level - 1));
 }
 
 /** 한 번에 layers 층을 지웠을 때 점수. 넓은 우물일수록 한 층이 어려우니 넓이에 비례한다 */
