@@ -303,8 +303,8 @@ test('지운 칸 수에 따라 레벨이 오르고 빨라진다', () => {
   assert.equal(game.level, 2);
   assert.ok(game.drain().some((e) => e.type === 'level' && e.level === 2));
   assert.ok(gravityInterval(2) < gravityInterval(1));
-  assert.equal(gravityInterval(1), 1.6);
-  assert.equal(gravityInterval(50), 0.2);
+  assert.equal(gravityInterval(1), 3.2);
+  assert.equal(gravityInterval(50), 0.4);
 });
 
 test('새 조각이 나올 자리가 막히면 게임이 끝난다', () => {
