@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>3D 테트리스 · Casual Games</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="stage"></div>
+
+    <header class="top" id="top">
+      <a class="back" href="../index.html">← 게임 목록</a>
+      <div id="stats" hidden>
+        <span class="stat score"><small>점수</small><b id="score">0</b></span>
+        <span class="stat"><small>층</small><b id="layers">0</b></span>
+        <span class="stat"><small>레벨</small><b id="level">1</b></span>
+      </div>
+      <div class="controls" id="controls" hidden>
+        <button type="button" class="chip" id="btn-pause" title="일시정지 (P)">일시정지</button>
+        <button type="button" class="chip" id="btn-sound" title="소리 (M)" aria-pressed="true">소리</button>
+      </div>
+    </header>
+
+    <aside class="side" id="side" hidden>
+      <section class="box">
+        <h2>다음</h2>
+        <div id="next-view"></div>
+        <p id="next-name"></p>
+      </section>
+      <section class="box">
+        <h2>층</h2>
+        <ol id="gauge"></ol>
+      </section>
+      <p class="best" id="side-best"></p>
+    </aside>
+
+    <div id="loading">우물을 파는 중…</div>
+    <script>
+      // file:// 로 열면 브라우저가 모듈 스크립트 로딩을 막아 아래 main.js 가 실행되지 않는다
+      if (location.protocol === 'file:') {
+        document.getElementById('loading').textContent =
+          '파일을 직접 열면 실행되지 않습니다. 저장소 루트에서 npm start 를 실행한 뒤 http://localhost:8000 으로 접속하세요.';
+      }
+    </script>
+
+    <div id="menu" class="overlay" hidden>
+      <div class="card">
+        <h1>3D 테트리스</h1>
+        <p class="lead">위에서 떨어지는 입체 조각을 돌리고 옮겨 우물 바닥을 채우세요. 한 층이 꽉 차면 사라집니다.</p>
+        <fieldset>
+          <legend>조각</legend>
+          <div class="segmented" id="set-options"></div>
+        </fieldset>
+        <fieldset>
+          <legend>우물 크기</legend>
+          <div class="segmented" id="size-options"></div>
+        </fieldset>
+        <p class="best" id="menu-best"></p>
+        <button type="button" id="btn-start">시작 <kbd>Enter</kbd></button>
+        <details class="help">
+          <summary>조작법</summary>
+          <dl>
+            <dt>방향키</dt>
+            <dd>화면 기준으로 옮기기</dd>
+            <dt><kbd>Q</kbd> <kbd>A</kbd></dt>
+            <dd>앞뒤로 굴리기 (가로축)</dd>
+            <dt><kbd>W</kbd> <kbd>S</kbd></dt>
+            <dd>좌우로 굴리기 (안쪽 축)</dd>
+            <dt><kbd>E</kbd> <kbd>D</kbd></dt>
+            <dd>제자리 돌리기 (세로축)</dd>
+            <dt><kbd>Space</kbd></dt>
+            <dd>바로 떨어뜨리기</dd>
+            <dt><kbd>Z</kbd></dt>
+            <dd>한 칸 내리기</dd>
+            <dt><kbd>,</kbd> <kbd>.</kbd></dt>
+            <dd>시점 90° 돌리기 (끌어서 자유롭게, 더블클릭으로 처음 시점)</dd>
+            <dt><kbd>P</kbd> <kbd>M</kbd></dt>
+            <dd>일시정지, 소리</dd>
+          </dl>
+        </details>
+      </div>
+    </div>
+
+    <div id="pause" class="overlay" hidden>
+      <div class="card">
+        <h1>일시정지</h1>
+        <button type="button" id="btn-resume">계속 <kbd>P</kbd></button>
+        <button type="button" class="secondary" id="btn-quit">그만두고 메뉴로</button>
+      </div>
+    </div>
+
+    <div id="result" class="overlay" hidden>
+      <div class="card">
+        <h1 id="result-title">게임 끝</h1>
+        <p id="result-detail"></p>
+        <p class="best" id="result-best"></p>
+        <button type="button" id="btn-again">다시 하기 <kbd>Enter</kbd></button>
+        <button type="button" class="secondary" id="btn-menu">설정 바꾸기</button>
+      </div>
+    </div>
+
+    <footer class="pad" id="pad" hidden>
+      <div class="cluster move">
+        <button type="button" data-action="up" class="up" aria-label="안쪽으로">▲</button>
+        <button type="button" data-action="left" class="left" aria-label="왼쪽으로">◀</button>
+        <button type="button" data-action="soft" class="mid" aria-label="한 칸 내리기">▼<kbd>Z</kbd></button>
+        <button type="button" data-action="right" class="right" aria-label="오른쪽으로">▶</button>
+        <button type="button" data-action="down" class="down" aria-label="바깥쪽으로">▼</button>
+      </div>
+      <div class="cluster view">
+        <button type="button" class="chip" data-action="view-left" aria-label="시점 왼쪽으로">↶ <kbd>,</kbd></button>
+        <button type="button" class="chip" data-action="view-right" aria-label="시점 오른쪽으로">↷ <kbd>.</kbd></button>
+        <button type="button" class="drop" data-action="drop">떨어뜨리기 <kbd>Space</kbd></button>
+      </div>
+      <div class="cluster turn">
+        <button type="button" data-action="pitch+" title="앞으로 굴리기 (Q)"><span class="icon">⤒</span><kbd>Q</kbd></button>
+        <button type="button" data-action="roll+" title="오른쪽으로 굴리기 (W)"><span class="icon">↷</span><kbd>W</kbd></button>
+        <button type="button" data-action="yaw+" title="시계 방향으로 돌리기 (E)"><span class="icon">⟳</span><kbd>E</kbd></button>
+        <button type="button" data-action="pitch-" title="뒤로 굴리기 (A)"><span class="icon">⤓</span><kbd>A</kbd></button>
+        <button type="button" data-action="roll-" title="왼쪽으로 굴리기 (S)"><span class="icon">↶</span><kbd>S</kbd></button>
+        <button type="button" data-action="yaw-" title="시계 반대 방향으로 돌리기 (D)"><span class="icon">⟲</span><kbd>D</kbd></button>
+      </div>
+    </footer>
+
+    <div id="toast" role="status"></div>
+
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>
