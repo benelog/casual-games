@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>타워 디펜스 · Casual Games</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="stage"></div>
+
+    <header class="top">
+      <a class="back" href="../index.html">← 게임 목록</a>
+      <div id="stats" hidden>
+        <span class="stat" title="웨이브"><small>웨이브</small><b id="wave">0/20</b></span>
+        <span class="stat gold" title="골드"><small>골드</small><b id="gold">200</b></span>
+        <span class="stat lives" title="목숨"><small>목숨</small><b id="lives">20</b></span>
+      </div>
+      <div class="controls" id="controls" hidden>
+        <button type="button" class="chip" id="btn-pause" title="일시정지 (Space)">일시정지</button>
+        <button type="button" class="chip" id="btn-speed" title="배속 (F)">1x</button>
+        <button type="button" class="chip" id="btn-sound" title="소리 (M)" aria-pressed="true">소리</button>
+      </div>
+    </header>
+
+    <div id="loading">타워를 세우는 중…</div>
+    <script>
+      // file:// 로 열면 브라우저가 모듈 스크립트와 에셋 로딩을 막아 아래 main.js 가 실행되지 않는다
+      if (location.protocol === 'file:') {
+        document.getElementById('loading').textContent =
+          '파일을 직접 열면 실행되지 않습니다. 저장소 루트에서 npm start 를 실행한 뒤 http://localhost:8000 으로 접속하세요.';
+      }
+    </script>
+
+    <div id="menu" class="overlay" hidden>
+      <div class="card">
+        <h1>타워 디펜스</h1>
+        <p class="lead">길을 따라 기지로 몰려오는 적을 타워로 막으세요. 20웨이브를 버티면 승리합니다.</p>
+        <p class="best" id="menu-best"></p>
+        <button type="button" id="btn-continue"></button>
+        <button type="button" class="secondary" id="btn-menu-new">새 게임</button>
+      </div>
+    </div>
+
+    <footer class="bottom" id="bottom" hidden>
+      <div id="status" role="status"></div>
+      <div id="banner" hidden>
+        <strong id="banner-title"></strong>
+        <span id="banner-detail"></span>
+        <button type="button" id="btn-new">새 게임</button>
+      </div>
+      <section id="panel" hidden>
+        <div class="info">
+          <strong id="panel-title"></strong>
+          <span id="panel-detail"></span>
+        </div>
+        <div class="actions" id="panel-actions">
+          <button type="button" id="btn-upgrade"></button>
+          <button type="button" class="secondary" id="btn-sell"></button>
+        </div>
+      </section>
+      <nav class="toolbar">
+        <div class="towers" id="tower-buttons"></div>
+        <div class="wave-box">
+          <span id="next-wave"></span>
+          <button type="button" id="btn-wave">웨이브 시작</button>
+        </div>
+      </nav>
+    </footer>
+
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>

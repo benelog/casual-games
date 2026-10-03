@@ -1,0 +1,333 @@
+:root {
+  --ink: #f3ecdc;
+  --muted: #b9b09c;
+  --brass: #d9b46a;
+  --win: #7fd69a;
+  --lose: #e8857a;
+  --panel: rgba(12, 14, 19, 0.78);
+  --line: rgba(243, 236, 220, 0.16);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #0b0d12;
+  color: var(--ink);
+  font-family: 'Pretendard', 'Noto Sans KR', system-ui, sans-serif;
+}
+
+#stage {
+  position: fixed;
+  inset: 0;
+}
+
+#stage canvas {
+  display: block;
+}
+
+.labels {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.label {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.label.stack {
+  font-weight: 600;
+}
+
+.label.insurance {
+  color: var(--brass);
+}
+
+.label.dealer {
+  transform: translate(0, -50%);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* 핸드 값과 베팅액. 베팅 칩 아래에 붙는다 */
+.label.hand {
+  transform: translate(-50%, 0);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.label.hand.active {
+  border-color: var(--brass);
+  color: var(--brass);
+  box-shadow: 0 0 0 2px rgba(217, 180, 106, 0.25);
+}
+
+.label[data-tone='win'] {
+  border-color: var(--win);
+  color: var(--win);
+}
+
+.label[data-tone='lose'] {
+  color: var(--lose);
+}
+
+.label[data-tone='push'] {
+  color: var(--muted);
+}
+
+.label.bubble {
+  transform: translate(0, -50%);
+  padding: 8px 14px;
+  border-radius: 14px 14px 14px 2px;
+  background: var(--ink);
+  color: #16181d;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.top {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  z-index: 2;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 18px;
+  font-size: 14px;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.top nav {
+  display: flex;
+  gap: 8px;
+}
+
+.back {
+  pointer-events: auto;
+  color: var(--ink);
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.back:hover {
+  border-color: var(--brass);
+}
+
+#info {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--panel);
+  text-align: right;
+}
+
+#info:empty {
+  display: none;
+}
+
+#loading {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #0b0d12;
+  color: var(--muted);
+  font-family: Georgia, 'Noto Serif KR', serif;
+  font-size: 18px;
+  padding: 24px;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.bottom {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px max(16px, env(safe-area-inset-bottom));
+  pointer-events: none;
+}
+
+.bottom > * {
+  pointer-events: auto;
+}
+
+#banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  max-width: 100%;
+  padding: 10px 26px;
+  border-radius: 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  text-align: center;
+}
+
+#banner-title {
+  font-family: Georgia, 'Noto Serif KR', serif;
+  font-size: 24px;
+}
+
+#banner-detail {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+#banner[data-tone='win'] {
+  border-color: var(--brass);
+}
+
+#banner[data-tone='win'] #banner-title {
+  color: var(--brass);
+}
+
+.status {
+  display: flex;
+  gap: 14px;
+  min-height: 20px;
+  max-width: 100%;
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: var(--panel);
+  font-size: 14px;
+  text-align: center;
+}
+
+#my-hand {
+  color: var(--brass);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(460px, 100%);
+  padding: 10px;
+  border-radius: 16px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(6px);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.actions button {
+  flex: 1;
+}
+
+.chips {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+button {
+  padding: 11px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(243, 236, 220, 0.08);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+  border-color: var(--brass);
+}
+
+button:focus-visible {
+  outline: 2px solid var(--brass);
+  outline-offset: 2px;
+}
+
+button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+button.primary {
+  background: var(--brass);
+  border-color: var(--brass);
+  color: #1a1408;
+}
+
+/* 칩 버튼: 테이블 칩과 같은 색 (Kenney 칩 이미지의 색에 맞춤) */
+button.chip {
+  width: 54px;
+  height: 54px;
+  padding: 0;
+  border-radius: 50%;
+  border: 4px dashed rgba(255, 255, 255, 0.85);
+  color: #fff;
+  font-size: 14px;
+  box-shadow: 0 0 0 3px var(--chip), 0 3px 8px rgba(0, 0, 0, 0.5);
+  background: var(--chip);
+}
+
+button.chip:hover:not(:disabled) {
+  border-color: #fff;
+  transform: translateY(-2px);
+}
+
+button.chip[data-chip='10'] {
+  --chip: #c8362e;
+}
+
+button.chip[data-chip='50'] {
+  --chip: #2d6fd1;
+}
+
+button.chip[data-chip='100'] {
+  --chip: #2b2b2e;
+}
+
+button.chip[data-chip='500'] {
+  --chip: #2f9e5c;
+}
+
+#btn-next {
+  min-width: 200px;
+}
+
+.status:not(:has(span:not(:empty))) {
+  visibility: hidden;
+}

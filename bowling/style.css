@@ -1,0 +1,481 @@
+:root {
+  --ink: #f3ecdc;
+  --muted: #b9b09c;
+  --brass: #d9b46a;
+  --panel: rgba(12, 14, 19, 0.8);
+  --line: rgba(243, 236, 220, 0.16);
+  --me: #d8362c;
+  --computer: #2d6fd1;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #0b0d12;
+  color: var(--ink);
+  font-family: 'Pretendard', 'Noto Sans KR', system-ui, sans-serif;
+}
+
+#stage {
+  position: fixed;
+  inset: 0;
+  touch-action: none;
+}
+
+#stage canvas {
+  display: block;
+}
+
+.top {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.back,
+.title {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--panel);
+}
+
+.back {
+  pointer-events: auto;
+  color: var(--ink);
+  text-decoration: none;
+  border: 1px solid var(--line);
+}
+
+.back:hover {
+  border-color: var(--brass);
+}
+
+.title {
+  color: var(--muted);
+}
+
+#loading {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #0b0d12;
+  color: var(--muted);
+  font-family: Georgia, 'Noto Serif KR', serif;
+  font-size: 18px;
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* ---------- 점수표 ---------- */
+
+#hud {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  pointer-events: none;
+}
+
+#card {
+  width: min(100%, 680px);
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  font-variant-numeric: tabular-nums;
+}
+
+#card th,
+#card td {
+  padding: 0;
+  border-left: 1px solid var(--line);
+  text-align: center;
+}
+
+#card th:first-child,
+#card td:first-child {
+  border-left: 0;
+}
+
+#card th {
+  padding: 3px 0;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+#card .col-name {
+  width: 74px;
+}
+
+#card .col-total {
+  width: 52px;
+}
+
+#card .col-tenth {
+  width: 13%;
+}
+
+#card td {
+  border-top: 1px solid var(--line);
+}
+
+#card td.name {
+  padding: 0 8px;
+  font-size: 13px;
+  color: var(--muted);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.name .dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: 6px;
+  border-radius: 50%;
+  vertical-align: 0;
+}
+
+.dot.me {
+  background: var(--me);
+}
+
+.dot.computer {
+  background: var(--computer);
+}
+
+.marks {
+  display: flex;
+  justify-content: flex-end;
+  height: 20px;
+}
+
+.marks span {
+  display: grid;
+  place-items: center;
+  width: 50%;
+  font-size: 13px;
+  font-weight: 700;
+  border-left: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.marks span:first-child {
+  border-left: 0;
+}
+
+/* 첫 칸에는 테두리 없이, 둘째 칸(스페어·스트라이크 칸)만 작은 상자로 */
+.frame:not(.tenth) .marks span:first-child {
+  border-bottom-color: transparent;
+}
+
+.tenth .marks span {
+  width: 33.4%;
+}
+
+.marks .x,
+.marks .spare {
+  color: var(--brass);
+}
+
+.cum {
+  height: 22px;
+  line-height: 22px;
+  font-size: 14px;
+}
+
+#card tr.active td.name {
+  color: var(--ink);
+}
+
+#card td.frame.current {
+  background: rgba(217, 180, 106, 0.16);
+}
+
+#card td.total {
+  font-family: Georgia, serif;
+  font-size: 22px;
+}
+
+#card tr.active td.total {
+  color: var(--brass);
+}
+
+#pin-cam {
+  align-self: flex-end;
+  width: 220px;
+  aspect-ratio: 4 / 3;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* ---------- 투구 결과 ---------- */
+
+#callout {
+  position: fixed;
+  left: 50%;
+  top: 34%;
+  transform: translate(-50%, -50%);
+  padding: 8px 26px;
+  border-radius: 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  font-family: Georgia, 'Noto Serif KR', serif;
+  font-size: 34px;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: pop 1.4s ease-out forwards;
+}
+
+#callout[data-tone='great'] {
+  color: var(--brass);
+  border-color: var(--brass);
+}
+
+@keyframes pop {
+  from {
+    transform: translate(-50%, -30%) scale(0.85);
+    opacity: 0;
+  }
+  15% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  75% {
+    opacity: 1;
+  }
+  to {
+    transform: translate(-50%, -50%);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #callout {
+    animation-name: fade;
+  }
+  @keyframes fade {
+    from,
+    75% {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+}
+
+/* ---------- 아래쪽 조작부 ---------- */
+
+.bottom {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px max(18px, env(safe-area-inset-bottom));
+  pointer-events: none;
+}
+
+#controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+#spin {
+  display: flex;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  pointer-events: auto;
+}
+
+#spin button {
+  min-width: 0;
+  padding: 6px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+#spin button[aria-checked='true'] {
+  background: var(--brass);
+  color: #1a1408;
+  font-weight: 700;
+}
+
+#power {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--panel);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.meter {
+  position: relative;
+  width: 220px;
+  height: 12px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(243, 236, 220, 0.12);
+}
+
+#power-fill {
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #6fbf73, #e6c25a 60%, #e0573f);
+}
+
+#status {
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: var(--panel);
+  font-size: 14px;
+  text-align: center;
+}
+
+#status:empty {
+  display: none;
+}
+
+#banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 12px 30px;
+  border-radius: 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+}
+
+#banner[data-tone='win'] {
+  border-color: var(--brass);
+}
+
+#banner-title {
+  font-family: Georgia, 'Noto Serif KR', serif;
+  font-size: 28px;
+}
+
+#banner[data-tone='win'] #banner-title {
+  color: var(--brass);
+}
+
+#banner-detail {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+button {
+  min-width: 200px;
+  padding: 11px 14px;
+  border: 1px solid var(--brass);
+  border-radius: 10px;
+  background: var(--brass);
+  color: #1a1408;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+@media (max-width: 560px) {
+  #hud {
+    top: 54px;
+    padding: 0 6px;
+    gap: 6px;
+  }
+  #card .col-name {
+    width: 30px;
+  }
+  #card .col-total {
+    width: 36px;
+  }
+  #card td.name {
+    padding: 0;
+    text-align: center;
+  }
+  /* 좁은 화면에서는 이름 대신 색 점만 */
+  #card td.name .label {
+    display: none;
+  }
+  .name .dot {
+    margin: 0;
+  }
+  #card th {
+    font-size: 10px;
+  }
+  .marks {
+    height: 17px;
+  }
+  .marks span {
+    font-size: 11px;
+  }
+  .cum {
+    height: 18px;
+    line-height: 18px;
+    font-size: 11px;
+  }
+  #card td.total {
+    font-size: 15px;
+  }
+  #pin-cam {
+    width: 132px;
+  }
+  #spin button {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  .meter {
+    width: 160px;
+  }
+}

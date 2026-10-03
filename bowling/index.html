@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>볼링 · Casual Games</title>
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/",
+          "cannon-es": "https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="stage"></div>
+
+    <header class="top">
+      <a class="back" href="../index.html">← 게임 목록</a>
+      <span class="title">볼링</span>
+    </header>
+
+    <div id="loading">레인에 핀을 세우는 중…</div>
+    <script>
+      // file:// 로 열면 브라우저가 모듈 스크립트와 에셋 로딩을 막아 아래 main.js 가 실행되지 않는다
+      if (location.protocol === 'file:') {
+        document.getElementById('loading').textContent =
+          '파일을 직접 열면 실행되지 않습니다. 저장소 루트에서 npm start 를 실행한 뒤 http://localhost:8000 으로 접속하세요.';
+      }
+    </script>
+
+    <aside id="hud" hidden>
+      <table id="card">
+        <thead>
+          <tr id="card-head"></tr>
+        </thead>
+        <tbody id="card-body"></tbody>
+      </table>
+      <div id="pin-cam" aria-label="핀 덱"></div>
+    </aside>
+
+    <div id="callout" hidden></div>
+
+    <footer class="bottom">
+      <div id="banner" hidden>
+        <strong id="banner-title"></strong>
+        <span id="banner-detail"></span>
+      </div>
+      <div id="controls" hidden>
+        <div id="spin" role="radiogroup" aria-label="스핀">
+          <button type="button" data-spin="-1" role="radio">↶ 왼쪽 훅</button>
+          <button type="button" data-spin="0" role="radio">직구</button>
+          <button type="button" data-spin="1" role="radio">오른쪽 훅 ↷</button>
+        </div>
+        <div id="power" hidden>
+          <span>약</span>
+          <div class="meter"><div id="power-fill"></div></div>
+          <span>강</span>
+        </div>
+      </div>
+      <div id="status"></div>
+      <button type="button" id="btn-new" hidden>새 게임</button>
+    </footer>
+
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>3D 블랙잭 · Casual Games</title>
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="stage"></div>
+
+    <header class="top">
+      <nav>
+        <a class="back" href="../index.html">← 게임 목록</a>
+      </nav>
+      <span id="info"></span>
+    </header>
+
+    <div id="loading">테이블을 준비하는 중…</div>
+    <script>
+      // file:// 로 열면 브라우저가 모듈 스크립트와 에셋 로딩을 막아 아래 main.js 가 실행되지 않는다
+      if (location.protocol === 'file:') {
+        document.getElementById('loading').textContent =
+          '파일을 직접 열면 실행되지 않습니다. 저장소 루트에서 npm start 를 실행한 뒤 http://localhost:8000 으로 접속하세요.';
+      }
+    </script>
+
+    <footer class="bottom">
+      <div id="banner" hidden>
+        <strong id="banner-title"></strong>
+        <span id="banner-detail"></span>
+      </div>
+      <div class="status">
+        <span id="status"></span>
+        <span id="my-hand"></span>
+      </div>
+      <div id="bet-controls" class="panel" hidden>
+        <div class="chips">
+          <button type="button" class="chip" data-chip="10" title="단축키 1">10</button>
+          <button type="button" class="chip" data-chip="50" title="단축키 2">50</button>
+          <button type="button" class="chip" data-chip="100" title="단축키 3">100</button>
+          <button type="button" class="chip" data-chip="500" title="단축키 4">500</button>
+        </div>
+        <div class="actions">
+          <button type="button" id="btn-clear" title="단축키 Backspace">지우기</button>
+          <button type="button" id="btn-deal" class="primary" title="단축키 Enter">딜</button>
+        </div>
+      </div>
+      <div id="insurance-controls" class="panel" hidden>
+        <div class="actions">
+          <button type="button" id="btn-decline" title="단축키 N">거절</button>
+          <button type="button" id="btn-insure" class="primary" title="단축키 Y">보험 들기</button>
+        </div>
+      </div>
+      <div id="controls" class="panel" hidden>
+        <div class="actions">
+          <button type="button" id="btn-hit" class="primary" title="단축키 H">히트</button>
+          <button type="button" id="btn-stand" title="단축키 S">스탠드</button>
+          <button type="button" id="btn-double" title="단축키 D">더블</button>
+          <button type="button" id="btn-split" title="단축키 P">스플릿</button>
+        </div>
+      </div>
+      <button type="button" id="btn-next" class="primary" hidden>새 게임</button>
+    </footer>
+
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>

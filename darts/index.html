@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>다트 301 · Casual Games</title>
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="stage"></div>
+
+    <header class="top">
+      <a class="back" href="../index.html">← 게임 목록</a>
+      <span class="title">다트 301</span>
+    </header>
+
+    <div id="loading">다트보드를 거는 중…</div>
+    <script>
+      // file:// 로 열면 브라우저가 모듈 스크립트와 에셋 로딩을 막아 아래 main.js 가 실행되지 않는다
+      if (location.protocol === 'file:') {
+        document.getElementById('loading').textContent =
+          '파일을 직접 열면 실행되지 않습니다. 저장소 루트에서 npm start 를 실행한 뒤 http://localhost:8000 으로 접속하세요.';
+      }
+    </script>
+
+    <aside id="hud" hidden>
+      <div class="player" id="player-0">
+        <span class="name"><i class="dot me"></i>나</span>
+        <strong id="score-0">301</strong>
+      </div>
+      <div class="player" id="player-1">
+        <span class="name"><i class="dot computer"></i>컴퓨터</span>
+        <strong id="score-1">301</strong>
+      </div>
+      <div class="turn">
+        <div id="darts"><span></span><span></span><span></span></div>
+        <span class="total">이번 턴 <b id="turn-total">0</b></span>
+      </div>
+    </aside>
+
+    <footer class="bottom">
+      <div id="banner" hidden>
+        <strong id="banner-title"></strong>
+        <span id="banner-detail"></span>
+      </div>
+      <div id="status"></div>
+      <button type="button" id="btn-new" hidden>새 게임</button>
+    </footer>
+
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>

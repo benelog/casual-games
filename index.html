@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Casual Games</title>
+    <style>
+      :root {
+        --ink: #f3ecdc;
+        --muted: #b9b09c;
+        --brass: #d9b46a;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        padding: 64px 20px;
+        background: radial-gradient(circle at 50% 0%, #1b2a24, #0b0d12 60%);
+        color: var(--ink);
+        font-family: 'Pretendard', 'Noto Sans KR', system-ui, sans-serif;
+      }
+      main {
+        max-width: 880px;
+        margin: 0 auto;
+      }
+      h1 {
+        margin: 0 0 6px;
+        font-family: Georgia, 'Noto Serif KR', serif;
+        font-size: 40px;
+        font-weight: 400;
+      }
+      p {
+        margin: 0;
+        color: var(--muted);
+      }
+      .games {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 18px;
+        margin: 36px 0 0;
+        padding: 0;
+        list-style: none;
+      }
+      .games a {
+        display: block;
+        height: 100%;
+        border: 1px solid rgba(243, 236, 220, 0.16);
+        border-radius: 16px;
+        overflow: hidden;
+        background: rgba(243, 236, 220, 0.04);
+        color: inherit;
+        text-decoration: none;
+        transition: border-color 0.15s, transform 0.15s;
+      }
+      .games a:hover,
+      .games a:focus-visible {
+        border-color: var(--brass);
+        transform: translateY(-3px);
+        outline: none;
+      }
+      .art {
+        display: grid;
+        place-items: center;
+        height: 150px;
+        font-size: 64px;
+      }
+      .text {
+        padding: 16px 18px 20px;
+      }
+      h2 {
+        margin: 0 0 6px;
+        font-size: 19px;
+      }
+      .text p {
+        font-size: 14px;
+        line-height: 1.5;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Casual Games</h1>
+      <p>가볍게 즐기는 게임 모음</p>
+      <ul class="games" id="games"></ul>
+    </main>
+    <script>
+      // 새 게임은 디렉토리를 만들고 여기에 한 줄 추가한다
+      const games = [
+        {
+          path: 'poker/index.html',
+          title: '3D 포커',
+          description: '컴퓨터와 1:1로 겨루는 텍사스 홀덤 · 오마하 · 파이브 카드 드로우 · 세븐 카드 스터드',
+          art: '♠',
+          background: 'radial-gradient(circle at 50% 40%, #1f8a55, #0b4a2c)',
+        },
+        {
+          path: 'darts/index.html',
+          title: '다트 301',
+          description: '흔들리는 조준점을 맞춰 던지는 3D 다트. 컴퓨터보다 먼저 301점을 0으로',
+          art: '🎯',
+          background: 'radial-gradient(circle at 50% 40%, #8a4a2a, #3a1c10)',
+        },
+        {
+          path: 'bowling/index.html',
+          title: '볼링',
+          description: '위치·방향·세기를 맞춰 굴리는 3D 텐핀 볼링. 컴퓨터와 10프레임 승부',
+          art: '🎳',
+          background: 'radial-gradient(circle at 50% 40%, #b07a3a, #4a2c12)',
+        },
+        {
+          path: 'blackjack/index.html',
+          title: '3D 블랙잭',
+          description: '6덱 슈로 딜러와 겨루는 블랙잭. 히트 · 스탠드 · 더블 · 스플릿 · 인슈어런스, 블랙잭 3:2',
+          art: '🂡',
+          background: 'radial-gradient(circle at 50% 40%, #1f6f8a, #0b3a4a)',
+        },
+        {
+          path: 'defense/index.html',
+          title: '타워 디펜스',
+          description: '길목에 궁수탑·대포·빙결탑을 세워 20웨이브의 UFO 침공을 막아내는 3D 타워 디펜스',
+          art: '🏰',
+          background: 'radial-gradient(circle at 50% 40%, #3f8a5a, #16402a)',
+        },
+      ];
+      const list = document.getElementById('games');
+      for (const game of games) {
+        const item = document.createElement('li');
+        const link = document.createElement('a');
+        link.href = game.path;
+        const art = document.createElement('div');
+        art.className = 'art';
+        art.style.background = game.background;
+        art.textContent = game.art;
+        const text = document.createElement('div');
+        text.className = 'text';
+        const title = document.createElement('h2');
+        title.textContent = game.title;
+        const description = document.createElement('p');
+        description.textContent = game.description;
+        text.append(title, description);
+        link.append(art, text);
+        item.append(link);
+        list.append(item);
+      }
+    </script>
+  </body>
+</html>
