@@ -131,7 +131,7 @@
   <body>
     <main>
       <h1>Casual Games</h1>
-      <p data-i18n="tagline">가볍게 즐기는 게임 모음</p>
+      <p data-i18n="tagline">브라우저에서 바로 즐기는 게임 모음</p>
       <div class="tabs" role="tablist">
         <button type="button" role="tab" id="tab-solo" data-tab="solo" aria-controls="games" data-i18n="tabSolo">혼자서</button>
         <button type="button" role="tab" id="tab-multi" data-tab="multi" aria-controls="games" data-i18n="tabMulti">여럿이</button>
@@ -323,7 +323,7 @@
       ];
 
       const t = createT({
-        ko: { tagline: '가볍게 즐기는 게임 모음', tabSolo: '혼자서', tabMulti: '여럿이' },
+        ko: { tagline: '브라우저에서 바로 즐기는 게임 모음', tabSolo: '혼자서', tabMulti: '여럿이' },
         en: { tagline: 'Quick games to play right in your browser', tabSolo: 'Solo', tabMulti: 'Multiplayer' },
       });
       const pick = (text) => text[lang] ?? text.ko;
