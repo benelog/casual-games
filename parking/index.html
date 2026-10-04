@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title data-i18n="pageTitle">주차 · Casual Games</title>
+    <meta name="theme-color" content="#0b0d12" />
+    <link rel="manifest" href="../manifest.webmanifest" />
+    <link rel="icon" href="../icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png" />
+    <script src="../shared/pwa.js" defer></script>
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="stage" role="application" aria-label="주차장" data-i18n-aria-label="stageLabel"></div>
+
+    <header class="top" id="top">
+      <a class="back" href="../index.html" data-i18n="back">← 게임 목록</a>
+      <div id="stats" hidden>
+        <span class="stat"><small data-i18n="level">단계</small><b id="level">1</b></span>
+        <span class="stat"><small data-i18n="time">시간</small><b id="time">0:00</b></span>
+        <span class="stat"><small data-i18n="switches">전환</small><b id="switches">0</b></span>
+        <span class="stat contacts" id="contacts-stat"><small data-i18n="contacts">접촉</small><b id="contacts">0</b></span>
+      </div>
+      <div class="controls" id="controls" hidden>
+        <button type="button" class="chip" id="btn-restart" title="다시 시작 (R)" data-i18n-title="restartTitle"><span class="icon">⟲</span><span class="label" data-i18n="restart">다시</span></button>
+        <button type="button" class="chip" id="btn-menu" title="단계 선택 (Esc)" data-i18n-title="menuTitle"><span class="icon">☰</span><span class="label" data-i18n="menu">단계</span></button>
+        <button type="button" class="chip" id="btn-sound" title="소리 (M)" data-i18n-title="soundTitle" aria-pressed="true" data-i18n="sound">소리</button>
+      </div>
+      <div class="controls" id="lang-controls"></div>
+    </header>
+
+    <!-- 화면 오른쪽: 시점·가이드 -->
+    <div class="view" id="view" hidden>
+      <button type="button" class="chip" id="btn-camera" title="시점 바꾸기 (C)" data-i18n-title="cameraTitle"><span class="icon">🎥</span><span id="camera-label"></span></button>
+      <button type="button" class="chip" id="btn-guide" title="예상 궤적 (V)" data-i18n-title="guideTitle" aria-pressed="true"><span class="icon">⤳</span><span data-i18n="guide">궤적</span></button>
+    </div>
+
+    <!-- 단계 이름과 요령 -->
+    <div class="banner" id="banner" role="status" aria-live="polite"><b id="banner-name"></b><span id="banner-tip"></span></div>
+
+    <!-- 주차 확인 막대와 주차 감지기 -->
+    <div class="meter" id="park-meter" hidden>
+      <span data-i18n="settling">주차 확인 중…</span>
+      <div class="track"><div class="fill" id="park-fill"></div></div>
+    </div>
+    <div class="sensor" id="sensor" hidden aria-hidden="true"><i></i><i></i><i></i><i></i><b id="sensor-text"></b></div>
+
+    <footer class="drive" id="drive" hidden>
+      <div class="wheel-box">
+        <div class="wheel" id="wheel" role="slider" aria-label="핸들" data-i18n-aria-label="wheelLabel" aria-valuemin="-100" aria-valuemax="100" aria-valuenow="0">
+          <svg viewBox="-100 -100 200 200" aria-hidden="true">
+            <circle class="rim" r="84" />
+            <circle class="rim-mark" r="84" />
+            <path class="spoke" d="M -80 6 L -26 14 L 26 14 L 80 6 L 80 -6 L 26 -2 L -26 -2 L -80 -6 Z" />
+            <path class="spoke" d="M -12 18 L -8 82 L 8 82 L 12 18 Z" />
+            <circle class="hub" r="26" />
+            <rect class="top-mark" x="-5" y="-96" width="10" height="20" rx="3" />
+          </svg>
+        </div>
+        <small class="wheel-hint" data-i18n="wheelHint">돌리기 · 두 번 톡 = 가운데</small>
+      </div>
+      <div class="pedals">
+        <button type="button" class="gear" id="gear" title="기어 D/R (G)" data-i18n-title="gearTitle" aria-label="기어" data-i18n-aria-label="gearLabel">
+          <span class="d">D</span><span class="r">R</span><small id="speed">0 km/h</small>
+        </button>
+        <div class="pedal-row">
+          <button type="button" class="pedal brake" id="brake" aria-label="브레이크" data-i18n-aria-label="brakeLabel"><span data-i18n="brake">브레이크</span></button>
+          <button type="button" class="pedal gas" id="gas" aria-label="가속" data-i18n-aria-label="gasLabel"><span data-i18n="gas">가속</span></button>
+        </div>
+      </div>
+    </footer>
+
+    <div id="loading" data-i18n="loading">주차장으로 가는 중…</div>
+    <script>
+      // file:// 로 열면 브라우저가 모듈 스크립트와 에셋 로딩을 막아 아래 main.js 가 실행되지 않는다
+      if (location.protocol === 'file:') {
+        document.getElementById('loading').textContent =
+          '파일을 직접 열면 실행되지 않습니다. 저장소 루트에서 npm start 를 실행한 뒤 http://localhost:8000 으로 접속하세요. / ' +
+          'Opening the file directly does not work. Run npm start in the repository root and visit http://localhost:8000.';
+      }
+    </script>
+
+    <div id="select" class="overlay" hidden>
+      <div class="card wide">
+        <h1 data-i18n="heading">주차</h1>
+        <p class="lead" data-i18n="lead">내 차(빨간 차)를 몰아 노란 칸 안에 반듯하게 세우세요. 칸 안에서 멈추고 잠시 기다리면 주차 완료입니다.</p>
+        <p class="progress" id="progress"></p>
+        <div class="level-grid" id="level-grid"></div>
+        <button type="button" id="btn-continue"><span id="continue-label"></span> <kbd>Enter</kbd></button>
+        <details class="help">
+          <summary data-i18n="help">조작법 · 채점</summary>
+          <dl>
+            <dt><kbd>↑</kbd> <kbd>W</kbd> · <kbd>↓</kbd> <kbd>S</kbd></dt>
+            <dd data-i18n="helpPedal">전진 · 후진 (기어가 저절로 바뀝니다. 움직이던 반대쪽이면 먼저 멈춥니다)</dd>
+            <dt><kbd>←</kbd> <kbd>→</kbd> · <kbd>A</kbd> <kbd>D</kbd></dt>
+            <dd data-i18n="helpSteer">핸들 (누르는 동안 꺾이고, 놓으면 가운데로)</dd>
+            <dt><kbd>Space</kbd> · <kbd>Shift</kbd></dt>
+            <dd data-i18n="helpBrake">브레이크 · 누르고 있으면 살살 가속</dd>
+            <dt><kbd>G</kbd> · <kbd>C</kbd> · <kbd>V</kbd></dt>
+            <dd data-i18n="helpView">기어 D/R · 시점 · 예상 궤적</dd>
+            <dt><kbd>R</kbd> · <kbd>Esc</kbd> · <kbd>M</kbd></dt>
+            <dd data-i18n="helpOther">다시 시작 · 단계 선택 · 소리</dd>
+            <dt data-i18n="helpTouchKey">화면</dt>
+            <dd data-i18n="helpTouch">왼쪽 아래 핸들을 돌리고(손을 떼도 그대로, 두 번 톡 치면 가운데로), 오른쪽 아래 페달과 D/R 기어를 누릅니다. 두 손가락으로 벌려 확대(마우스는 휠)</dd>
+            <dt data-i18n="helpScoreKey">채점</dt>
+            <dd data-i18n="helpScore">100점에서 접촉, 기준보다 늦은 시간·많은 전후진 전환, 칸 가운데·각도에서 벗어난 만큼 뺍니다. 90점 이상 ★★★, 70점 이상 ★★</dd>
+          </dl>
+        </details>
+      </div>
+    </div>
+
+    <div id="result" class="overlay" hidden>
+      <div class="card">
+        <h1 id="result-title"></h1>
+        <p class="stars" id="result-stars" aria-hidden="true"></p>
+        <p class="score" id="result-score"></p>
+        <table class="breakdown" id="result-table"></table>
+        <p class="best" id="result-best"></p>
+        <button type="button" id="btn-next"><span data-i18n="next">다음 단계</span> <kbd>Enter</kbd></button>
+        <button type="button" class="secondary" id="btn-again"><span data-i18n="again">다시 하기</span> <kbd>R</kbd></button>
+        <button type="button" class="secondary" id="btn-result-levels" data-i18n="toLevels">단계 선택</button>
+      </div>
+    </div>
+
+    <div id="fail" class="overlay" hidden>
+      <div class="card">
+        <h1 data-i18n="failed">실패</h1>
+        <p id="fail-reason"></p>
+        <button type="button" id="btn-retry"><span data-i18n="again">다시 하기</span> <kbd>Enter</kbd></button>
+        <button type="button" class="secondary" id="btn-fail-levels" data-i18n="toLevels">단계 선택</button>
+      </div>
+    </div>
+
+    <div id="toast" role="status"></div>
+
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>
