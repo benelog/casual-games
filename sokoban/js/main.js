@@ -8,6 +8,7 @@ import { SokobanScene } from './scene.js';
 import { Sound } from './sound.js';
 import { t } from './i18n.js';
 import { applyI18n, formatNumber, mountLangToggle } from '../../shared/i18n.js';
+import { createToast } from '../../shared/ui.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -30,7 +31,7 @@ let index = 0; // 지금 레벨 (LEVELS 의 위치)
 let game = null;
 let state = 'select'; // select | playing | cleared
 const held = new Map(); // 누르고 있는 방향 → 다음 반복까지 남은 시간
-let toastTimer = 0;
+const toast = createToast($('toast'));
 let resultTimer = 0;
 let padHeight = 0;
 let outcome = null; // 방금 깬 기록을 저장한 결과
@@ -141,16 +142,6 @@ function updateHud() {
   $('btn-restart').disabled = !game.canUndo;
 }
 
-function toast(text, tone = '') {
-  const el = $('toast');
-  el.textContent = text;
-  el.dataset.tone = tone;
-  el.classList.remove('show');
-  void el.offsetWidth; // 애니메이션을 처음부터 다시
-  el.classList.add('show');
-  toastTimer = 1.4;
-}
-
 /** 화면 가장자리를 가리는 HUD 크기를 씬에 알려 판이 그 사이에 오도록 한다 */
 function updateInsets() {
   const top = $('top').getBoundingClientRect().bottom;
@@ -185,7 +176,7 @@ function flush() {
         break;
       case 'restart':
         sound.play('restart');
-        toast(t('restarted'));
+        toast.show(t('restarted'));
         break;
       case 'solved':
         sound.play('win');
@@ -318,7 +309,7 @@ window.addEventListener('blur', () => held.clear());
 // ---------- 프레임 ----------
 
 scene.onFrame = (dt) => {
-  if (toastTimer > 0 && (toastTimer -= dt) <= 0) $('toast').classList.remove('show');
+  toast.tick(dt);
   if (state === 'cleared' && resultTimer > 0 && (resultTimer -= dt) <= 0) showResult();
   if (state !== 'playing') return;
   for (const [action, wait] of held) {

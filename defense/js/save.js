@@ -8,26 +8,18 @@
 import { MAP, tileAt } from './map.js';
 import { TOWERS, MAX_LEVEL } from './towers.js';
 import { WAVES } from './waves.js';
+import { browserStorage, JsonStore, isInt } from '../../shared/storage.js';
+
+export { browserStorage };
 
 export const SAVE_KEY = 'casual-games.defense.save.v1';
 export const BEST_KEY = 'casual-games.defense.best.v1';
 export const SAVE_VERSION = 1;
 
-/** 브라우저의 localStorage. 접근 자체가 막혀 있으면 null */
-export function browserStorage() {
-  try {
-    return globalThis.localStorage ?? null;
-  } catch {
-    return null;
-  }
-}
-
 /** game.snapshot() 에 저장 정보를 덧붙인 저장본 */
 export function serialize(game, { speed = 1, now = Date.now() } = {}) {
   return { version: SAVE_VERSION, ...game.snapshot(), speed, savedAt: now };
 }
-
-const isInt = (v, min, max) => Number.isInteger(v) && v >= min && v <= max;
 
 /** 저장본이 이 맵·규칙에 맞으면 정리한 사본을, 아니면 null 을 돌려준다 */
 export function validateSave(data, { map = MAP, waves = WAVES } = {}) {
@@ -73,38 +65,11 @@ function validateBest(data) {
   return { wave: data.wave, won, lives: won && isInt(data.lives, 0, 1e6) ? data.lives : 0 };
 }
 
-/** storage(getItem/setItem/removeItem) 를 감싸 예외와 잘못된 데이터를 모두 삼킨다 */
-export class SaveStore {
+/** 읽은 데이터를 검증해 잘못된 것은 버린다 */
+export class SaveStore extends JsonStore {
   constructor(storage, options = {}) {
-    this.storage = storage;
+    super(storage);
     this.options = options; // validateSave 에 넘길 { map, waves }
-  }
-
-  read(key) {
-    try {
-      const text = this.storage?.getItem(key);
-      return text ? JSON.parse(text) : null;
-    } catch {
-      return null;
-    }
-  }
-
-  write(key, value) {
-    if (!this.storage) return false;
-    try {
-      this.storage.setItem(key, JSON.stringify(value));
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  remove(key) {
-    try {
-      this.storage?.removeItem(key);
-    } catch {
-      // 지우지 못해도 다음 저장이 덮어쓴다
-    }
   }
 
   /** 유효한 저장본. 없거나 잘못됐으면 지우고 null */

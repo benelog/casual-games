@@ -9,6 +9,9 @@ import { RADIUS } from './board.js';
 
 const ASSETS = new URL('../assets/', import.meta.url);
 const asset = (path) => new URL(path, ASSETS).href;
+// 환경 조명은 여러 게임이 같이 쓴다
+const SHARED_ASSETS = new URL('../../shared/assets/', import.meta.url);
+const sharedAsset = (path) => new URL(path, SHARED_ASSETS).href;
 
 const BOARD_FACE_Z = 0.04; // 모델의 앞면 위치
 const BOARD_EDGE = 0.2253; // 숫자 링을 포함한 보드 반지름
@@ -69,7 +72,7 @@ export class DartsScene {
   async load({ debug = false } = {}) {
     const textures = new THREE.TextureLoader();
     const [env, board, wallMap, wallNormal, wallRough] = await Promise.all([
-      new RGBELoader().loadAsync(asset('hdri/warm_bar_1k.hdr')),
+      new RGBELoader().loadAsync(sharedAsset('hdri/warm_bar_1k.hdr')),
       new GLTFLoader().loadAsync(asset('models/dartboard/dartboard_1k.gltf')),
       loadTexture(textures, 'wood_plank_wall', 'diff', true, 3),
       loadTexture(textures, 'wood_plank_wall', 'nor_gl', false, 3),

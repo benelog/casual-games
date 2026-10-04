@@ -274,7 +274,7 @@ async function play() {
     $('controls').hidden = true;
     $('pin-cam').hidden = true;
     setStatus('');
-    sound.play('release', 1, 0.6 + 0.4 * ((shot.speed - SPEED_MIN) / (SPEED_MAX - SPEED_MIN)));
+    sound.play('release', 1, { volume: 0.6 + 0.4 * ((shot.speed - SPEED_MIN) / (SPEED_MAX - SPEED_MIN)) });
     const { standing, gutter } = await scene.roll(player, shot);
     // 물리에서 센 핀 수가 규칙상 가능한 범위를 벗어나지 않게 한 번 더 막는다
     const knocked = clamp(before.length - standing.length, 0, game.next.standing);

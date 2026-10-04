@@ -6,6 +6,10 @@
 //
 // 진행 중에 생긴 일은 events 에 쌓이고, 화면 쪽(main.js)이 꺼내 소리·효과로 보여 준다.
 
+import { createRng } from '../../shared/util.js';
+
+export { createRng };
+
 export const WIDTH = 6;
 export const VISIBLE = 12; // 보이는 줄 수
 export const HEIGHT = VISIBLE + 1; // 숨은 줄 포함. 그 위에 놓인 과일은 사라진다
@@ -44,18 +48,6 @@ const NEIGHBORS = [
 
 export const at = (x, y) => y * WIDTH + x;
 export const isFruit = (v) => v >= 1 && v <= 5;
-
-/** 시드를 받는 난수 (mulberry32). 테스트에서 같은 순서를 재현할 때 쓴다 */
-export function createRng(seed) {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
 
 /** distance 칸을 떨어지는 데 걸리는 시간(초). 다 떨어진 뒤에 다음 일이 일어나게 기다린다 */
 export function fallTime(distance) {

@@ -8,6 +8,10 @@
 // 그래서 항상 풀 수 있다. 조각은 돌려도 열린 방향의 개수가 그대로라, 모든 칸이 이어지고
 // 열린 끝이 없으면 저절로 고리 없는 트리가 된다(연결 수가 칸 수 - 1 로 고정).
 
+import { createRng, formatTime } from '../../shared/util.js';
+
+export { createRng, formatTime };
+
 export const N = 1;
 export const E = 2;
 export const S = 4;
@@ -66,18 +70,6 @@ export function turnsOf(mask) {
   return 0;
 }
 
-/** 시드로 재현되는 난수 (mulberry32). 0 이상 1 미만 */
-export function createRng(seed) {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
 /** 문자열 → 32비트 시드 (FNV-1a) */
 export function hashSeed(text) {
   let h = 0x811c9dc5;
@@ -97,16 +89,6 @@ export function dateKey(date = new Date()) {
 /** 오늘의 퍼즐 시드. 같은 날짜·같은 크기면 누구에게나 같은 퍼즐이 나온다 */
 export function dailySeed(day, size) {
   return hashSeed(`pipes:${day}:${size}`);
-}
-
-/** 초 → 'm:ss' (한 시간이 넘으면 'h:mm:ss') */
-export function formatTime(seconds) {
-  const total = Math.max(0, Math.floor(seconds));
-  const pad = (n) => String(n).padStart(2, '0');
-  const h = Math.floor(total / 3600);
-  const m = Math.floor((total % 3600) / 60);
-  const s = total % 60;
-  return h ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
 }
 
 const pick = (rng, n) => Math.min(n - 1, Math.floor(rng() * n));

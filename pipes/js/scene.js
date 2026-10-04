@@ -8,6 +8,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { createRenderer, startLoop } from '../../shared/gpu.js';
 import { DIRS, SHAPES, shapeOf, turnsOf } from './game.js';
+import { damp } from '../../shared/util.js';
 
 const QUARTER = Math.PI / 2;
 const TILT = 0.3; // 수직에서 기운 각도(라디안)
@@ -28,8 +29,6 @@ const GLOW = new THREE.Color('#1479d8');
 const TILE_DRY = [new THREE.Color('#77808f'), new THREE.Color('#6a7382')];
 const TILE_WET = [new THREE.Color('#5f93b8'), new THREE.Color('#5486ab')];
 const TILE_SOURCE = new THREE.Color('#d9b46a');
-
-const damp = (k, dt) => 1 - Math.exp(-k * dt);
 
 /** 조각 가운데에서 dir(0=북, 1=동, 2=남, 3=서) 쪽으로 뻗는 도형이 되게 돌린다. 기준은 북쪽(-z) */
 function toward(geometry, dir) {

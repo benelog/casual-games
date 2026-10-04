@@ -12,6 +12,9 @@ import { t } from './i18n.js';
 
 const ASSETS = new URL('../assets/', import.meta.url);
 const asset = (path) => new URL(path, ASSETS).href;
+// 카드·칩·텍스처·캐릭터·환경 조명은 블랙잭과 같이 쓴다
+const SHARED_ASSETS = new URL('../../shared/assets/', import.meta.url);
+const sharedAsset = (path) => new URL(path, SHARED_ASSETS).href;
 
 const CARD_W = 0.9;
 const CARD_H = 1.3;
@@ -78,7 +81,7 @@ function canvasTexture(width, height, draw) {
 
 async function loadPbr(loader, name, diffuse, repeatX, repeatY) {
   const load = async (suffix, srgb) => {
-    const texture = await loader.loadAsync(asset(`textures/${name}_${suffix}_1k.jpg`));
+    const texture = await loader.loadAsync(sharedAsset(`textures/${name}_${suffix}_1k.jpg`));
     texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
     texture.repeat.set(repeatX, repeatY);
     texture.anisotropy = 8;
@@ -175,16 +178,16 @@ export class TableScene {
     }
 
     const [env, felt, leather, wood, floorWood, opponent, chair, backImage, chipImages, cardImages] = await Promise.all([
-      new RGBELoader().loadAsync(asset('hdri/warm_bar_1k.hdr')),
+      new RGBELoader().loadAsync(sharedAsset('hdri/warm_bar_1k.hdr')),
       loadPbr(textures, 'velour_velvet', null, 7, 7),
       loadPbr(textures, 'brown_leather', 'albedo', 14, 1),
       loadPbr(textures, 'dark_wood', 'diff', 3, 1),
       loadPbr(textures, 'dark_wood', 'diff', 10, 10),
-      gltf.loadAsync(asset('models/BusinessMan.glb')),
+      gltf.loadAsync(sharedAsset('models/BusinessMan.glb')),
       gltf.loadAsync(asset('models/dining_chair_02/dining_chair_02_1k.gltf')),
-      loadImage(asset('cards/back.png')),
-      Promise.all(DENOMS.map((d) => loadImage(asset(`chips/${d.image}.png`)))),
-      Promise.all(cardFiles.map((card) => loadImage(asset(cardFile(card))))),
+      loadImage(sharedAsset('cards/back.png')),
+      Promise.all(DENOMS.map((d) => loadImage(sharedAsset(`chips/${d.image}.png`)))),
+      Promise.all(cardFiles.map((card) => loadImage(sharedAsset(cardFile(card))))),
     ]);
 
     this.cardImages = new Map(cardFiles.map((card, i) => [cardId(card), cardImages[i]]));

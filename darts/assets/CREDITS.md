@@ -6,7 +6,6 @@
 | --- | --- | --- | --- |
 | `models/dartboard/` | 다트보드 | [Poly Haven — dartboard](https://polyhaven.com/a/dartboard) | CC0 |
 | `textures/wood_plank_wall_*` | 벽 | [Poly Haven — wood_plank_wall](https://polyhaven.com/a/wood_plank_wall) | CC0 |
-| `hdri/warm_bar_1k.hdr` | 환경 조명 | [Poly Haven — warm_bar](https://polyhaven.com/a/warm_bar) | CC0 |
 | `sounds/throw.mp3` | 다트 던지기 (`cloth3`) | [Kenney — RPG Audio](https://kenney.nl/assets/rpg-audio) | CC0 |
 | `sounds/hit.mp3`, `miss.mp3` | 보드에 꽂힘, 벽에 꽂힘 (`impactWood_light_000`, `impactPlank_medium_001`) | [Kenney — Impact Sounds](https://kenney.nl/assets/impact-sounds) | CC0 |
 | `sounds/great.mp3`, `turn.mp3` | 불스아이·높은 점수, 차례 바뀜 (`confirmation_003`, `maximize_003`) | [Kenney — Interface Sounds](https://kenney.nl/assets/interface-sounds) | CC0 |
@@ -17,3 +16,5 @@
 
 다트는 쓸 만한 오픈소스 모델을 찾지 못해 코드에서 단순 도형으로 만든다.
 렌더링은 [three.js](https://threejs.org/) (MIT) 를 사용한다.
+
+환경 조명(`warm_bar_1k.hdr`)처럼 여러 게임이 같이 쓰는 파일은 [`shared/assets/CREDITS.md`](../../shared/assets/CREDITS.md) 에 있다.

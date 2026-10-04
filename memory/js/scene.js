@@ -8,6 +8,7 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { createRenderer, startLoop } from '../../shared/gpu.js';
 import { layoutFor } from './game.js';
+import { damp } from '../../shared/util.js';
 
 /** 플레이어 색. style.css 의 --p0, --p1 과 같다 */
 export const PLAYER_COLORS = ['#4db8ff', '#ffd23f'];
@@ -30,7 +31,6 @@ const FACE_PX = [256, 348];
 const SOLO_COLOR = new THREE.Color('#e8c36a');
 const RAIL_COLOR = new THREE.Color('#4a3524');
 
-const damp = (k, dt) => 1 - Math.exp(-k * dt);
 const smooth = (k) => k * k * (3 - 2 * k);
 
 function roundedRect(w, h, r) {

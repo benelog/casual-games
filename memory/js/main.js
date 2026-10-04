@@ -6,6 +6,7 @@ import { MemoryScene } from './scene.js';
 import { Sound } from './sound.js';
 import { t } from './i18n.js';
 import { applyI18n, mountLangToggle } from '../../shared/i18n.js';
+import { segmented, createToast } from '../../shared/ui.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -26,7 +27,7 @@ let backdrop = null; // 메뉴 뒤에 보여 줄, 그림이 모두 펼쳐진 판
 let state = 'menu'; // menu | playing | done
 let starter = 0; // 2인 대전에서 먼저 하는 사람. 한 판 더 하면 바뀐다
 let resultTimer = 0; // 결과 창을 띄우기까지 남은 시간
-let toastTimer = 0;
+const toast = createToast($('toast'));
 let keyCursor = -1; // 키보드로 고른 카드
 
 const playerName = (player) => t('player', { n: player + 1 });
@@ -36,19 +37,6 @@ sound.enabled = settings.sound;
 $('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 
 // ---------- 메뉴 ----------
-
-function segmented(container, options, current, onPick) {
-  container.replaceChildren();
-  for (const { value, label, detail } of options) {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'option';
-    button.setAttribute('aria-pressed', String(value === current));
-    button.innerHTML = `<span>${label}</span>${detail ? `<small>${detail}</small>` : ''}`;
-    button.addEventListener('click', () => onPick(value));
-    container.append(button);
-  }
-}
 
 const describe = (key, { time, turns }) => t(key, { time: formatTime(time), turns });
 
@@ -129,7 +117,7 @@ function deal(first) {
   sound.play('shuffle');
   updateHud();
   setState('playing');
-  if (players > 1) toast(t('turnOf', { name: playerName(game.current) }), `p${game.current}`);
+  if (players > 1) toast.show(t('turnOf', { name: playerName(game.current) }), `p${game.current}`);
 }
 
 function start() {
@@ -171,7 +159,7 @@ function finished() {
   $('result').dataset.tone = tone;
 
   sound.play('win');
-  toast($('result-title').textContent, tone === 'win' ? 'big' : tone);
+  toast.show($('result-title').textContent, tone === 'win' ? 'big' : tone);
   setState('done');
   setKeyCursor(-1);
   resultTimer = RESULT_DELAY;
@@ -217,16 +205,6 @@ function updateTurn(hint = 'turnHint') {
   $('turn-hint').textContent = t(hint);
 }
 
-function toast(text, tone = '') {
-  const el = $('toast');
-  el.textContent = text;
-  el.dataset.tone = tone;
-  el.classList.remove('show');
-  void el.offsetWidth; // 애니메이션을 처음부터 다시
-  el.classList.add('show');
-  toastTimer = 1.4;
-}
-
 /** 화면 가장자리를 가리는 HUD 크기를 씬에 알려 판이 그 사이에 오도록 한다 */
 function updateInsets() {
   const h = window.innerHeight;
@@ -255,7 +233,7 @@ function flush() {
         sound.play('match', 0.85 + 0.4 * (game.found / game.pairs));
         if (game.players > 1) {
           updateTurn('turnAgain');
-          if (!game.done) toast(t('matchAgain'), `p${event.player}`);
+          if (!game.done) toast.show(t('matchAgain'), `p${event.player}`);
         }
         break;
       case 'miss':
@@ -267,7 +245,7 @@ function flush() {
       case 'turn':
         sound.play('turn');
         updateTurn();
-        toast(t('turnOf', { name: playerName(event.player) }), `p${event.player}`);
+        toast.show(t('turnOf', { name: playerName(event.player) }), `p${event.player}`);
         break;
       case 'done':
         wasDone = true;
@@ -367,7 +345,7 @@ $('btn-sound').addEventListener('click', toggleSound);
 // ---------- 프레임 ----------
 
 scene.onFrame = (dt) => {
-  if (toastTimer > 0 && (toastTimer -= dt) <= 0) $('toast').classList.remove('show');
+  toast.tick(dt);
   if (!game) return;
   if (state === 'playing') {
     game.update(dt);

@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { createRenderer, startLoop } from '../../shared/gpu.js';
 import { DIRS } from './game.js';
+import { damp } from '../../shared/util.js';
 
 const asset = (path) => new URL(`../assets/${path}`, import.meta.url).href;
 
@@ -27,8 +28,6 @@ const SPEED = 7.5; // 칸/초. 밀려 있으면 더 빨리 따라잡는다
 const MAX_PARTICLES = 260;
 const GOAL_COLOR = 0xf2c94c;
 const CONFETTI = ['#f2c94c', '#e8504a', '#3fbf7f', '#3f8ae0', '#f08c3a', '#f3ecdc'];
-
-const damp = (k, dt) => 1 - Math.exp(-k * dt);
 
 /** position 을 target 쪽으로 일정한 속도로 옮긴다. 닿았으면 true */
 function approach(position, target, dt) {

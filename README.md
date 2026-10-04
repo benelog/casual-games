@@ -57,6 +57,13 @@ npm test         # node --test
   WebGL 을 만들 수 없거나 컨텍스트를 잃으면 로딩 화면에 안내와 다시 불러오기 버튼을 띄운다.
 - **카드 크게 보기** `shared/card-zoom.js`: 포커·블랙잭에서 카드 근처를 누르면 테이블의 카드를 줄별로
   크게 펼쳐 보여 준다(모두 뒷면인 줄은 뺀다). 드로우 포커에서 손가락으로 누르면 이 화면에서 바꿀 카드를 고른다.
+- **효과음** `shared/sound.js`: Web Audio 로 mp3 를 불러 겹쳐 트는 `Sound` 클래스. 게임의 `js/sound.js` 는
+  이를 상속해 소리 이름별 `{ volume, gap }` 표를 넘기고, 파일 없이 만드는 소리는 `prepare()` 에서 준비한다.
+- **저장** `shared/storage.js`: `browserStorage()`, 예외를 삼키는 JSON 저장소 `JsonStore`, 검증용 `isInt`·`isTime`,
+  항목별 최고 기록을 합치는 `mergeLowest`. 게임의 `js/save.js` 는 `JsonStore` 를 상속해 검증만 맡는다.
+- **유틸** `shared/util.js`: 시드 난수 `createRng`, `shuffle`, `formatTime`, 프레임 보간 `damp`.
+- **메뉴·HUD** `shared/ui.js`: 선택 버튼 묶음 `segmented`, 잠깐 뜨는 알림 `createToast`.
+- **공용 에셋** `shared/assets/`: 여러 게임이 같이 쓰는 카드·칩·텍스처·캐릭터·HDRI. 출처는 `shared/assets/CREDITS.md`.
 
 ## 배포
 

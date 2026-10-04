@@ -3,25 +3,17 @@
 
 import { COLOR_COUNTS } from './game.js';
 import { LEVEL_IDS } from './ai.js';
+import { browserStorage, JsonStore, isInt } from '../../shared/storage.js';
+
+export { browserStorage };
 
 export const RECORD_KEY = 'casual-games.fruitpop.record.v1';
 export const SETTINGS_KEY = 'casual-games.fruitpop.settings.v1';
 export const OPPONENTS = ['cpu', 'friend'];
 export const DEFAULT_SETTINGS = { opponent: 'cpu', level: 'normal', colors: 4 };
 
-/** 브라우저의 localStorage. 접근 자체가 막혀 있으면 null */
-export function browserStorage() {
-  try {
-    return globalThis.localStorage ?? null;
-  } catch {
-    return null;
-  }
-}
-
 /** 컴퓨터 실력과 과일 종류마다 전적을 따로 둔다 */
 export const modeKey = ({ level, colors }) => `${level}-${colors}`;
-
-const isInt = (v, min, max) => Number.isInteger(v) && v >= min && v <= max;
 
 export function validateSettings(data) {
   if (!data || typeof data !== 'object') return { ...DEFAULT_SETTINGS };
@@ -39,29 +31,10 @@ function validateRecord(data) {
   return { wins, losses, bestChain };
 }
 
-/** storage(getItem/setItem) 를 감싸 예외와 잘못된 데이터를 모두 삼킨다 */
-export class SaveStore {
+/** 읽은 데이터를 검증해 잘못된 것은 버린다 */
+export class SaveStore extends JsonStore {
   constructor(storage) {
-    this.storage = storage;
-  }
-
-  read(key) {
-    try {
-      const text = this.storage?.getItem(key);
-      return text ? JSON.parse(text) : null;
-    } catch {
-      return null;
-    }
-  }
-
-  write(key, value) {
-    if (!this.storage) return false;
-    try {
-      this.storage.setItem(key, JSON.stringify(value));
-      return true;
-    } catch {
-      return false;
-    }
+    super(storage);
   }
 
   loadSettings() {

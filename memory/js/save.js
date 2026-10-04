@@ -3,23 +3,14 @@
 // 게임은 저장 없이 계속된다.
 
 import { SIZES } from './game.js';
+import { browserStorage, JsonStore, isInt, isTime, mergeLowest } from '../../shared/storage.js';
+
+export { browserStorage };
 
 export const BEST_KEY = 'casual-games.memory.best.v1';
 export const SETTINGS_KEY = 'casual-games.memory.settings.v1';
 export const PLAYER_COUNTS = [1, 2];
 export const DEFAULT_SETTINGS = { players: 1, size: 20, sound: true };
-
-/** 브라우저의 localStorage. 접근 자체가 막혀 있으면 null */
-export function browserStorage() {
-  try {
-    return globalThis.localStorage ?? null;
-  } catch {
-    return null;
-  }
-}
-
-const isInt = (v, min, max) => Number.isInteger(v) && v >= min && v <= max;
-const isTime = (v) => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 1e7;
 
 export function validateSettings(data) {
   if (!data || typeof data !== 'object') return { ...DEFAULT_SETTINGS };
@@ -37,29 +28,10 @@ function validateResult(data) {
   return { time, turns };
 }
 
-/** storage(getItem/setItem) 를 감싸 예외와 잘못된 데이터를 모두 삼킨다 */
-export class SaveStore {
+/** 읽은 데이터를 검증해 잘못된 것은 버린다 */
+export class SaveStore extends JsonStore {
   constructor(storage) {
-    this.storage = storage;
-  }
-
-  read(key) {
-    try {
-      const text = this.storage?.getItem(key);
-      return text ? JSON.parse(text) : null;
-    } catch {
-      return null;
-    }
-  }
-
-  write(key, value) {
-    if (!this.storage) return false;
-    try {
-      this.storage.setItem(key, JSON.stringify(value));
-      return true;
-    } catch {
-      return false;
-    }
+    super(storage);
   }
 
   loadSettings() {
@@ -88,17 +60,11 @@ export class SaveStore {
 
   /** 더 빠르거나 더 적은 턴에 끝냈으면 그 항목을 바꾼다. 무엇이 새 기록인지 { time, turns } 로 알려 준다 */
   recordBest(size, { time, turns }) {
-    const improved = { time: false, turns: false };
-    if (!SIZES.includes(size) || !validateResult({ time, turns })) return improved;
+    if (!SIZES.includes(size) || !validateResult({ time, turns })) return { time: false, turns: false };
     const all = this.loadAllBest();
-    const best = all[size];
-    improved.time = !best || time < best.time;
-    improved.turns = !best || turns < best.turns;
+    const { record, improved } = mergeLowest(all[size], { time, turns });
     if (improved.time || improved.turns) {
-      all[size] = {
-        time: improved.time ? time : best.time,
-        turns: improved.turns ? turns : best.turns,
-      };
+      all[size] = record;
       this.write(BEST_KEY, all);
     }
     return improved;

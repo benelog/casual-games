@@ -6,22 +6,13 @@ import { MAP, positionAt, tileAt } from './map.js';
 import { TOWERS, MAX_LEVEL, towerStats, upgradeCost, sellValue } from './towers.js';
 import { ENEMIES, enemyHp } from './enemies.js';
 import { WAVES, waveBonus, spawnSchedule } from './waves.js';
+import { createRng } from '../../shared/util.js';
+
+export { createRng };
 
 export const STEP = 1 / 60;
 export const START_GOLD = 200;
 export const START_LIVES = 20;
-
-/** 시드를 받는 작은 난수 생성기 (mulberry32). 0 이상 1 미만 */
-export function createRng(seed = 1) {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
 
 export class DefenseGame {
   constructor({ map = MAP, waves = WAVES, gold = START_GOLD, lives = START_LIVES, seed = 1 } = {}) {

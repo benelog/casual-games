@@ -7,6 +7,8 @@ import { DuelScene } from './scene.js';
 import { Sound } from './sound.js';
 import { t } from './i18n.js';
 import { applyI18n, formatNumber, mountLangToggle } from '../../shared/i18n.js';
+import { formatTime } from '../../shared/util.js';
+import { segmented, createToast } from '../../shared/ui.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -81,24 +83,11 @@ let demoRestart = 0;
 let tally = [0, 0]; // 설정을 바꾸기 전까지 이어지는 승수
 const held = new Map(); // "판:동작" → 다음 반복까지 남은 시간
 const chainTimers = [0, 0];
-let toastTimer = 0;
+const toast = createToast($('toast'), 1.1);
 
 const solo = () => settings.opponent === 'cpu';
 
 // ---------- 메뉴 ----------
-
-function segmented(container, options, current, onPick) {
-  container.replaceChildren();
-  for (const { value, label, detail } of options) {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'option';
-    button.setAttribute('aria-pressed', String(value === current));
-    button.innerHTML = `<span>${label}</span>${detail ? `<small>${detail}</small>` : ''}`;
-    button.addEventListener('click', () => onPick(value));
-    container.append(button);
-  }
-}
 
 function describeRecord(record) {
   if (!record) return '';
@@ -194,7 +183,7 @@ function start() {
   countdown = COUNTDOWN;
   updateHud();
   setState('countdown');
-  toast(t('ready'));
+  toast.show(t('ready'));
 }
 
 function pause() {
@@ -205,11 +194,6 @@ function pause() {
 
 function resume() {
   if (state === 'paused') setState(pausedFrom);
-}
-
-function formatTime(seconds) {
-  const s = Math.floor(seconds);
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
 function finish() {
@@ -259,16 +243,6 @@ function updateHud() {
     plate.querySelector('.score').textContent = formatNumber(board.score);
     plate.querySelector('.wins').textContent = '★'.repeat(Math.min(tally[i], 5));
   });
-}
-
-function toast(text, tone = '') {
-  const el = $('toast');
-  el.textContent = text;
-  el.dataset.tone = tone;
-  el.classList.remove('show');
-  void el.offsetWidth; // 애니메이션을 처음부터 다시
-  el.classList.add('show');
-  toastTimer = 1.1;
 }
 
 /** 판 위에 연쇄 알림을 띄운다 */
@@ -357,30 +331,30 @@ function flush() {
     const human = !ais[event.player];
     switch (event.type) {
       case 'move':
-        if (human) sound.play('move', 1, pan);
+        if (human) sound.play('move', 1, { pan });
         break;
       case 'rotate':
-        if (human) sound.play('rotate', 1, pan);
+        if (human) sound.play('rotate', 1, { pan });
         break;
       case 'drop':
-        sound.play('drop', 1, pan);
+        sound.play('drop', 1, { pan });
         break;
       case 'lock':
-        sound.play('lock', 1.25, pan);
+        sound.play('lock', 1.25, { pan });
         break;
       case 'pop':
         // 연쇄가 이어질수록 높은 소리
-        sound.play('pop', 2 ** (Math.min(event.chain - 1, 9) / 6), pan);
+        sound.play('pop', 2 ** (Math.min(event.chain - 1, 9) / 6), { pan });
         if (event.chain >= 2) chainToast(event.player, t('chain', { n: event.chain }), event.chain >= 4 ? 'big' : '');
         break;
       case 'chainEnd':
         if (event.allClear) {
-          sound.play('allclear', 1, pan);
+          sound.play('allclear', 1, { pan });
           chainToast(event.player, t('allClear'), 'big');
         }
         break;
       case 'garbage':
-        sound.play('lock', 0.6, pan);
+        sound.play('lock', 0.6, { pan });
         break;
     }
   }
@@ -484,7 +458,7 @@ function runMatch(dt) {
 }
 
 scene.onFrame = (dt) => {
-  if (toastTimer > 0 && (toastTimer -= dt) <= 0) $('toast').classList.remove('show');
+  toast.tick(dt);
   for (const i of [0, 1]) {
     if (chainTimers[i] > 0 && (chainTimers[i] -= dt) <= 0) $(`chain-${i}`).classList.remove('show');
   }
@@ -503,7 +477,7 @@ scene.onFrame = (dt) => {
     countdown -= dt;
     if (countdown <= 0) {
       match.start();
-      toast(t('go'), 'big');
+      toast.show(t('go'), 'big');
       setState('playing');
     }
   } else if (state === 'playing') {

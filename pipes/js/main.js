@@ -6,6 +6,7 @@ import { PipesScene } from './scene.js';
 import { Sound } from './sound.js';
 import { t } from './i18n.js';
 import { applyI18n, mountLangToggle } from '../../shared/i18n.js';
+import { segmented, createToast } from '../../shared/ui.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -25,26 +26,13 @@ let game = null;
 let backdrop = null; // 메뉴 뒤에 보여 줄 완성된 판
 let state = 'menu'; // menu | playing | solved
 let resultTimer = 0; // 결과 창을 띄우기까지 남은 시간
-let toastTimer = 0;
+const toast = createToast($('toast'));
 let keyCursor = -1; // 키보드로 고른 칸
 
 sound.enabled = settings.sound;
 $('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 
 // ---------- 메뉴 ----------
-
-function segmented(container, options, current, onPick) {
-  container.replaceChildren();
-  for (const { value, label, detail } of options) {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'option';
-    button.setAttribute('aria-pressed', String(value === current));
-    button.innerHTML = `<span>${label}</span>${detail ? `<small>${detail}</small>` : ''}`;
-    button.addEventListener('click', () => onPick(value));
-    container.append(button);
-  }
-}
 
 const describe = (key, { time, moves }) => t(key, { time: formatTime(time), moves });
 
@@ -186,7 +174,7 @@ function solved() {
 
   sound.play('win');
   sound.flow();
-  toast(t('solved'), 'water');
+  toast.show(t('solved'), 'water');
   setState('solved');
   setKeyCursor(-1);
   resultTimer = RESULT_DELAY;
@@ -208,16 +196,6 @@ function updateHud() {
   $('moves').textContent = game.moves;
   $('time').textContent = formatTime(game.elapsed);
   $('filled').textContent = `${game.filled}/${game.count}`;
-}
-
-function toast(text, tone = '') {
-  const el = $('toast');
-  el.textContent = text;
-  el.dataset.tone = tone;
-  el.classList.remove('show');
-  void el.offsetWidth; // 애니메이션을 처음부터 다시
-  el.classList.add('show');
-  toastTimer = 1.4;
 }
 
 /** 화면 가장자리를 가리는 HUD 크기를 씬에 알려 판이 그 사이에 오도록 한다 */
@@ -350,7 +328,7 @@ $('btn-sound').addEventListener('click', toggleSound);
 // ---------- 프레임 ----------
 
 scene.onFrame = (dt) => {
-  if (toastTimer > 0 && (toastTimer -= dt) <= 0) $('toast').classList.remove('show');
+  toast.tick(dt);
   if (!game) return;
   if (state === 'playing') {
     game.update(dt);

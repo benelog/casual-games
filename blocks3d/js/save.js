@@ -3,24 +3,16 @@
 
 import { PIECE_SETS, SET_IDS } from './pieces.js';
 import { PIT_SIZES } from './game.js';
+import { browserStorage, JsonStore, isInt } from '../../shared/storage.js';
+
+export { browserStorage };
 
 export const BEST_KEY = 'casual-games.tetris3d.best.v1';
 export const SETTINGS_KEY = 'casual-games.tetris3d.settings.v1';
 export const DEFAULT_SETTINGS = { set: 'basic', size: 5 };
 
-/** 브라우저의 localStorage. 접근 자체가 막혀 있으면 null */
-export function browserStorage() {
-  try {
-    return globalThis.localStorage ?? null;
-  } catch {
-    return null;
-  }
-}
-
 /** 조각 묶음과 우물 크기마다 기록을 따로 둔다 */
 export const modeKey = ({ set, size }) => `${set}-${size}`;
-
-const isInt = (v, min, max) => Number.isInteger(v) && v >= min && v <= max;
 
 export function validateSettings(data) {
   if (!data || typeof data !== 'object') return { ...DEFAULT_SETTINGS };
@@ -37,29 +29,10 @@ function validateRecord(data) {
   return { score, layers, level };
 }
 
-/** storage(getItem/setItem) 를 감싸 예외와 잘못된 데이터를 모두 삼킨다 */
-export class SaveStore {
+/** 읽은 데이터를 검증해 잘못된 것은 버린다 */
+export class SaveStore extends JsonStore {
   constructor(storage) {
-    this.storage = storage;
-  }
-
-  read(key) {
-    try {
-      const text = this.storage?.getItem(key);
-      return text ? JSON.parse(text) : null;
-    } catch {
-      return null;
-    }
-  }
-
-  write(key, value) {
-    if (!this.storage) return false;
-    try {
-      this.storage.setItem(key, JSON.stringify(value));
-      return true;
-    } catch {
-      return false;
-    }
+    super(storage);
   }
 
   loadSettings() {

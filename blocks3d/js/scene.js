@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { createRenderer, startLoop } from '../../shared/gpu.js';
+import { damp } from '../../shared/util.js';
 
 // 쌓인 칸은 높이(층)마다 색이 다르다. 몇 층까지 찼는지 한눈에 보이도록
 export const LAYER_COLORS = [
@@ -33,8 +34,6 @@ const MIN_POLAR = 0.02;
 const MAX_POLAR = 1.25;
 const QUARTER = Math.PI / 2;
 const MAX_PARTICLES = 400;
-
-const damp = (k, dt) => 1 - Math.exp(-k * dt);
 
 export class TetrisScene {
   constructor(container) {

@@ -3,6 +3,9 @@
 // 게임은 저장 없이 계속된다.
 
 import { SIZES } from './game.js';
+import { browserStorage, JsonStore, isInt, isTime, mergeLowest } from '../../shared/storage.js';
+
+export { browserStorage };
 
 export const BEST_KEY = 'casual-games.pipes.best.v1';
 export const DAILY_KEY = 'casual-games.pipes.daily.v1';
@@ -10,17 +13,6 @@ export const SETTINGS_KEY = 'casual-games.pipes.settings.v1';
 export const MODES = ['free', 'daily'];
 export const DEFAULT_SETTINGS = { mode: 'free', size: 5, sound: true };
 
-/** 브라우저의 localStorage. 접근 자체가 막혀 있으면 null */
-export function browserStorage() {
-  try {
-    return globalThis.localStorage ?? null;
-  } catch {
-    return null;
-  }
-}
-
-const isInt = (v, min, max) => Number.isInteger(v) && v >= min && v <= max;
-const isTime = (v) => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 1e7;
 const isDay = (v) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v);
 
 /** 'YYYY-MM-DD' 의 하루 전 날짜 */
@@ -45,29 +37,10 @@ function validateResult(data) {
   return { time, moves };
 }
 
-/** storage(getItem/setItem) 를 감싸 예외와 잘못된 데이터를 모두 삼킨다 */
-export class SaveStore {
+/** 읽은 데이터를 검증해 잘못된 것은 버린다 */
+export class SaveStore extends JsonStore {
   constructor(storage) {
-    this.storage = storage;
-  }
-
-  read(key) {
-    try {
-      const text = this.storage?.getItem(key);
-      return text ? JSON.parse(text) : null;
-    } catch {
-      return null;
-    }
-  }
-
-  write(key, value) {
-    if (!this.storage) return false;
-    try {
-      this.storage.setItem(key, JSON.stringify(value));
-      return true;
-    } catch {
-      return false;
-    }
+    super(storage);
   }
 
   loadSettings() {
@@ -98,17 +71,11 @@ export class SaveStore {
 
   /** 더 빠르거나 더 적게 돌렸으면 그 항목을 바꾼다. 무엇이 새 기록인지 { time, moves } 로 알려 준다 */
   recordBest(size, { time, moves }) {
-    const improved = { time: false, moves: false };
-    if (!SIZES.includes(size) || !validateResult({ time, moves })) return improved;
+    if (!SIZES.includes(size) || !validateResult({ time, moves })) return { time: false, moves: false };
     const all = this.loadAllBest();
-    const best = all[size];
-    improved.time = !best || time < best.time;
-    improved.moves = !best || moves < best.moves;
+    const { record, improved } = mergeLowest(all[size], { time, moves });
     if (improved.time || improved.moves) {
-      all[size] = {
-        time: improved.time ? time : best.time,
-        moves: improved.moves ? moves : best.moves,
-      };
+      all[size] = record;
       this.write(BEST_KEY, all);
     }
     return improved;

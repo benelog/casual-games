@@ -18,9 +18,13 @@ import {
 } from './lane.js';
 import { createRenderer, startLoop } from '../../shared/gpu.js';
 import { LanePhysics } from './physics.js';
+import { damp } from '../../shared/util.js';
 
 const ASSETS = new URL('../assets/', import.meta.url);
 const asset = (path) => new URL(path, ASSETS).href;
+// 환경 조명은 여러 게임이 같이 쓴다
+const SHARED_ASSETS = new URL('../../shared/assets/', import.meta.url);
+const sharedAsset = (path) => new URL(path, SHARED_ASSETS).href;
 
 const BOARD_TILE = LANE_WIDTH; // 텍스처 한 장(판재 약 40줄)이 레인 폭에 오게 한다 — 볼링 레인은 39장
 const APPROACH = 4.6; // 파울 라인 뒤 어프로치 길이
@@ -35,7 +39,6 @@ const PIN_STRIPES = [
   [0.729, 0.784],
 ];
 
-const damp = (k, dt) => 1 - Math.exp(-k * dt);
 const clampAbs = (v, max) => Math.max(-max, Math.min(max, v));
 
 /** FBX 안의 메시 하나를 꺼내 변환을 굽고, 법선만 남긴 비인덱스 지오메트리로 만든다 */
@@ -170,7 +173,7 @@ export class BowlingScene {
     const fbx = new FBXLoader(manager);
 
     const [env, laneMap, laneNormal, laneRough, pinFbx, ballFbx] = await Promise.all([
-      new RGBELoader().loadAsync(asset('hdri/warm_bar_1k.hdr')),
+      new RGBELoader().loadAsync(sharedAsset('hdri/warm_bar_1k.hdr')),
       loadTexture(textures, 'laminate_floor', 'diff', true),
       loadTexture(textures, 'laminate_floor', 'nor_gl', false),
       loadTexture(textures, 'laminate_floor', 'rough', false),

@@ -5,6 +5,10 @@
 // 2인 대전에서는 짝을 맞추면 한 번 더 하고, 틀리면 차례가 넘어간다.
 // 일어난 일은 사건으로 쌓아 두고 drain() 으로 꺼내 화면과 소리에 옮긴다.
 
+import { createRng, shuffle, formatTime } from '../../shared/util.js';
+
+export { createRng, shuffle, formatTime };
+
 export const FACES = [
   'bear',
   'buffalo',
@@ -41,32 +45,6 @@ export const FACES = [
 /** 고를 수 있는 카드 장수 */
 export const SIZES = [12, 20, 30];
 export const MISS_DELAY = 1.1; // 틀린 두 장을 보여 주는 시간(초)
-
-/** 시드로 만드는 난수(mulberry32). 테스트에서 같은 판을 다시 만들 때 쓴다 */
-export function createRng(seed) {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-export function shuffle(list, rng = Math.random) {
-  for (let i = list.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1));
-    [list[i], list[j]] = [list[j], list[i]];
-  }
-  return list;
-}
-
-/** 초 → '1:05' */
-export function formatTime(seconds) {
-  const total = Math.max(0, Math.floor(seconds));
-  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
-}
 
 /**
  * count 장을 가로 cols × 세로 rows 로 놓는 방법 중, 가로세로 비가 aspect 인 영역에서 카드가 가장 크게 보이는 것.

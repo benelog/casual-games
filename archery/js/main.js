@@ -2,6 +2,7 @@
 // 조준·시간 제한·점수판·효과음·시상식 진행을 맡는다.
 
 import { applyI18n, formatNumber, mountLangToggle } from '../../shared/i18n.js';
+import { JsonStore, browserStorage } from '../../shared/storage.js';
 import { scoreAt, TIMEOUT_HIT } from './target.js';
 import { ArcheryMatch } from './match.js';
 import { Tournament, ROUNDS } from './tournament.js';
@@ -18,6 +19,7 @@ const params = new URLSearchParams(location.search);
 // 손가락으로 조작하는 기기에서는 안내 문구를 '터치' 기준으로 바꾼다
 const touch = matchMedia('(pointer: coarse)').matches;
 const GOLDS_KEY = 'casual-games.archery.golds';
+const store = new JsonStore(browserStorage());
 const VERSUS_WIND = 3.5; // 2인 대전의 최대 풍속 (m/s)
 
 applyI18n(t);
@@ -47,19 +49,12 @@ function setStatus(text) {
 }
 
 function readGolds() {
-  try {
-    return Number(localStorage.getItem(GOLDS_KEY)) || 0;
-  } catch {
-    return 0;
-  }
+  return Number(store.read(GOLDS_KEY)) || 0;
 }
 
+/** 저장하지 못해도 시상식은 그대로 한다 */
 function addGold() {
-  try {
-    localStorage.setItem(GOLDS_KEY, String(readGolds() + 1));
-  } catch {
-    // 저장하지 못해도 시상식은 그대로 한다
-  }
+  store.write(GOLDS_KEY, readGolds() + 1);
 }
 
 const roundName = (round) => t(`round.${round.id}`);

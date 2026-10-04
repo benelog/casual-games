@@ -8,6 +8,7 @@ import { TetrisScene, layerColor } from './scene.js';
 import { Sound } from './sound.js';
 import { t } from './i18n.js';
 import { applyI18n, formatNumber, mountLangToggle } from '../../shared/i18n.js';
+import { segmented, createToast } from '../../shared/ui.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -51,22 +52,9 @@ let game = null;
 let backdrop = null; // 메뉴 뒤에 보여 줄 빈 우물
 let state = 'menu'; // menu | playing | paused | over
 const held = new Map(); // 누르고 있는 반복 동작 → 다음 반복까지 남은 시간
-let toastTimer = 0;
+const toast = createToast($('toast'));
 
 // ---------- 메뉴 ----------
-
-function segmented(container, options, current, onPick) {
-  container.replaceChildren();
-  for (const { value, label, detail } of options) {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'option';
-    button.setAttribute('aria-pressed', String(value === current));
-    button.innerHTML = `<span>${label}</span>${detail ? `<small>${detail}</small>` : ''}`;
-    button.addEventListener('click', () => onPick(value));
-    container.append(button);
-  }
-}
 
 function describeBest(best) {
   return best ? t('best', { score: formatNumber(best.score), layers: best.layers, level: best.level }) : '';
@@ -206,16 +194,6 @@ function updateHud() {
   updateGauge();
 }
 
-function toast(text, tone = '') {
-  const el = $('toast');
-  el.textContent = text;
-  el.dataset.tone = tone;
-  el.classList.remove('show');
-  void el.offsetWidth; // 애니메이션을 처음부터 다시
-  el.classList.add('show');
-  toastTimer = 1.4;
-}
-
 /** 화면 가장자리를 가리는 HUD 크기를 씬에 알려 우물이 그 사이에 오도록 한다 */
 function updateInsets() {
   const h = window.innerHeight;
@@ -263,13 +241,13 @@ function flush() {
         const score = formatNumber(event.score);
         let text = n === 1 ? t('clearOne', { score }) : t('clearMany', { n, score });
         if (event.perfect) text = t('perfect', { score });
-        toast(text, n > 1 || event.perfect ? 'big' : '');
+        toast.show(text, n > 1 || event.perfect ? 'big' : '');
         hudDirty = true;
         break;
       }
       case 'level':
         sound.play('level');
-        setTimeout(() => toast(t('levelUp', { n: event.level }), 'level'), 600);
+        setTimeout(() => toast.show(t('levelUp', { n: event.level }), 'level'), 600);
         break;
       case 'spawn':
         hudDirty = true;
@@ -388,7 +366,7 @@ document.addEventListener('visibilitychange', () => {
 // ---------- 프레임 ----------
 
 scene.onFrame = (dt) => {
-  if (toastTimer > 0 && (toastTimer -= dt) <= 0) $('toast').classList.remove('show');
+  toast.tick(dt);
   if (!game) {
     // 메뉴 뒤에서 빈 우물이 천천히 돈다
     scene.viewTarget.azimuth += dt * 0.15;

@@ -11,7 +11,8 @@ import { cardId } from './cards.js';
 import { formatNumber } from '../../shared/i18n.js';
 import { t } from './i18n.js';
 
-const ASSETS = new URL('../assets/', import.meta.url);
+// 카드·칩·텍스처·캐릭터는 포커와 같은 파일이라 shared/assets 에 둔다
+const ASSETS = new URL('../../shared/assets/', import.meta.url);
 const asset = (path) => new URL(path, ASSETS).href;
 
 const CARD_W = 0.9;

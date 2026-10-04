@@ -6,6 +6,9 @@
 // 진행 중에 생긴 일은 events 에 쌓이고, 화면 쪽(main.js)이 꺼내 소리·효과로 보여 준다.
 
 import { PIECE_SETS, rotateCells, bounds, spawnCells } from './pieces.js';
+import { createRng } from '../../shared/util.js';
+
+export { createRng };
 
 export const LOCK_DELAY = 0.5; // 바닥에 닿은 뒤 굳기까지 시간(초)
 export const MAX_LOCK_RESETS = 15; // 바닥에서 움직여 굳는 시간을 늦출 수 있는 횟수
@@ -47,18 +50,6 @@ export function clearScore(layers, level, area = 25) {
 /** 우물이 완전히 비었을 때 덧붙는 점수 */
 export function perfectBonus(level, area = 25) {
   return Math.round((1000 * level * area) / 25);
-}
-
-/** 시드를 받는 난수 (mulberry32). 테스트에서 같은 조각 순서를 재현할 때 쓴다 */
-export function createRng(seed) {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
 }
 
 export class Tetris3D {

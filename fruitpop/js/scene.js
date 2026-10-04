@@ -21,6 +21,7 @@ import {
   columnHeight,
   pairCells,
 } from './game.js';
+import { damp } from '../../shared/util.js';
 
 const asset = (path) => new URL(`../assets/${path}`, import.meta.url).href;
 
@@ -55,7 +56,6 @@ const MAX_PARTICLES = 500;
 const POP_BURST = 0.3; // 터지기 시작한 뒤 이만큼 지나 흩어진다
 const FOCUS_SCALE = 0.5; // 좁은 화면에서 상대 판을 줄이는 배율
 
-const damp = (k, dt) => 1 - Math.exp(-k * dt);
 const WHITE = new THREE.Color('#ffffff');
 
 /** 판 하나의 그림 */
