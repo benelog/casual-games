@@ -5,7 +5,7 @@
 
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { createRenderer } from '../../shared/gpu.js';
+import { createRenderer, startLoop } from '../../shared/gpu.js';
 import { DIRS } from './game.js';
 
 const asset = (path) => new URL(`../assets/${path}`, import.meta.url).href;
@@ -64,7 +64,7 @@ export class SokobanScene {
     this.goals = [];
     this.celebrating = -1; // 클리어 연출이 시작된 뒤 지난 시간. 음수면 연출 중이 아니다
     this.time = 0;
-    this.onFrame = null; // (dt) => void, 그리기 직전에 불린다
+    this.onFrame = null; // (dt) => void, 프레임마다 그리기 전에 불린다
 
     new ResizeObserver(() => this.resize()).observe(container);
     this.resize();
@@ -96,7 +96,7 @@ export class SokobanScene {
     this.buildCharacter(gltfs[names.indexOf('character')]);
     this.buildShared();
     this.last = performance.now();
-    this.renderer.setAnimationLoop((now) => this.frame(now));
+    this.loop = startLoop(this.renderer, this);
   }
 
   /** 모델을 높이(또는 너비)가 size 가 되도록 맞춘 배율 */
@@ -386,6 +386,7 @@ export class SokobanScene {
     this.particleMesh.instanceColor.needsUpdate = true;
   }
 
+  /** 캐릭터와 상자를 움직인다. 걷거나 밀리거나 뛰는 중이면 true */
   updateActors(dt) {
     // 캐릭터
     const arrived = approach(this.characterBase, this.characterTarget, dt);
@@ -436,6 +437,8 @@ export class SokobanScene {
     // 빈 목표는 깜빡여 눈에 띄게, 상자가 놓이면 상자에 가려진다
     const pulse = 0.62 + 0.3 * Math.sin(this.time * 3.2);
     for (const goal of this.goals) goal.material.opacity = pulse;
+
+    return !arrived || moving || this.lunge.lengthSq() > 1e-5 || (this.celebrating >= 0 && this.celebrating < 4);
   }
 
   // ---------- 카메라 ----------
@@ -508,13 +511,16 @@ export class SokobanScene {
     this.time += dt;
     this.onFrame?.(dt);
 
+    let lively = Math.abs(this.zoomTarget - this.zoom) > 0.002;
     if (this.game) {
-      this.updateActors(dt);
+      if (this.updateActors(dt)) lively = true;
       this.updateParticles(dt);
+      if (this.particles.length) lively = true;
     }
     this.mixer?.update(dt);
     this.zoom += (this.zoomTarget - this.zoom) * damp(5, dt);
     this.placeCamera();
-    this.renderer.render(this.scene, this.camera);
+    // 서 있는 캐릭터도 조금씩 움직이므로 그림자는 그릴 때마다 맞춘다
+    if (this.loop.due(now, lively, true)) this.renderer.render(this.scene, this.camera);
   }
 }

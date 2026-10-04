@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { createRenderer } from '../../shared/gpu.js';
+import { createRenderer, startLoop } from '../../shared/gpu.js';
 import { DIRS, SHAPES, shapeOf, turnsOf } from './game.js';
 
 const QUARTER = Math.PI / 2;
@@ -98,7 +98,7 @@ export class PipesScene {
     this.cursor = -1;
     this.time = 0;
     this.game = null;
-    this.onFrame = null; // (dt) => void, 그리기 직전에 불린다
+    this.onFrame = null; // (dt) => void, 프레임마다 그리기 전에 불린다
     this.onTap = null; // (index, dir) => void
     this.onHover = null; // (index) => void, 마우스가 가리키는 칸(-1 이면 없음)
 
@@ -108,7 +108,7 @@ export class PipesScene {
     new ResizeObserver(() => this.resize()).observe(container);
     this.resize();
     this.last = performance.now();
-    this.renderer.setAnimationLoop((now) => this.frame(now));
+    this.loop = startLoop(this.renderer, this);
   }
 
   buildLights() {
@@ -509,17 +509,20 @@ export class PipesScene {
     this.last = now;
     this.time += dt;
     this.onFrame?.(dt);
+    let lively = false;
     if (this.game) {
       this.placeCamera();
-      this.animate(dt);
+      lively = this.animate(dt);
     }
-    this.renderer.render(this.scene, this.camera);
+    if (this.loop.due(now, lively)) this.renderer.render(this.scene, this.camera);
   }
 
+  /** 조각·물결·물방울을 움직인다. 물이 일렁이는 것 말고 움직인 것이 있으면 true */
   animate(dt) {
     const game = this.game;
     const wave = this.wave;
     if (wave) wave.time += dt;
+    let moving = !!wave && wave.time < WAVE_TIME + PULSE_TIME;
     const turn = damp(18, dt);
     const soak = damp(9, dt);
     const color = new THREE.Color();
@@ -532,6 +535,14 @@ export class PipesScene {
       cell.scale += (1 - cell.scale) * damp(7, dt);
       cell.wet += ((filled ? 1 : 0) - cell.wet) * soak;
       cell.press = Math.max(0, cell.press - dt * 5);
+      if (
+        Math.abs(cell.target - cell.angle) > 0.002 ||
+        cell.scale < 0.995 ||
+        cell.press > 0 ||
+        Math.abs((filled ? 1 : 0) - cell.wet) > 0.01
+      ) {
+        moving = true;
+      }
 
       // 완성 물결이 이 칸을 지나는 동안 솟았다 내려온다
       let pulse = 0;
@@ -574,6 +585,7 @@ export class PipesScene {
       this.cursorMesh.position.set(cell.x, 0.012, cell.z);
     }
     this.animateDrops(dt);
+    return moving || this.drops.length > 0;
   }
 
   animateDrops(dt) {

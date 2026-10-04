@@ -5,7 +5,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
-import { createRenderer } from '../../shared/gpu.js';
+import { createRenderer, startLoop } from '../../shared/gpu.js';
 import { showCardZoom, hideCardZoom, pickCard, isFaceUp } from '../../shared/card-zoom.js';
 import { cardId } from './cards.js';
 import { formatNumber } from '../../shared/i18n.js';
@@ -221,7 +221,7 @@ export class TableScene {
     this.buildRack();
 
     this.last = performance.now();
-    this.renderer.setAnimationLoop((now) => this.frame(now));
+    this.loop = startLoop(this.renderer, this);
   }
 
   // ---------- 씬 구성 ----------
@@ -514,6 +514,8 @@ export class TableScene {
   frame(now) {
     const dt = Math.min(0.05, (now - this.last) / 1000);
     this.last = now;
+    // 딜러가 가만히 숨만 쉬는 동안은 천천히 그려도 된다
+    const lively = this.tweens.size > 0 || (this.activeAction !== this.actions?.Idle && !!this.activeAction?.isRunning());
     for (const t of this.tweens) {
       t.elapsed += dt * 1000;
       const k = Math.min(1, t.elapsed / t.duration);
@@ -524,7 +526,7 @@ export class TableScene {
       }
     }
     this.mixer?.update(dt);
-    this.renderer.render(this.scene, this.camera);
+    if (this.loop.due(now, lively)) this.renderer.render(this.scene, this.camera);
     this.updateLabels();
   }
 

@@ -170,6 +170,7 @@ function setState(next) {
   // 포커스가 버튼에 남아 있으면 Space 가 그 버튼을 누르게 된다
   if (state === 'playing' || state === 'countdown') document.activeElement?.blur?.();
   updateInsets();
+  scene.loop?.setPaused(state === 'paused'); // 모델을 불러오기 전에는 아직 그리지 않는다
 }
 
 function openMenu() {
@@ -526,6 +527,7 @@ scene.onFrame = (dt) => {
     }
   }
   placeHud();
+  return state !== 'menu';
 };
 
 // ?debug 로 열면 콘솔에서 대전과 씬을 들여다볼 수 있다

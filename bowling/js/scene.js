@@ -16,7 +16,7 @@ import {
   BALL_START_Z,
   predictX,
 } from './lane.js';
-import { createRenderer } from '../../shared/gpu.js';
+import { createRenderer, startLoop } from '../../shared/gpu.js';
 import { LanePhysics } from './physics.js';
 
 const ASSETS = new URL('../assets/', import.meta.url);
@@ -147,7 +147,7 @@ export class BowlingScene {
     this.mode = 'aim'; // aim(공을 들고 있음) · roll(굴러가는 중) · result(멈춘 뒤)
     this.ballX = 0;
     this.camLook = new THREE.Vector3();
-    this.onFrame = null; // (dt) => void, 매 프레임 main.js 가 조준 게이지를 움직인다
+    this.onFrame = null; // (dt) => boolean, 매 프레임 main.js 가 조준 게이지를 움직인다. 게이지가 움직이는 중이면 true 를 돌려준다
     this.onPointer = null; // (type, event) => void
 
     const canvas = this.renderer.domElement;
@@ -190,7 +190,7 @@ export class BowlingScene {
 
     this.rack();
     this.last = performance.now();
-    this.renderer.setAnimationLoop((now) => this.frame(now));
+    this.loop = startLoop(this.renderer, this);
   }
 
   // ---------- 볼링장 ----------
@@ -467,7 +467,8 @@ export class BowlingScene {
   frame(now) {
     const dt = Math.min(0.1, (now - this.last) / 1000);
     this.last = now;
-    this.onFrame?.(dt);
+    const rolling = this.mode === 'roll';
+    let lively = !!this.onFrame?.(dt) || rolling;
 
     if (this.mode === 'roll') {
       this.physics.step(dt);
@@ -482,11 +483,15 @@ export class BowlingScene {
       }
     }
 
+    const from = this.camera.position.clone();
     this.placeCamera(damp(this.mode === 'aim' ? 6 : 4, dt));
+    if (from.distanceToSquared(this.camera.position) > 1e-8) lively = true;
     const focus = this.ball.position;
     this.sun.target.position.set(focus.x, 0, focus.z);
     this.sun.position.set(focus.x + 1.2, 4, focus.z + 1.5);
 
+    // 조준 게이지가 움직이는 동안에도 그림자는 그대로다
+    if (!this.loop.due(now, lively, rolling)) return;
     this.renderer.setViewport(0, 0, this.container.clientWidth, this.container.clientHeight);
     this.renderer.render(this.scene, this.camera);
     this.renderPinCam();

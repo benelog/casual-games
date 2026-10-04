@@ -7,7 +7,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
-import { createRenderer } from '../../shared/gpu.js';
+import { createRenderer, startLoop } from '../../shared/gpu.js';
 import { FACE_RADIUS, RING_WIDTH, X_RADIUS, DISTANCE } from './target.js';
 
 const ASSETS = new URL('../assets/', import.meta.url);
@@ -215,7 +215,7 @@ export class ArcheryScene {
 
     this.setView(this.wideView(), { instant: true });
     this.last = performance.now();
-    this.renderer.setAnimationLoop((now) => this.frame(now));
+    this.loop = startLoop(this.renderer, this);
   }
 
   // ---------- 경기장 ----------
@@ -1051,7 +1051,8 @@ export class ArcheryScene {
       this.updateConfetti(dt);
       this.updateNameLabels();
     }
-    this.renderer.render(this.scene, this.camera);
+    // 깃발·조준점·선수가 늘 움직이므로 매 프레임 그린다
+    if (this.loop.due(now, true)) this.renderer.render(this.scene, this.camera);
   }
 
   tween(duration, update) {

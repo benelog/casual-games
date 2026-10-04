@@ -4,7 +4,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
-import { createRenderer } from '../../shared/gpu.js';
+import { createRenderer, startLoop } from '../../shared/gpu.js';
 import { RADIUS } from './board.js';
 
 const ASSETS = new URL('../assets/', import.meta.url);
@@ -106,7 +106,7 @@ export class DartsScene {
     if (debug) this.buildCalibration();
 
     this.last = performance.now();
-    this.renderer.setAnimationLoop((now) => this.frame(now));
+    this.loop = startLoop(this.renderer, this);
   }
 
   buildReticle() {
@@ -202,6 +202,7 @@ export class DartsScene {
     const dt = Math.min(0.05, (now - this.last) / 1000);
     this.last = now;
     this.time += dt;
+    const flying = this.tweens.size > 0;
     for (const t of this.tweens) {
       t.elapsed += dt * 1000;
       const k = Math.min(1, t.elapsed / t.duration);
@@ -215,7 +216,8 @@ export class DartsScene {
       const p = this.reticlePoint();
       this.reticle.position.set(p.x, p.y, BOARD_FACE_Z + 0.002);
     }
-    this.renderer.render(this.scene, this.camera);
+    // 조준점은 계속 흔들리지만 그림자는 다트가 날 때만 바뀐다
+    if (this.loop.due(now, flying || this.aiming, flying)) this.renderer.render(this.scene, this.camera);
   }
 
   tween(duration, update) {

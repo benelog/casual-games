@@ -5,7 +5,7 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { createRenderer } from '../../shared/gpu.js';
+import { createRenderer, startLoop } from '../../shared/gpu.js';
 
 // 쌓인 칸은 높이(층)마다 색이 다르다. 몇 층까지 찼는지 한눈에 보이도록
 export const LAYER_COLORS = [
@@ -75,7 +75,7 @@ export class TetrisScene {
     this.particles = [];
     this.bump = 0;
     this.time = 0;
-    this.onFrame = null; // (dt) => void, 그리기 직전에 불린다
+    this.onFrame = null; // (dt) => boolean, 프레임마다 그리기 전에 불린다. 게임이 진행 중이면 true 를 돌려준다
     this.previewElement = null;
 
     this.buildPreview();
@@ -83,7 +83,7 @@ export class TetrisScene {
     new ResizeObserver(() => this.resize()).observe(container);
     this.resize();
     this.last = performance.now();
-    this.renderer.setAnimationLoop((now) => this.frame(now));
+    this.loop = startLoop(this.renderer, this);
   }
 
   buildLights() {
@@ -685,8 +685,17 @@ export class TetrisScene {
     const dt = Math.min(0.05, (now - this.last) / 1000);
     this.last = now;
     this.time += dt;
-    this.onFrame?.(dt);
+    let lively = !!this.onFrame?.(dt) || this.bump > 0.001;
 
+    // 메뉴 뒤에서 천천히 도는 정도는 잔잔한 움직임으로 친다
+    const { view, viewTarget } = this;
+    if (
+      Math.abs(viewTarget.azimuth - view.azimuth) > 0.02 ||
+      Math.abs(viewTarget.polar - view.polar) > 0.002 ||
+      Math.abs(viewTarget.zoom - view.zoom) > 0.002
+    ) {
+      lively = true;
+    }
     const k = damp(12, dt);
     this.view.azimuth += (this.viewTarget.azimuth - this.view.azimuth) * k;
     this.view.polar += (this.viewTarget.polar - this.view.polar) * k;
@@ -700,7 +709,9 @@ export class TetrisScene {
       if (this.blocksDirty) {
         this.blocksDirty = false;
         this.rebuildBlocks();
+        lively = true;
       }
+      if (this.effects.size || this.particles.length) lively = true;
       for (const effect of this.effects) {
         if (!effect.update(dt)) {
           effect.dispose();
@@ -711,6 +722,7 @@ export class TetrisScene {
     }
 
     this.placeCamera();
+    if (!this.loop.due(now, lively)) return;
     const renderer = this.renderer;
     renderer.setScissorTest(false);
     renderer.setViewport(0, 0, this.container.clientWidth, this.container.clientHeight);

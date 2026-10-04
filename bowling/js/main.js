@@ -187,6 +187,7 @@ scene.onFrame = (dt) => {
     $('power-fill').style.width = `${aim.power * 100}%`;
   }
   scene.setGuide(shotOf(aim));
+  return aim.phase !== 'position'; // 방향·세기 게이지가 움직이는 중
 };
 
 scene.onPointer = (type, event) => {

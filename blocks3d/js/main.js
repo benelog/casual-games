@@ -118,6 +118,7 @@ function setState(next) {
   // 포커스가 버튼에 남아 있으면 Space 가 그 버튼을 누르게 된다
   if (state === 'playing') document.activeElement?.blur?.();
   updateInsets();
+  scene.loop.setPaused(state === 'paused');
 }
 
 function openMenu() {
@@ -406,6 +407,7 @@ scene.onFrame = (dt) => {
     flush();
   }
   scene.sync(game);
+  return state === 'playing';
 };
 
 $('loading').hidden = true;

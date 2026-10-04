@@ -410,6 +410,7 @@ scene.onFrame = (dt) => {
     hudClock = 0.1;
     updateHud();
   }
+  return game.phase === 'combat' && !paused;
 };
 
 // ---------- 시작 ----------

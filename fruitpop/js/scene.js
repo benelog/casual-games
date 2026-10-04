@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { createRenderer } from '../../shared/gpu.js';
+import { createRenderer, startLoop } from '../../shared/gpu.js';
 import {
   WIDTH,
   VISIBLE,
@@ -499,7 +499,7 @@ export class DuelScene {
     this.particles = [];
     this.orbs = new Set();
     this.time = 0;
-    this.onFrame = null; // (dt) => void, 그리기 직전에 불린다
+    this.onFrame = null; // (dt) => boolean, 프레임마다 그리기 전에 불린다. 게임이 진행 중이면 true 를 돌려준다
 
     new ResizeObserver(() => this.resize()).observe(container);
     this.resize();
@@ -544,7 +544,7 @@ export class DuelScene {
     }
     this.applyLayout('even');
     this.last = performance.now();
-    this.renderer.setAnimationLoop((now) => this.frame(now));
+    this.loop = startLoop(this.renderer, this);
   }
 
   /** 받침 위에 올릴 과일 하나. userData.inner 를 돌려 흔든다 */
@@ -766,11 +766,12 @@ export class DuelScene {
     const dt = Math.min(0.05, Math.max(0, (now - this.last) / 1000));
     this.last = now;
     this.time += dt;
-    this.onFrame?.(dt);
+    // 메뉴 뒤에서 도는 시범 경기는 천천히 그려도 된다
+    const lively = !!this.onFrame?.(dt) || this.orbs.size > 0 || this.particles.length > 0;
     this.placeCamera();
     if (this.match) for (const view of this.views) view.update(dt, this.time);
     this.updateOrbs(dt);
     this.updateParticles(dt);
-    this.renderer.render(this.scene, this.camera);
+    if (this.loop.due(now, lively)) this.renderer.render(this.scene, this.camera);
   }
 }

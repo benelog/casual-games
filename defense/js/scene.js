@@ -4,7 +4,7 @@
 
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { createRenderer } from '../../shared/gpu.js';
+import { createRenderer, startLoop } from '../../shared/gpu.js';
 
 const ASSETS = new URL('../assets/', import.meta.url);
 const asset = (path) => new URL(path, ASSETS).href;
@@ -159,7 +159,7 @@ export class DefenseScene {
     // 입력: 클릭(터치는 손을 뗄 때)한 타일과 마우스가 올라간 타일을 알린다
     this.onTileClick = null; // ({col, row}) => void
     this.onHover = null; // ({col, row} | null) => void
-    this.onFrame = null; // (dt) => void, 그리기 직전에 불린다
+    this.onFrame = null; // (dt) => boolean, 프레임마다 그리기 전에 불린다. 전투가 진행 중이면 true 를 돌려준다
     this.raycaster = new THREE.Raycaster();
     this.groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -GROUND);
     const canvas = this.renderer.domElement;
@@ -219,7 +219,7 @@ export class DefenseScene {
     this.buildMarkers();
     this.resize();
     this.last = performance.now();
-    this.renderer.setAnimationLoop((now) => this.frame(now));
+    this.loop = startLoop(this.renderer, this);
   }
 
   model(name) {
@@ -810,7 +810,7 @@ export class DefenseScene {
     this.last = now;
     this.dt = dt;
     this.time += dt;
-    this.onFrame?.(dt);
+    const lively = !!this.onFrame?.(dt) || this.effects.size > 0;
     for (const e of this.effects) {
       e.elapsed += dt;
       const k = Math.min(1, e.elapsed / e.duration);
@@ -821,6 +821,6 @@ export class DefenseScene {
       const s = 1 + Math.sin(this.time * 5) * 0.04;
       this.selectMarker.scale.set(s, 1, s);
     }
-    this.renderer.render(this.scene, this.camera);
+    if (this.loop.due(now, lively)) this.renderer.render(this.scene, this.camera);
   }
 }
