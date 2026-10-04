@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>3D 소코반 · Casual Games</title>
+    <meta name="theme-color" content="#0b0d12" />
+    <link rel="manifest" href="../manifest.webmanifest" />
+    <link rel="icon" href="../icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png" />
+    <script src="../shared/pwa.js" defer></script>
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="stage"></div>
+
+    <header class="top" id="top">
+      <a class="back" href="../index.html" data-i18n="back">← 게임 목록</a>
+      <div id="stats" hidden>
+        <span class="stat"><small data-i18n="level">레벨</small><b id="level">1</b></span>
+        <span class="stat moves"><small data-i18n="moves">이동</small><b id="moves">0</b></span>
+        <span class="stat"><small data-i18n="pushes">밀기</small><b id="pushes">0</b></span>
+        <span class="stat best" id="best-stat" hidden><small data-i18n="bestShort">최고</small><b id="best">0</b></span>
+      </div>
+      <div class="controls" id="controls">
+        <button type="button" class="chip" id="btn-sound" title="소리 (M)" data-i18n-title="soundTitle" aria-pressed="true" data-i18n="sound">소리</button>
+      </div>
+      <div class="controls" id="lang-controls"></div>
+    </header>
+
+    <div id="loading" data-i18n="loading">창고 문을 여는 중…</div>
+    <script>
+      // file:// 로 열면 브라우저가 모듈 스크립트 로딩을 막아 아래 main.js 가 실행되지 않는다
+      if (location.protocol === 'file:') {
+        document.getElementById('loading').textContent =
+          '파일을 직접 열면 실행되지 않습니다. 저장소 루트에서 npm start 를 실행한 뒤 http://localhost:8000 으로 접속하세요. / ' +
+          'Opening the file directly does not work. Run npm start in the repository root and visit http://localhost:8000.';
+      }
+    </script>
+
+    <div id="select" class="overlay" hidden>
+      <div class="card wide">
+        <h1 data-i18n="heading">3D 소코반</h1>
+        <p class="lead" data-i18n="lead">창고지기를 움직여 상자를 모두 표시된 자리로 밀어 넣으세요. 상자는 밀 수만 있고 당길 수는 없습니다.</p>
+        <p class="progress" id="progress"></p>
+        <div class="level-grid" id="level-grid"></div>
+        <button type="button" id="btn-continue"><span id="continue-label"></span> <kbd>Enter</kbd></button>
+        <details class="help">
+          <summary data-i18n="help">조작법</summary>
+          <dl>
+            <dt><span data-i18n="helpArrows">방향키</span> · <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd></dt>
+            <dd data-i18n="helpMove">움직이기 (화면을 쓸어도 됩니다)</dd>
+            <dt><kbd>Z</kbd></dt>
+            <dd data-i18n="helpUndo">되돌리기</dd>
+            <dt><kbd>R</kbd></dt>
+            <dd data-i18n="helpRestart">레벨 다시 시작</dd>
+            <dt><kbd>Esc</kbd></dt>
+            <dd data-i18n="helpLevels">레벨 선택</dd>
+            <dt><kbd>M</kbd></dt>
+            <dd data-i18n="helpSound">소리</dd>
+          </dl>
+        </details>
+      </div>
+    </div>
+
+    <div id="result" class="overlay" hidden>
+      <div class="card">
+        <h1 id="result-title"></h1>
+        <p id="result-detail"></p>
+        <p class="best" id="result-best"></p>
+        <button type="button" id="btn-next"><span data-i18n="next">다음 레벨</span> <kbd>Enter</kbd></button>
+        <button type="button" class="secondary" id="btn-again" data-i18n="again">다시 하기</button>
+        <button type="button" class="secondary" id="btn-result-levels" data-i18n="toLevels">레벨 선택</button>
+      </div>
+    </div>
+
+    <footer class="pad" id="pad" hidden>
+      <div class="cluster move">
+        <button type="button" data-action="up" class="up" aria-label="위로" data-i18n-aria-label="padUp">▲</button>
+        <button type="button" data-action="left" class="left" aria-label="왼쪽으로" data-i18n-aria-label="padLeft">◀</button>
+        <button type="button" data-action="right" class="right" aria-label="오른쪽으로" data-i18n-aria-label="padRight">▶</button>
+        <button type="button" data-action="down" class="down" aria-label="아래로" data-i18n-aria-label="padDown">▼</button>
+      </div>
+      <div class="cluster actions">
+        <button type="button" data-action="undo" id="btn-undo" title="되돌리기 (Z)" data-i18n-title="undoTitle"><span class="icon">↶</span><span class="label"><span data-i18n="undo">되돌리기</span> <kbd>Z</kbd></span></button>
+        <button type="button" data-action="restart" id="btn-restart" title="레벨 다시 시작 (R)" data-i18n-title="restartTitle"><span class="icon">⟲</span><span class="label"><span data-i18n="restart">다시 시작</span> <kbd>R</kbd></span></button>
+        <button type="button" data-action="levels" id="btn-levels" title="레벨 선택 (Esc)" data-i18n-title="levelsTitle"><span class="icon">☰</span><span class="label" data-i18n="levels">레벨 선택</span></button>
+      </div>
+    </footer>
+
+    <div id="toast" role="status"></div>
+
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>파이프 연결 · Casual Games</title>
+    <meta name="theme-color" content="#0b0d12" />
+    <link rel="manifest" href="../manifest.webmanifest" />
+    <link rel="icon" href="../icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png" />
+    <script src="../shared/pwa.js" defer></script>
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="stage" tabindex="0" role="application" aria-label="파이프 판" data-i18n-aria-label="boardLabel"></div>
+
+    <header class="top" id="top">
+      <a class="back" href="../index.html" data-i18n="back">← 게임 목록</a>
+      <div id="stats" hidden>
+        <span class="stat"><small data-i18n="moves">회전</small><b id="moves">0</b></span>
+        <span class="stat time"><small data-i18n="time">시간</small><b id="time">0:00</b></span>
+        <span class="stat"><small data-i18n="connected">연결</small><b id="filled">0/0</b></span>
+      </div>
+      <div class="controls" id="controls">
+        <button type="button" class="chip" id="btn-sound" title="소리 (M)" data-i18n-title="soundTitle" aria-pressed="true" data-i18n="sound">소리</button>
+      </div>
+      <div class="controls" id="lang-controls"></div>
+    </header>
+
+    <p class="label" id="label" hidden></p>
+
+    <div id="loading" data-i18n="loading">파이프를 까는 중…</div>
+    <script>
+      // file:// 로 열면 브라우저가 모듈 스크립트 로딩을 막아 아래 main.js 가 실행되지 않는다
+      if (location.protocol === 'file:') {
+        document.getElementById('loading').textContent =
+          '파일을 직접 열면 실행되지 않습니다. 저장소 루트에서 npm start 를 실행한 뒤 http://localhost:8000 으로 접속하세요. / ' +
+          'Opening the file directly does not work. Run npm start in the repository root and visit http://localhost:8000.';
+      }
+    </script>
+
+    <div id="menu" class="overlay" hidden>
+      <div class="card">
+        <h1 data-i18n="heading">파이프 연결</h1>
+        <p class="lead" data-i18n="lead">파이프 조각을 눌러 돌려서, 가운데 수원에서 모든 조각까지 물길을 이으세요. 열린 끝이 남으면 안 됩니다.</p>
+        <fieldset>
+          <legend data-i18n="mode">방식</legend>
+          <div class="segmented" id="mode-options"></div>
+        </fieldset>
+        <fieldset>
+          <legend data-i18n="size">크기</legend>
+          <div class="segmented" id="size-options"></div>
+        </fieldset>
+        <p class="best" id="menu-best"></p>
+        <button type="button" id="btn-start"><span data-i18n="start">시작</span> <kbd>Enter</kbd></button>
+        <details class="help">
+          <summary data-i18n="help">조작법</summary>
+          <p data-i18n="helpGoal">물이 닿은 파이프는 파랗게 빛납니다. 모든 파이프가 파랗고 새는 곳이 없으면 완성입니다.</p>
+          <dl>
+            <dt data-i18n="helpTapKey">탭 · 클릭</dt>
+            <dd data-i18n="helpTap">시계 방향으로 90° 돌리기</dd>
+            <dt data-i18n="helpBackKey">우클릭 · Shift+클릭</dt>
+            <dd data-i18n="helpBack">반시계 방향으로 돌리기</dd>
+            <dt data-i18n="helpKeysKey">방향키 · Space</dt>
+            <dd data-i18n="helpKeys">칸 고르기 · 돌리기 (Shift+Space 는 반시계)</dd>
+            <dt data-i18n="helpOtherKey">N · R · M</dt>
+            <dd data-i18n="helpOther">새 퍼즐 · 다시 섞기 · 소리</dd>
+          </dl>
+        </details>
+      </div>
+    </div>
+
+    <div id="result" class="overlay" hidden>
+      <div class="card">
+        <h1 id="result-title" data-i18n="solved">물길 완성!</h1>
+        <p id="result-detail"></p>
+        <p class="best" id="result-best"></p>
+        <button type="button" id="btn-next"><span id="btn-next-label" data-i18n="next">다음 퍼즐</span> <kbd>Enter</kbd></button>
+        <button type="button" class="secondary" id="btn-view" data-i18n="view">판 보기</button>
+        <button type="button" class="secondary" id="btn-result-menu" data-i18n="changeSettings">방식·크기 바꾸기</button>
+      </div>
+    </div>
+
+    <footer class="bar" id="bar" hidden>
+      <button type="button" class="secondary" id="btn-new" title="새 퍼즐 (N)" data-i18n-title="newPuzzleTitle" data-i18n="newPuzzle">새 퍼즐</button>
+      <button type="button" class="secondary" id="btn-reshuffle" title="같은 퍼즐을 다시 섞기 (R)">다시 섞기</button>
+      <button type="button" class="secondary" id="btn-menu" title="방식·크기 바꾸기 (Esc)" data-i18n-title="menuTitle" data-i18n="menu">메뉴</button>
+    </footer>
+
+    <div id="toast" role="status"></div>
+
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>

@@ -12,6 +12,8 @@ https://casual-games.benelog.net 에 배포되어 있고, PWA 라 홈 화면에 
 | [`defense/`](defense/) | 타워 디펜스 — 길목에 타워를 세워 20웨이브의 적을 막아 기지 지키기 |
 | [`tetris3d/`](tetris3d/) | 3D 테트리스 — 입체 조각을 돌려 우물 바닥을 채우고, 꽉 찬 층을 지우는 블록아웃식 테트리스 |
 | [`archery/`](archery/) | 양궁 — 바람을 읽고 70m 과녁을 노리는 올림픽 세트제 양궁, 컴퓨터와 8강~결승 토너먼트 또는 2인 대전 |
+| [`sokoban/`](sokoban/) | 3D 소코반 — 창고의 상자를 밀어 모두 목표 칸에 넣는 상자 밀기 퍼즐 |
+| [`pipes/`](pipes/) | 파이프 연결 — 파이프 조각을 돌려 수원에서 모든 칸까지 물길을 잇는 퍼즐 |
 
 ## 실행
 
@@ -34,7 +36,8 @@ npm test         # node --test
 
 1. 최상위에 게임 디렉토리를 만들고 `index.html` 을 둔다. `<head>` 에는 다른 게임처럼 manifest·아이콘·
    `../shared/pwa.js` 줄을 넣는다.
-2. 루트 `index.html` 의 `games` 배열에 항목(한/영 제목·설명)을 추가한다.
+2. 루트 `index.html` 의 `games` 배열에 항목(한/영 제목·설명)을 추가한다. `modes` 로 보여 줄 탭을 정한다:
+   혼자서(컴퓨터와 1:1 포함)는 `'solo'`, 여러 사람이 할 수 있으면 `'multi'`, 둘 다면 둘 다 적는다.
 3. 렌더러는 `shared/gpu.js` 의 `createRenderer(THREE, options)` 로 만든다 (아래 모바일 GPU 참고).
 
 ## 공통 모듈 (`shared/`)
