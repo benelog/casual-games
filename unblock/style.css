@@ -1,0 +1,583 @@
+:root {
+  --ink: #f3ecdc;
+  --muted: #b9b09c;
+  --brass: #d9b46a;
+  --panel: rgba(12, 14, 19, 0.82);
+  --line: rgba(243, 236, 220, 0.16);
+  --done: #7fd08f;
+  --star: #ffd166;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 35%, #3a3f4a, #121419 72%);
+  color: var(--ink);
+  font-family: 'Pretendard', 'Noto Sans KR', system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+#stage {
+  position: fixed;
+  inset: 0;
+  touch-action: none; /* 차를 끌어 미므로 브라우저 스크롤·확대를 막는다 */
+}
+
+#stage:focus {
+  outline: none;
+}
+
+#stage canvas {
+  display: block;
+}
+
+/* ---------- 위쪽 막대 ---------- */
+
+.top {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: max(10px, env(safe-area-inset-top)) 14px 10px;
+  font-size: 14px;
+  pointer-events: none;
+  z-index: 1; /* 레벨 선택 화면 위에서도 목록·언어 버튼을 누를 수 있게 */
+}
+
+.back {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  text-decoration: none;
+  pointer-events: auto;
+  white-space: nowrap;
+}
+
+.back:hover {
+  border-color: var(--brass);
+}
+
+#stats {
+  display: flex;
+  gap: 6px;
+  margin: 0 auto;
+}
+
+.stat {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.stat small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.stat b {
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat.moves b {
+  min-width: 2ch;
+  color: var(--brass);
+}
+
+.stat.best b {
+  color: var(--done);
+}
+
+.controls {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+#stats:not([hidden]) + .controls,
+#controls + #lang-controls {
+  margin-left: 0;
+}
+
+/* ---------- 버튼 ---------- */
+
+button {
+  padding: 10px 14px;
+  border: 1px solid var(--brass);
+  border-radius: 10px;
+  background: var(--brass);
+  color: #1a1408;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+
+button.secondary,
+button.chip {
+  background: var(--panel);
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+button.chip {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+}
+
+button.chip[aria-pressed='false'] {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+kbd {
+  display: inline-block;
+  min-width: 1.4em;
+  padding: 0 4px;
+  border-radius: 4px;
+  border: 1px solid currentColor;
+  font: inherit;
+  font-size: 11px;
+  line-height: 1.4;
+  text-align: center;
+  opacity: 0.7;
+}
+
+/* ---------- 아래쪽 조작판 ---------- */
+
+.pad {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 18px;
+  padding: 10px 12px max(12px, env(safe-area-inset-bottom));
+  pointer-events: none;
+}
+
+.cluster {
+  display: grid;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 16px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  pointer-events: auto;
+}
+
+.cluster button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 46px;
+  min-height: 46px;
+  padding: 4px 10px;
+  background: rgba(243, 236, 220, 0.08);
+  border-color: var(--line);
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1;
+}
+
+.cluster button:active:not(:disabled) {
+  background: rgba(217, 180, 106, 0.35);
+  border-color: var(--brass);
+}
+
+.actions {
+  grid-auto-flow: column;
+}
+
+.actions button {
+  justify-content: flex-start;
+  font-size: 14px;
+}
+
+.actions .icon {
+  width: 1.2em;
+  font-size: 18px;
+  text-align: center;
+}
+
+/* ---------- 알림 ---------- */
+
+#toast {
+  position: fixed;
+  left: 50%;
+  top: 30%;
+  transform: translate(-50%, -50%);
+  font-family: Georgia, 'Noto Serif KR', serif;
+  font-size: 26px;
+  white-space: nowrap;
+  text-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.8),
+    0 0 14px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  pointer-events: none;
+}
+
+#toast[data-tone='big'] {
+  color: var(--brass);
+  font-size: 34px;
+}
+
+#toast.show {
+  animation: pop 1.4s ease-out forwards;
+}
+
+@keyframes pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -30%) scale(0.85);
+  }
+  12% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -90%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #toast.show {
+    animation-name: fade;
+  }
+  @keyframes fade {
+    0%,
+    75% {
+      opacity: 1;
+      transform: translate(-50%, -50%);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-50%, -50%);
+    }
+  }
+}
+
+/* ---------- 레벨 선택·결과 ---------- */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: safe center;
+  padding: 60px 20px 20px;
+  background: rgba(8, 10, 16, 0.5);
+  overflow-y: auto;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(400px, 100%);
+  padding: 26px 24px 22px;
+  border-radius: 18px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  text-align: center;
+}
+
+.card.wide {
+  width: min(480px, 100%);
+}
+
+/* ---------- 오늘의 퍼즐 ---------- */
+
+button.daily {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 100%;
+  background: linear-gradient(135deg, rgba(232, 80, 74, 0.28), rgba(217, 180, 106, 0.22));
+  border-color: rgba(232, 80, 74, 0.6);
+  color: var(--ink);
+}
+
+button.daily small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+button.daily .daily-title small {
+  margin-left: 4px;
+}
+
+.stars {
+  color: var(--star);
+  letter-spacing: 2px;
+}
+
+.card .stars.big {
+  margin: 0;
+  color: var(--star);
+  font-size: 34px;
+  line-height: 1.1;
+}
+
+/* ---------- 위쪽 안내 줄 ---------- */
+
+.status {
+  position: fixed;
+  left: 50%;
+  top: calc(max(10px, env(safe-area-inset-top)) + 44px);
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--star);
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.card h1 {
+  margin: 0;
+  font-family: Georgia, 'Noto Serif KR', serif;
+  font-size: 30px;
+  font-weight: 400;
+}
+
+#result[data-tone='win'] h1 {
+  color: var(--brass);
+}
+
+.card p {
+  margin: 0 0 4px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.card .progress {
+  color: var(--ink);
+}
+
+.card .best:empty {
+  display: none;
+}
+
+.card > button {
+  width: 100%;
+}
+
+.tiers {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+}
+
+.tier h2 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.tier h2 small {
+  margin-left: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.level-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+
+.level-grid .level {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 54px;
+  padding: 6px 2px;
+  background: rgba(243, 236, 220, 0.06);
+  border-color: var(--line);
+  color: var(--ink);
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+}
+
+.level-grid .level small {
+  min-height: 1.2em;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: -1px;
+  white-space: nowrap;
+}
+
+.level-grid .level .hinted {
+  font-style: normal;
+  font-size: 8px;
+  vertical-align: top;
+}
+
+.level-grid .level:disabled {
+  opacity: 0.45;
+}
+
+.level-grid .level.solved {
+  border-color: rgba(127, 208, 143, 0.55);
+  background: rgba(127, 208, 143, 0.14);
+}
+
+.level-grid .level.solved small {
+  color: var(--star);
+}
+
+.level-grid .level.current {
+  border-color: var(--brass);
+  box-shadow: 0 0 0 1px var(--brass);
+}
+
+.help {
+  color: var(--muted);
+  font-size: 13px;
+  text-align: left;
+}
+
+.help summary {
+  cursor: pointer;
+  text-align: center;
+}
+
+.help dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 12px;
+  margin: 10px 0 0;
+}
+
+.help dt {
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.help dd {
+  margin: 0;
+}
+
+#loading {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* ---------- 좁은 화면 ---------- */
+
+@media (max-width: 720px) {
+  .top {
+    flex-wrap: wrap;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  #stats {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .stat {
+    padding: 4px 10px;
+  }
+
+  /* 통계가 아랫줄로 내려가므로 버튼은 다시 오른쪽 끝으로 */
+  #stats:not([hidden]) + .controls {
+    margin-left: auto;
+  }
+
+  .overlay {
+    padding: 56px 12px 12px;
+  }
+
+  .card {
+    padding: 20px 16px 16px;
+  }
+
+  .card h1 {
+    font-size: 26px;
+  }
+
+  .level-grid {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 4px;
+  }
+
+  .level-grid .level {
+    min-height: 48px;
+    font-size: 15px;
+  }
+
+  .status {
+    top: calc(max(10px, env(safe-area-inset-top)) + 84px);
+  }
+
+  /* 글자 대신 아이콘만 */
+  .actions .label {
+    display: none;
+  }
+
+  .actions button {
+    justify-content: center;
+    min-width: 60px;
+    min-height: 50px;
+  }
+}

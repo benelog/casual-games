@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>차 빼기 · Casual Games</title>
+    <meta name="theme-color" content="#0b0d12" />
+    <link rel="manifest" href="../manifest.webmanifest" />
+    <link rel="icon" href="../icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png" />
+    <script src="../shared/pwa.js" defer></script>
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="stage" tabindex="0" role="application" aria-label="주차장" data-i18n-aria-label="boardLabel"></div>
+
+    <header class="top" id="top">
+      <a class="back" href="../index.html" data-i18n="back">← 게임 목록</a>
+      <div id="stats" hidden>
+        <span class="stat"><b id="level"></b></span>
+        <span class="stat moves"><small data-i18n="moves">이동</small><b id="moves">0</b></span>
+        <span class="stat"><small data-i18n="minimum">최소</small><b id="min">0</b></span>
+        <span class="stat best" id="best-stat" hidden><small data-i18n="bestShort">최고</small><b id="best">0</b></span>
+      </div>
+      <div class="controls" id="controls">
+        <button type="button" class="chip" id="btn-sound" title="소리 (M)" data-i18n-title="soundTitle" aria-pressed="true" data-i18n="sound">소리</button>
+      </div>
+      <div class="controls" id="lang-controls"></div>
+    </header>
+
+    <p class="status" id="status" role="status" aria-live="polite" hidden></p>
+
+    <div id="loading" data-i18n="loading">주차장 문을 여는 중…</div>
+    <script>
+      // file:// 로 열면 브라우저가 모듈 스크립트 로딩을 막아 아래 main.js 가 실행되지 않는다
+      if (location.protocol === 'file:') {
+        document.getElementById('loading').textContent =
+          '파일을 직접 열면 실행되지 않습니다. 저장소 루트에서 npm start 를 실행한 뒤 http://localhost:8000 으로 접속하세요. / ' +
+          'Opening the file directly does not work. Run npm start in the repository root and visit http://localhost:8000.';
+      }
+    </script>
+
+    <div id="select" class="overlay" hidden>
+      <div class="card wide">
+        <h1 data-i18n="heading">차 빼기</h1>
+        <p class="lead" data-i18n="lead">차를 앞뒤로 밀어 길을 터서 빨간 내 차를 오른쪽 출구로 빼내세요. 차는 놓인 방향으로만 움직입니다.</p>
+        <button type="button" class="daily" id="btn-daily">
+          <span class="daily-title"><span data-i18n="daily">오늘의 퍼즐</span> <small id="daily-date"></small></span>
+          <small id="daily-detail"></small>
+        </button>
+        <p class="progress" id="progress"></p>
+        <div class="tiers" id="tiers"></div>
+        <button type="button" id="btn-continue"><span id="continue-label"></span> <kbd>Enter</kbd></button>
+        <details class="help">
+          <summary data-i18n="help">조작법</summary>
+          <p data-i18n="helpRules">한 차를 한 번 미는 것이 1수입니다(몇 칸을 가든). 같은 차를 잇달아 밀면 한 수로 칩니다. 최소 수에 가깝게 풀수록 별이 많습니다.</p>
+          <dl>
+            <dt data-i18n="helpDragKey">끌기</dt>
+            <dd data-i18n="helpDrag">차를 눌러 앞뒤로 끌어 밀기 (막히면 그 앞까지만)</dd>
+            <dt><kbd>Tab</kbd> · <span data-i18n="helpArrows">방향키</span></dt>
+            <dd data-i18n="helpSelect">차 고르기 · 고른 차 밀기 (차가 못 가는 방향이면 그쪽 차를 고릅니다)</dd>
+            <dt><kbd>Z</kbd> · <kbd>R</kbd></dt>
+            <dd data-i18n="helpUndo">되돌리기 · 다시 시작</dd>
+            <dt><kbd>H</kbd></dt>
+            <dd data-i18n="helpHint">힌트: 풀이기가 다음 한 수를 보여 줍니다 (기록에 표시됩니다)</dd>
+            <dt><kbd>Esc</kbd> · <kbd>M</kbd></dt>
+            <dd data-i18n="helpOther">단계 선택 · 소리</dd>
+          </dl>
+        </details>
+      </div>
+    </div>
+
+    <div id="result" class="overlay" hidden>
+      <div class="card">
+        <h1 id="result-title"></h1>
+        <p class="stars big" id="result-stars"></p>
+        <p id="result-detail"></p>
+        <p class="best" id="result-best"></p>
+        <button type="button" id="btn-next"><span id="btn-next-label" data-i18n="next">다음 단계</span> <kbd>Enter</kbd></button>
+        <button type="button" class="secondary" id="btn-again" data-i18n="again">다시 하기</button>
+        <button type="button" class="secondary" id="btn-result-levels" data-i18n="toLevels">단계 선택</button>
+      </div>
+    </div>
+
+    <footer class="pad" id="pad" hidden>
+      <div class="cluster actions">
+        <button type="button" data-action="undo" id="btn-undo" title="되돌리기 (Z)" data-i18n-title="undoTitle"><span class="icon">↶</span><span class="label"><span data-i18n="undo">되돌리기</span> <kbd>Z</kbd></span></button>
+        <button type="button" data-action="restart" id="btn-restart" title="다시 시작 (R)" data-i18n-title="restartTitle"><span class="icon">⟲</span><span class="label"><span data-i18n="restart">다시 시작</span> <kbd>R</kbd></span></button>
+        <button type="button" data-action="hint" id="btn-hint" title="힌트 (H)" data-i18n-title="hintTitle"><span class="icon">💡</span><span class="label"><span data-i18n="hint">힌트</span> <kbd>H</kbd></span></button>
+        <button type="button" data-action="levels" id="btn-levels" title="단계 선택 (Esc)" data-i18n-title="levelsTitle"><span class="icon">☰</span><span class="label" data-i18n="levels">단계</span></button>
+      </div>
+    </footer>
+
+    <div id="toast" role="status"></div>
+
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>
