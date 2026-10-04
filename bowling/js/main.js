@@ -1,10 +1,14 @@
 // 볼링: 규칙(game.js)·컴퓨터(ai.js)와 3D 씬(scene.js)을 잇고, 점수표와 조준 단계를 진행한다.
 // 조준은 세 단계다: ① 공을 놓을 자리 → ② 좌우로 흔들리는 방향 → ③ 오르내리는 세기. 단계마다 클릭(탭)으로 확정한다.
+// 컴퓨터와 1:1 로 치거나, 2인 대전에서는 한 기기로 두 사람이 프레임마다 번갈아 같은 방식으로 던진다.
 
 import { BowlingGame, FRAMES } from './game.js';
 import { computerThrow } from './ai.js';
 import { LANE_WIDTH, START_LIMIT, SPEED_MIN, SPEED_MAX, clamp } from './lane.js';
 import { BowlingScene } from './scene.js';
+import { Sound } from './sound.js';
+import { t } from './i18n.js';
+import { applyI18n, mountLangToggle, formatNumber } from '../../shared/i18n.js';
 
 const $ = (id) => document.getElementById(id);
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -16,21 +20,33 @@ const POWER_PERIOD = 1.7; // 세기가 0 → 최대 → 0 으로 한 번 오르�
 const PREVIEW_SPEED = 7.5; // 세기를 고르기 전에 조준선을 그릴 때 쓰는 속도
 const BOARD = LANE_WIDTH / 39; // 키보드로 한 번에 옮기는 거리 (판재 한 장)
 
-const tap = matchMedia('(pointer: coarse)').matches ? '탭' : '클릭';
-const PHASE_TEXT = {
-  position: `① 좌우로 움직여 공을 놓을 자리를 고르고 ${tap}`,
-  direction: `② 흔들리는 조준선이 원하는 방향일 때 ${tap}`,
-  power: `③ 원하는 세기에서 ${tap}하면 굴러갑니다`,
-};
+applyI18n(t);
+mountLangToggle($('tools'), { className: 'chip' });
+
+const tap = t(matchMedia('(pointer: coarse)').matches ? 'tap' : 'click');
 
 const scene = new BowlingScene($('stage'), $('pin-cam'));
+const sound = new Sound(new URL('../assets/sounds/', import.meta.url));
 let game;
-let spin = 0;
-let lastX = 0; // 사람이 마지막으로 고른 출발 위치. 다음 투구에서 그대로 시작한다
-let aim = null; // 사람이 조준하는 동안의 상태 { phase, startX, angle, power, t, resolve }
+let spins = [0, 0]; // 사람마다 고른 스핀
+let lastX = [0, 0]; // 사람마다 마지막으로 고른 출발 위치. 다음 투구에서 그대로 시작한다
+let aim = null; // 사람이 조준하는 동안의 상태 { player, phase, startX, angle, power, t, resolve }
 
-function setStatus(text) {
-  $('status').textContent = text;
+/** 점수표·배너에 쓰는 이름. 컴퓨터 대전은 나/컴퓨터, 2인 대전은 플레이어 1/2 */
+function nameOf(player) {
+  if (game?.mode === 'versus') return t(player === 0 ? 'player1' : 'player2');
+  return t(player === 0 ? 'me' : 'computer');
+}
+
+/** 아래쪽 안내 문구. player 를 주면 그 사람의 공 색 점을 앞에 붙인다 */
+function setStatus(text, player = null) {
+  const el = $('status');
+  el.textContent = text;
+  if (text && player !== null) {
+    const dot = document.createElement('i');
+    dot.className = `dot ${player === 0 ? 'me' : 'computer'}`;
+    el.prepend(dot);
+  }
 }
 
 // ---------- 점수표 ----------
@@ -44,14 +60,17 @@ function buildCard() {
     if (f === FRAMES) th.className = 'col-tenth';
     head.append(th);
   }
-  head.insertAdjacentHTML('beforeend', '<th class="col-total">합계</th>');
+  const total = document.createElement('th');
+  total.className = 'col-total';
+  total.textContent = t('total');
+  head.append(total);
 
   const body = $('card-body');
   body.innerHTML = '';
   ['me', 'computer'].forEach((who, i) => {
     const row = document.createElement('tr');
     row.id = `row-${i}`;
-    row.innerHTML = `<td class="name"><i class="dot ${who}"></i><span class="label">${i === 0 ? '나' : '컴퓨터'}</span></td>`;
+    row.innerHTML = `<td class="name"><i class="dot ${who}"></i><span class="label"></span><span class="short">${i + 1}</span></td>`;
     for (let f = 0; f < FRAMES; f++) {
       const boxes = f === FRAMES - 1 ? 3 : 2;
       const cell = document.createElement('td');
@@ -68,6 +87,8 @@ function updateHud() {
   game.players.forEach((_, i) => {
     const card = game.card(i);
     const row = $(`row-${i}`);
+    row.querySelector('.label').textContent = nameOf(i);
+    row.classList.toggle('versus', game.mode === 'versus');
     const active = !game.over && game.current === i;
     row.classList.toggle('active', active);
     for (let f = 0; f < FRAMES; f++) {
@@ -81,7 +102,7 @@ function updateHud() {
       cell.querySelector('.cum').textContent = frame?.total ?? '';
       cell.classList.toggle('current', active && card.next?.frame === f);
     }
-    row.lastElementChild.textContent = card.total;
+    row.lastElementChild.textContent = formatNumber(card.total);
   });
 }
 
@@ -108,14 +129,15 @@ function shotOf(a) {
     startX: a.startX,
     angle: a.phase === 'position' ? 0 : a.angle,
     speed: a.phase === 'power' ? speedOf(a.power) : PREVIEW_SPEED,
-    spin,
+    spin: spins[a.player],
   };
 }
 
-function playerShot() {
+function playerShot(player) {
   return new Promise((resolve) => {
-    aim = { phase: 'position', startX: lastX, angle: 0, power: 0, t: 0, resolve };
-    setStartX(lastX);
+    aim = { player, phase: 'position', startX: lastX[player], angle: 0, power: 0, t: 0, resolve };
+    setSpin(spins[player]);
+    setStartX(lastX[player]);
     enterPhase('position');
   });
 }
@@ -124,13 +146,16 @@ function enterPhase(phase) {
   aim.phase = phase;
   aim.t = 0;
   $('power').hidden = phase !== 'power';
-  setStatus(PHASE_TEXT[phase]);
+  const text = t(phase, { tap });
+  // 2인 대전에서는 누구 차례인지 함께 적는다
+  if (game.mode === 'versus') setStatus(t('whoseShot', { name: nameOf(aim.player), text }), aim.player);
+  else setStatus(text);
 }
 
 function setStartX(x) {
   aim.startX = clamp(x, -START_LIMIT, START_LIMIT);
-  lastX = aim.startX;
-  scene.placeBall(0, aim.startX);
+  lastX[aim.player] = aim.startX;
+  scene.placeBall(aim.player, aim.startX);
 }
 
 function confirm() {
@@ -144,13 +169,16 @@ function confirm() {
 }
 
 function setSpin(value) {
-  spin = value;
+  if (aim) spins[aim.player] = value;
   for (const button of $('spin').children) {
     button.setAttribute('aria-checked', String(Number(button.dataset.spin) === value));
   }
 }
 
 scene.onFrame = (dt) => {
+  // 공이 바닥을 구르는 동안 속도에 맞춰 굴러가는 소리를 낸다
+  const roll = scene.mode === 'roll' ? scene.physics.ballRoll() : null;
+  sound.setRoll(roll?.speed ?? 0, roll?.gutter);
   if (!aim) return;
   aim.t += dt;
   if (aim.phase === 'direction') aim.angle = swing(aim.t);
@@ -169,7 +197,26 @@ scene.onPointer = (type, event) => {
   confirm();
 };
 
+// 브라우저는 사용자 입력이 있어야 소리를 내게 해 준다
+for (const type of ['pointerdown', 'keydown']) window.addEventListener(type, () => sound.unlock(), true);
+
+function toggleSound() {
+  sound.unlock();
+  sound.setEnabled(!sound.enabled);
+  $('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
+}
+
+$('btn-sound').addEventListener('click', (event) => {
+  toggleSound();
+  event.currentTarget.blur(); // 스페이스로 조준을 확정할 때 버튼이 다시 눌리지 않게
+});
+
+scene.physics.onImpact = (kind, speed) => sound.impact(kind, speed);
+scene.physics.onGutter = () => sound.play('gutter');
+
 document.addEventListener('keydown', (event) => {
+  if (event.ctrlKey || event.metaKey || event.altKey) return;
+  if (event.key === 'm' || event.key === 'M') return toggleSound();
   if (['1', '2', '3'].includes(event.key) && !$('controls').hidden) return setSpin(Number(event.key) - 2);
   if (!aim) return;
   if (event.key === ' ' || event.key === 'Enter') {
@@ -193,7 +240,7 @@ $('spin').addEventListener('click', (event) => {
 // ---------- 컴퓨터 ----------
 
 async function computerShot(standing) {
-  setStatus('컴퓨터 차례');
+  setStatus(t('computerTurn'), 1);
   const shot = computerThrow(standing);
   await sleep(600);
   scene.placeBall(1, shot.startX);
@@ -206,65 +253,109 @@ async function computerShot(standing) {
 // ---------- 진행 ----------
 
 function resultText(result, knocked, gutter) {
-  if (result.strike) return ['스트라이크!', true];
-  if (result.spare) return ['스페어!', true];
-  if (knocked === 0) return [gutter ? '거터' : '0핀', false];
-  return [`${knocked}핀`, false];
+  if (result.strike) return [t('strike'), true];
+  if (result.spare) return [t('spare'), true];
+  if (knocked === 0 && gutter) return [t('gutter'), false];
+  return [t('pins', { n: knocked }), false];
 }
 
 async function play() {
   while (!game.over) {
     updateHud();
     const player = game.current;
+    const human = game.isHuman(player);
     const before = scene.standing();
     $('pin-cam').hidden = false;
-    $('controls').hidden = player !== 0;
-    scene.placeBall(player, player === 0 ? lastX : 0);
-    const shot = player === 0 ? await playerShot() : await computerShot(before);
+    $('controls').hidden = !human;
+    scene.placeBall(player, human ? lastX[player] : 0);
+    const shot = human ? await playerShot(player) : await computerShot(before);
 
     $('controls').hidden = true;
     $('pin-cam').hidden = true;
     setStatus('');
+    sound.play('release', 1, 0.6 + 0.4 * ((shot.speed - SPEED_MIN) / (SPEED_MAX - SPEED_MIN)));
     const { standing, gutter } = await scene.roll(player, shot);
     // 물리에서 센 핀 수가 규칙상 가능한 범위를 벗어나지 않게 한 번 더 막는다
     const knocked = clamp(before.length - standing.length, 0, game.next.standing);
     const result = game.roll(knocked);
     updateHud();
     callout(...resultText(result, knocked, gutter));
+    if (result.strike) sound.play('strike');
+    else if (result.spare) sound.play('spare');
     await sleep(1600);
     if (result.gameOver) break;
     if (result.rerack) scene.rack();
     else scene.sweep();
-    if (result.turnOver) game.nextTurn();
+    if (result.turnOver) {
+      game.nextTurn();
+      if (game.current !== player) {
+        sound.play('turn');
+        // 2인 대전에서는 기기를 넘겨받는 사람이 알아보도록 차례를 크게 띄운다
+        if (game.mode === 'versus') {
+          callout(t('turnOf', { name: nameOf(game.current) }), false);
+          updateHud();
+          scene.placeBall(game.current, lastX[game.current]);
+          await sleep(1000);
+        }
+      }
+    }
   }
   endGame();
 }
 
 function endGame() {
   updateHud();
-  const [mine, theirs] = game.players.map((_, i) => game.card(i).total);
+  const [a, b] = game.players.map((_, i) => game.card(i).total);
   const winner = game.winner;
-  $('banner-title').textContent = winner === 0 ? '승리!' : winner === 1 ? '패배' : '무승부';
-  $('banner-detail').textContent = `나 ${mine} : ${theirs} 컴퓨터`;
-  $('banner').dataset.tone = winner === 0 ? 'win' : 'lose';
+  const versus = game.mode === 'versus';
+  let title;
+  if (winner === null) title = t('draw');
+  else if (versus) title = t('winner', { name: nameOf(winner) });
+  else title = t(winner === 0 ? 'win' : 'lose');
+  $('banner-title').textContent = title;
+  $('banner-detail').textContent = t('score', {
+    a: nameOf(0),
+    x: formatNumber(a),
+    y: formatNumber(b),
+    b: nameOf(1),
+  });
+  const won = versus ? winner !== null : winner === 0;
+  $('banner').dataset.tone = won ? 'win' : 'lose';
   $('banner').hidden = false;
-  $('btn-new').hidden = false;
+  sound.play(won ? 'win' : 'lose');
   setStatus('');
+  showMenu(true);
 }
 
-function newGame() {
-  game = new BowlingGame();
+/** 대전 방식을 고르는 창. again 이면 끝난 게임 아래에 띄운다 */
+function showMenu(again = false) {
+  $('menu-title').textContent = t(again ? 'againTitle' : 'menuTitle');
+  $('menu').hidden = false;
+  $('controls').hidden = true;
+  $('pin-cam').hidden = true;
+}
+
+function newGame(mode) {
+  game = new BowlingGame(mode);
+  spins = [0, 0];
+  lastX = [0, 0];
+  aim = null;
   scene.rack();
   $('banner').hidden = true;
-  $('btn-new').hidden = true;
+  $('menu').hidden = true;
   play();
 }
 
-$('btn-new').addEventListener('click', newGame);
+$('menu').addEventListener('click', (event) => {
+  const button = event.target.closest('button[data-mode]');
+  if (!button) return;
+  button.blur();
+  newGame(button.dataset.mode);
+});
 
 // ?debug 로 열면 콘솔에서 씬과 게임 상태를 들여다볼 수 있다
 if (params.has('debug')) {
-  window.bowling = { scene, get game() { return game; } };
+  window.bowling = { scene, sound, get game() { return game; } };
 }
 
 try {
@@ -273,8 +364,10 @@ try {
   await scene.load();
   $('loading').hidden = true;
   $('hud').hidden = false;
-  newGame();
+  game = new BowlingGame();
+  updateHud();
+  showMenu();
 } catch (error) {
   console.error(error);
-  $('loading').textContent = `불러오기에 실패했습니다: ${error.message}`;
+  $('loading').textContent = t('loadFailed', { message: error.message });
 }

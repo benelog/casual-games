@@ -1,4 +1,7 @@
 // 핸드 값 계산, 딜러 진행 규칙, 정산. 렌더링과 무관한 순수 함수들이다.
+// describeHand 만 화면 문구를 만들므로 i18n.js 의 번역을 쓴다.
+
+import { t } from './i18n.js';
 
 /** 하우스 룰. game.js 의 기본값이며 README 의 설명과 맞춘다. */
 export const RULES = {
@@ -88,11 +91,11 @@ export function settleHand(hand, dealerCards, rules = RULES) {
   return { outcome: 'lose', payout: 0 };
 }
 
-/** 화면에 보여 줄 핸드 값. 예: '소프트 17', '20', '블랙잭', '버스트 24' */
+/** 화면에 보여 줄 핸드 값. 예: '소프트 17', '20', '블랙잭', '버스트 24' (영어: 'Soft 17', 'Bust 24') */
 export function describeHand(cards, { fromSplit = false } = {}) {
   if (cards.length === 0) return '';
   const { total, soft } = handValue(cards);
-  if (!fromSplit && isBlackjack(cards)) return '블랙잭';
-  if (total > 21) return `버스트 ${total}`;
-  return soft && total < 21 ? `소프트 ${total}` : String(total);
+  if (!fromSplit && isBlackjack(cards)) return t('hand.blackjack');
+  if (total > 21) return t('hand.bust', { total });
+  return soft && total < 21 ? t('hand.soft', { total }) : String(total);
 }

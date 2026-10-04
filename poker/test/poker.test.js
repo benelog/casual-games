@@ -8,7 +8,7 @@ const SUIT = { s: 0, h: 1, d: 2, c: 3 };
 const RANK = { T: 10, J: 11, Q: 12, K: 13, A: 14 };
 const hand = (text) =>
   text.split(' ').map((t) => ({ rank: RANK[t[0]] ?? Number(t[0]), suit: SUIT[t[1]] }));
-const name = (text) => evaluateBest(hand(text)).name;
+const key = (text) => evaluateBest(hand(text)).key;
 const score = (text) => evaluateBest(hand(text)).score;
 
 function seededRng(seed) {
@@ -20,18 +20,18 @@ function seededRng(seed) {
   };
 }
 
-test('족보 이름', () => {
-  assert.equal(name('As Ks Qs Js Ts'), '로열 플러시');
-  assert.equal(name('9s 8s 7s 6s 5s'), '스트레이트 플러시');
-  assert.equal(name('9s 9h 9d 9c 5s'), '포 카드');
-  assert.equal(name('9s 9h 9d 5c 5s'), '풀 하우스');
-  assert.equal(name('As 9s 7s 6s 2s'), '플러시');
-  assert.equal(name('9s 8h 7s 6d 5s'), '스트레이트');
-  assert.equal(name('As 2h 3s 4d 5s'), '스트레이트');
-  assert.equal(name('9s 9h 9d 6c 5s'), '트리플');
-  assert.equal(name('9s 9h 6d 6c 5s'), '투 페어');
-  assert.equal(name('9s 9h 7d 6c 5s'), '원 페어');
-  assert.equal(name('Ks 9h 7d 6c 5s'), '하이 카드');
+test('족보 키', () => {
+  assert.equal(key('As Ks Qs Js Ts'), 'royal-flush');
+  assert.equal(key('9s 8s 7s 6s 5s'), 'straight-flush');
+  assert.equal(key('9s 9h 9d 9c 5s'), 'four-of-a-kind');
+  assert.equal(key('9s 9h 9d 5c 5s'), 'full-house');
+  assert.equal(key('As 9s 7s 6s 2s'), 'flush');
+  assert.equal(key('9s 8h 7s 6d 5s'), 'straight');
+  assert.equal(key('As 2h 3s 4d 5s'), 'straight');
+  assert.equal(key('9s 9h 9d 6c 5s'), 'three-of-a-kind');
+  assert.equal(key('9s 9h 6d 6c 5s'), 'two-pair');
+  assert.equal(key('9s 9h 7d 6c 5s'), 'one-pair');
+  assert.equal(key('Ks 9h 7d 6c 5s'), 'high-card');
 });
 
 test('족보 비교', () => {
@@ -45,9 +45,9 @@ test('족보 비교', () => {
 
 test('7장 중 최고 5장', () => {
   const best = evaluateBest(hand('As Ah Kd Kc Ks 2d 3c'));
-  assert.equal(best.name, '풀 하우스');
+  assert.equal(best.key, 'full-house');
   assert.equal(best.cards.length, 5);
-  assert.equal(name('2s 5s 9s Js Ks Ah Ad'), '플러시');
+  assert.equal(key('2s 5s 9s Js Ks Ah Ad'), 'flush');
 });
 
 test('블라인드와 폴드', () => {
@@ -86,8 +86,8 @@ test('올인 콜이면 쇼다운까지 진행', () => {
 });
 
 test('5장 미만은 가진 카드만으로 평가', () => {
-  assert.equal(name('9s 9h'), '원 페어');
-  assert.equal(name('9s 8s 7s 6s'), '하이 카드');
+  assert.equal(key('9s 9h'), 'one-pair');
+  assert.equal(key('9s 8s 7s 6s'), 'high-card');
   assert.ok(score('As') > score('Ks'));
   assert.ok(score('2s 2h') > score('As Kh'));
 });
@@ -95,9 +95,9 @@ test('5장 미만은 가진 카드만으로 평가', () => {
 test('오마하는 내 카드 2장과 공용 카드 3장만 쓴다', () => {
   const board = hand('As Ks Qs Js 2d');
   // 스페이드가 한 장뿐이면 플러시가 되지 않는다
-  assert.equal(evaluateOmaha(hand('Ts 3h 4d 5c'), board).name, '하이 카드');
-  assert.equal(evaluateOmaha(hand('Ts 3s 4d 5c'), board).name, '플러시');
-  assert.equal(evaluateOmaha(hand('Ah Ad Kh Kd'), board).name, '트리플');
+  assert.equal(evaluateOmaha(hand('Ts 3h 4d 5c'), board).key, 'high-card');
+  assert.equal(evaluateOmaha(hand('Ts 3s 4d 5c'), board).key, 'flush');
+  assert.equal(evaluateOmaha(hand('Ah Ad Kh Kd'), board).key, 'three-of-a-kind');
 });
 
 test('오마하는 팟 리밋', () => {

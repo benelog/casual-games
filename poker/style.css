@@ -104,10 +104,16 @@ body {
   border-radius: 999px;
   background: var(--panel);
   border: 1px solid var(--line);
+  white-space: nowrap;
 }
 
 .back:hover {
   border-color: var(--brass);
+}
+
+/* 한/EN 전환 버튼. 옆의 링크와 같은 모양으로 */
+.lang-toggle {
+  font-weight: 400;
 }
 
 #info {
@@ -118,6 +124,18 @@ body {
 
 #info:empty {
   display: none;
+}
+
+/* 좁은 화면에서는 링크 줄과 핸드 정보를 두 줄로 나눈다 */
+@media (max-width: 520px) {
+  .top {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+
+  #info {
+    white-space: nowrap;
+  }
 }
 
 #loading {

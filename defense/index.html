@@ -4,7 +4,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>타워 디펜스 · Casual Games</title>
-    <link rel="icon" href="data:," />
+    <meta name="theme-color" content="#0b0d12" />
+    <link rel="manifest" href="../manifest.webmanifest" />
+    <link rel="icon" href="../icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png" />
+    <script src="../shared/pwa.js" defer></script>
     <link rel="stylesheet" href="style.css" />
     <script type="importmap">
       {
@@ -19,35 +23,37 @@
     <div id="stage"></div>
 
     <header class="top">
-      <a class="back" href="../index.html">← 게임 목록</a>
+      <a class="back" href="../index.html" data-i18n="back">← 게임 목록</a>
       <div id="stats" hidden>
-        <span class="stat" title="웨이브"><small>웨이브</small><b id="wave">0/20</b></span>
-        <span class="stat gold" title="골드"><small>골드</small><b id="gold">200</b></span>
-        <span class="stat lives" title="목숨"><small>목숨</small><b id="lives">20</b></span>
+        <span class="stat" title="웨이브" data-i18n-title="wave"><small data-i18n="wave">웨이브</small><b id="wave">0/20</b></span>
+        <span class="stat gold" title="골드" data-i18n-title="gold"><small data-i18n="gold">골드</small><b id="gold">200</b></span>
+        <span class="stat lives" title="목숨" data-i18n-title="lives"><small data-i18n="lives">목숨</small><b id="lives">20</b></span>
       </div>
       <div class="controls" id="controls" hidden>
-        <button type="button" class="chip" id="btn-pause" title="일시정지 (Space)">일시정지</button>
-        <button type="button" class="chip" id="btn-speed" title="배속 (F)">1x</button>
-        <button type="button" class="chip" id="btn-sound" title="소리 (M)" aria-pressed="true">소리</button>
+        <button type="button" class="chip" id="btn-pause" title="일시정지 (Space)" data-i18n-title="pauseTitle" data-i18n="pause">일시정지</button>
+        <button type="button" class="chip" id="btn-speed" title="배속 (F)" data-i18n-title="speedTitle">1x</button>
+        <button type="button" class="chip" id="btn-sound" title="소리 (M)" data-i18n-title="soundTitle" aria-pressed="true" data-i18n="sound">소리</button>
       </div>
+      <div class="controls" id="lang-controls"></div>
     </header>
 
-    <div id="loading">타워를 세우는 중…</div>
+    <div id="loading" data-i18n="loading">타워를 세우는 중…</div>
     <script>
       // file:// 로 열면 브라우저가 모듈 스크립트와 에셋 로딩을 막아 아래 main.js 가 실행되지 않는다
       if (location.protocol === 'file:') {
         document.getElementById('loading').textContent =
-          '파일을 직접 열면 실행되지 않습니다. 저장소 루트에서 npm start 를 실행한 뒤 http://localhost:8000 으로 접속하세요.';
+          '파일을 직접 열면 실행되지 않습니다. 저장소 루트에서 npm start 를 실행한 뒤 http://localhost:8000 으로 접속하세요. / ' +
+          'Opening the file directly does not work. Run npm start in the repository root and visit http://localhost:8000.';
       }
     </script>
 
     <div id="menu" class="overlay" hidden>
       <div class="card">
-        <h1>타워 디펜스</h1>
-        <p class="lead">길을 따라 기지로 몰려오는 적을 타워로 막으세요. 20웨이브를 버티면 승리합니다.</p>
+        <h1 data-i18n="heading">타워 디펜스</h1>
+        <p class="lead" data-i18n="lead">길을 따라 기지로 몰려오는 적을 타워로 막으세요. 20웨이브를 버티면 승리합니다.</p>
         <p class="best" id="menu-best"></p>
         <button type="button" id="btn-continue"></button>
-        <button type="button" class="secondary" id="btn-menu-new">새 게임</button>
+        <button type="button" class="secondary" id="btn-menu-new" data-i18n="newGame">새 게임</button>
       </div>
     </div>
 
@@ -56,7 +62,7 @@
       <div id="banner" hidden>
         <strong id="banner-title"></strong>
         <span id="banner-detail"></span>
-        <button type="button" id="btn-new">새 게임</button>
+        <button type="button" id="btn-new" data-i18n="newGame">새 게임</button>
       </div>
       <section id="panel" hidden>
         <div class="info">
@@ -72,7 +78,7 @@
         <div class="towers" id="tower-buttons"></div>
         <div class="wave-box">
           <span id="next-wave"></span>
-          <button type="button" id="btn-wave">웨이브 시작</button>
+          <button type="button" id="btn-wave" data-i18n="startWave">웨이브 시작</button>
         </div>
       </nav>
     </footer>

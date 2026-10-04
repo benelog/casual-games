@@ -1,15 +1,16 @@
 // 족보 평가. score 가 클수록 강한 패.
+// 족보 이름은 화면 언어와 무관한 키로 돌려주고, 화면에서 i18n.js 의 'hand.<키>' 로 번역한다.
 
-export const CATEGORY_NAMES = [
-  '하이 카드',
-  '원 페어',
-  '투 페어',
-  '트리플',
-  '스트레이트',
-  '플러시',
-  '풀 하우스',
-  '포 카드',
-  '스트레이트 플러시',
+export const CATEGORY_KEYS = [
+  'high-card',
+  'one-pair',
+  'two-pair',
+  'three-of-a-kind',
+  'straight',
+  'flush',
+  'full-house',
+  'four-of-a-kind',
+  'straight-flush',
 ];
 
 /** 1~5장을 그대로 평가한다. 5장 미만이면 스트레이트·플러시는 없다. */
@@ -54,7 +55,7 @@ function describe(result, cards) {
   return {
     score: result.score,
     category: result.category,
-    name: royal ? '로열 플러시' : CATEGORY_NAMES[result.category],
+    key: royal ? 'royal-flush' : CATEGORY_KEYS[result.category],
     cards,
   };
 }

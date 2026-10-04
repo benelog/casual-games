@@ -87,10 +87,20 @@ function tenthMarks(rolls) {
   return marks;
 }
 
+// 대전 방식: 컴퓨터와 1:1, 또는 한 기기에서 두 사람이 번갈아 던지는 2인 대전
+export const MODES = ['computer', 'versus'];
+
 export class BowlingGame {
-  constructor() {
-    this.players = ['나', '컴퓨터'].map((name) => ({ name, rolls: [] }));
+  constructor(mode = 'computer') {
+    if (!MODES.includes(mode)) throw new Error(`알 수 없는 대전 방식입니다: ${mode}`);
+    this.mode = mode;
+    this.players = [0, 1].map(() => ({ rolls: [] }));
     this.current = 0;
+  }
+
+  /** 사람이 직접 던지는 차례인가. 컴퓨터 대전에서는 1번 자리가 컴퓨터다 */
+  isHuman(player = this.current) {
+    return this.mode === 'versus' || player === 0;
   }
 
   card(player = this.current) {

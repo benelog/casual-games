@@ -1,11 +1,13 @@
 // 3D 테트리스: 규칙(game.js), 3D 씬(scene.js), 저장(save.js)을 잇고 HUD·입력을 처리한다.
 
 import { Tetris3D, PIT_SIZES } from './game.js';
-import { PIECES, PIECE_SETS, SET_IDS, spawnCells } from './pieces.js';
+import { SET_IDS, spawnCells } from './pieces.js';
 import { moveVector, rotation } from './controls.js';
 import { SaveStore, browserStorage } from './save.js';
 import { TetrisScene, layerColor } from './scene.js';
 import { Sound } from './sound.js';
+import { t } from './i18n.js';
+import { applyI18n, formatNumber, mountLangToggle } from '../../shared/i18n.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -35,6 +37,10 @@ const KEYS = {
   Period: 'view-right',
 };
 
+document.title = t('title');
+applyI18n(t);
+mountLangToggle($('lang-controls'), { className: 'chip' });
+
 const scene = new TetrisScene($('stage'));
 const store = new SaveStore(browserStorage());
 const sound = new Sound(new URL('../assets/sounds/', import.meta.url));
@@ -63,13 +69,13 @@ function segmented(container, options, current, onPick) {
 }
 
 function describeBest(best) {
-  return best ? `최고 기록 ${best.score.toLocaleString()}점 · ${best.layers}층 · 레벨 ${best.level}` : '';
+  return best ? t('best', { score: formatNumber(best.score), layers: best.layers, level: best.level }) : '';
 }
 
 function renderMenu() {
   segmented(
     $('set-options'),
-    SET_IDS.map((id) => ({ value: id, label: PIECE_SETS[id].name, detail: PIECE_SETS[id].detail })),
+    SET_IDS.map((id) => ({ value: id, label: t(`set.${id}`), detail: t(`set.${id}.detail`) })),
     settings.set,
     (set) => {
       settings = { ...settings, set };
@@ -107,7 +113,7 @@ function setState(next) {
   show('controls', inGame);
   show('side', inGame);
   show('pad', state === 'playing');
-  $('btn-pause').textContent = state === 'paused' ? '계속' : '일시정지';
+  $('btn-pause').textContent = state === 'paused' ? t('resume') : t('pause');
   held.clear();
   // 포커스가 버튼에 남아 있으면 Space 가 그 버튼을 누르게 된다
   if (state === 'playing') document.activeElement?.blur?.();
@@ -147,12 +153,16 @@ function gameOver() {
   const previous = store.loadBest(mode);
   const record = { score: game.score, layers: game.layers, level: game.level };
   const isBest = game.score > 0 && store.recordBest(mode, record);
-  $('result-title').textContent = isBest ? '새 최고 기록!' : '게임 끝';
-  $('result-detail').textContent =
-    `${game.score.toLocaleString()}점 · ${game.layers}층 · 레벨 ${game.level} · 조각 ${game.pieces}개`;
+  $('result-title').textContent = isBest ? t('newBest') : t('gameOver');
+  $('result-detail').textContent = t('result', {
+    score: formatNumber(game.score),
+    layers: game.layers,
+    level: game.level,
+    pieces: game.pieces,
+  });
   $('result-best').textContent = isBest
     ? previous
-      ? `이전 기록 ${previous.score.toLocaleString()}점`
+      ? t('previousBest', { score: formatNumber(previous.score) })
       : ''
     : describeBest(previous);
   $('result').dataset.tone = isBest ? 'win' : '';
@@ -185,12 +195,12 @@ function updateGauge() {
 }
 
 function updateHud() {
-  $('score').textContent = game.score.toLocaleString();
+  $('score').textContent = formatNumber(game.score);
   $('layers').textContent = game.layers;
   $('level').textContent = game.level;
   const next = game.next;
   scene.showNext(spawnCells(next, game.width, game.depth), next);
-  $('next-name').textContent = PIECES[next].name;
+  $('next-name').textContent = t(`piece.${next}`);
   $('side-best').textContent = describeBest(store.loadBest({ set: game.set, size: game.width }));
   updateGauge();
 }
@@ -249,14 +259,16 @@ function flush() {
       case 'clear': {
         const n = event.layers.length;
         sound.play(event.perfect ? 'perfect' : 'clear', 1 + (n - 1) * 0.08);
-        const label = n === 1 ? '한 층' : `${n}층 한꺼번에`;
-        toast(event.perfect ? `싹 비웠다! +${event.score.toLocaleString()}` : `${label} +${event.score.toLocaleString()}`, n > 1 || event.perfect ? 'big' : '');
+        const score = formatNumber(event.score);
+        let text = n === 1 ? t('clearOne', { score }) : t('clearMany', { n, score });
+        if (event.perfect) text = t('perfect', { score });
+        toast(text, n > 1 || event.perfect ? 'big' : '');
         hudDirty = true;
         break;
       }
       case 'level':
         sound.play('level');
-        setTimeout(() => toast(`레벨 ${event.level}`, 'level'), 600);
+        setTimeout(() => toast(t('levelUp', { n: event.level }), 'level'), 600);
         break;
       case 'spawn':
         hudDirty = true;

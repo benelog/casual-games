@@ -3,7 +3,12 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>볼링 · Casual Games</title>
+    <title data-i18n="pageTitle">볼링 · Casual Games</title>
+    <meta name="theme-color" content="#0b0d12" />
+    <link rel="manifest" href="../manifest.webmanifest" />
+    <link rel="icon" href="../icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png" />
+    <script src="../shared/pwa.js" defer></script>
     <link rel="stylesheet" href="style.css" />
     <script type="importmap">
       {
@@ -19,16 +24,22 @@
     <div id="stage"></div>
 
     <header class="top">
-      <a class="back" href="../index.html">← 게임 목록</a>
-      <span class="title">볼링</span>
+      <a class="back" href="../index.html" data-i18n="back">← 게임 목록</a>
+      <div class="tools" id="tools">
+        <span class="title" data-i18n="title">볼링</span>
+        <button type="button" class="chip" id="btn-sound" aria-pressed="true" data-i18n="sound" data-i18n-title="soundTitle">
+          소리
+        </button>
+      </div>
     </header>
 
-    <div id="loading">레인에 핀을 세우는 중…</div>
+    <div id="loading" data-i18n="loading">레인에 핀을 세우는 중…</div>
     <script>
       // file:// 로 열면 브라우저가 모듈 스크립트와 에셋 로딩을 막아 아래 main.js 가 실행되지 않는다
       if (location.protocol === 'file:') {
         document.getElementById('loading').textContent =
-          '파일을 직접 열면 실행되지 않습니다. 저장소 루트에서 npm start 를 실행한 뒤 http://localhost:8000 으로 접속하세요.';
+          '파일을 직접 열면 실행되지 않습니다. 저장소 루트에서 npm start 를 실행한 뒤 http://localhost:8000 으로 접속하세요. ' +
+          '/ This page does not run from a file. Run npm start in the repository root and open http://localhost:8000.';
       }
     </script>
 
@@ -39,7 +50,7 @@
         </thead>
         <tbody id="card-body"></tbody>
       </table>
-      <div id="pin-cam" aria-label="핀 덱"></div>
+      <div id="pin-cam" aria-label="핀 덱" data-i18n-aria-label="pinDeck"></div>
     </aside>
 
     <div id="callout" hidden></div>
@@ -50,19 +61,31 @@
         <span id="banner-detail"></span>
       </div>
       <div id="controls" hidden>
-        <div id="spin" role="radiogroup" aria-label="스핀">
-          <button type="button" data-spin="-1" role="radio">↶ 왼쪽 훅</button>
-          <button type="button" data-spin="0" role="radio">직구</button>
-          <button type="button" data-spin="1" role="radio">오른쪽 훅 ↷</button>
+        <div id="spin" role="radiogroup" aria-label="스핀" data-i18n-aria-label="spin">
+          <button type="button" data-spin="-1" role="radio" data-i18n="hookLeft">↶ 왼쪽 훅</button>
+          <button type="button" data-spin="0" role="radio" data-i18n="straight">직구</button>
+          <button type="button" data-spin="1" role="radio" data-i18n="hookRight">오른쪽 훅 ↷</button>
         </div>
         <div id="power" hidden>
-          <span>약</span>
+          <span data-i18n="soft">약</span>
           <div class="meter"><div id="power-fill"></div></div>
-          <span>강</span>
+          <span data-i18n="hard">강</span>
         </div>
       </div>
       <div id="status"></div>
-      <button type="button" id="btn-new" hidden>새 게임</button>
+      <div id="menu" hidden>
+        <strong id="menu-title" data-i18n="menuTitle">누구와 칠까요?</strong>
+        <div class="modes">
+          <button type="button" data-mode="computer">
+            <span data-i18n="vsComputer">컴퓨터와 대전</span>
+            <small data-i18n="vsComputerHint">혼자서 컴퓨터와 1:1</small>
+          </button>
+          <button type="button" data-mode="versus">
+            <span data-i18n="versus">2인 대전</span>
+            <small data-i18n="versusHint">한 기기로 번갈아 던지기</small>
+          </button>
+        </div>
+      </div>
     </footer>
 
     <script type="module" src="js/main.js"></script>

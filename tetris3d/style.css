@@ -50,6 +50,7 @@ body {
   padding: max(10px, env(safe-area-inset-top)) 14px 10px;
   font-size: 14px;
   pointer-events: none;
+  z-index: 1; /* 시작 화면 위에서도 목록·언어 버튼을 누를 수 있게 */
 }
 
 .back {
@@ -105,6 +106,11 @@ body {
 }
 
 #stats + .controls {
+  margin-left: 0;
+}
+
+/* 언어 버튼은 메뉴에서도 보이도록 #controls 바깥에 둔다 */
+#controls:not([hidden]) + #lang-controls {
   margin-left: 0;
 }
 

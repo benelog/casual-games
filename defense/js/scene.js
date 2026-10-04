@@ -4,6 +4,7 @@
 
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { createRenderer } from '../../shared/gpu.js';
 
 const ASSETS = new URL('../assets/', import.meta.url);
 const asset = (path) => new URL(path, ASSETS).href;
@@ -134,9 +135,7 @@ const easeOut = (k) => 1 - (1 - k) * (1 - k);
 export class DefenseScene {
   constructor(container) {
     this.container = container;
-    this.renderer = new THREE.WebGLRenderer({ antialias: true });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    this.renderer.shadowMap.enabled = true;
+    this.renderer = createRenderer(THREE, { antialias: true });
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container.appendChild(this.renderer.domElement);
 

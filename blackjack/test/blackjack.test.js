@@ -13,6 +13,10 @@ import {
 } from '../js/rules.js';
 import { Shoe } from '../js/shoe.js';
 import { BlackjackGame } from '../js/game.js';
+import { setLang } from '../../shared/i18n.js';
+
+// 화면 문구는 브라우저 언어를 따르므로 테스트에서는 한국어로 고정한다
+setLang('ko', { persist: false });
 
 const SUIT = { s: 0, h: 1, d: 2, c: 3 };
 const RANK = { T: 10, J: 11, Q: 12, K: 13, A: 14 };
@@ -72,6 +76,17 @@ test('블랙잭과 버스트 판정', () => {
   assert.equal(describeHand(cards('As Kh'), { fromSplit: true }), '21');
   assert.equal(describeHand(cards('As 6h')), '소프트 17');
   assert.equal(describeHand(cards('Ks 6h 9c')), '버스트 25');
+});
+
+test('핸드 값 영어 표기', () => {
+  setLang('en', { persist: false });
+  try {
+    assert.equal(describeHand(cards('As Kh')), 'Blackjack');
+    assert.equal(describeHand(cards('As 6h')), 'Soft 17');
+    assert.equal(describeHand(cards('Ks 6h 9c')), 'Bust 25');
+  } finally {
+    setLang('ko', { persist: false });
+  }
 });
 
 test('스플릿은 같은 랭크 한 쌍만', () => {

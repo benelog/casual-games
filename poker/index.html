@@ -3,7 +3,12 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>3D 포커 · Casual Games</title>
+    <title data-i18n="title">3D 포커 · Casual Games</title>
+    <meta name="theme-color" content="#0b0d12" />
+    <link rel="manifest" href="../manifest.webmanifest" />
+    <link rel="icon" href="../icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png" />
+    <script src="../shared/pwa.js" defer></script>
     <link rel="stylesheet" href="style.css" />
     <script type="importmap">
       {
@@ -19,24 +24,25 @@
 
     <header class="top">
       <nav>
-        <a class="back" href="../index.html">← 게임 목록</a>
-        <a class="back" id="change" href="index.html" hidden>종목 변경</a>
+        <a class="back" href="../index.html" data-i18n="back">← 게임 목록</a>
+        <a class="back" id="change" href="index.html" hidden data-i18n="change">종목 변경</a>
       </nav>
       <span id="info"></span>
     </header>
 
-    <div id="loading">테이블을 준비하는 중…</div>
+    <div id="loading" data-i18n="loading">테이블을 준비하는 중…</div>
     <script>
       // file:// 로 열면 브라우저가 모듈 스크립트와 에셋 로딩을 막아 아래 main.js 가 실행되지 않는다
       if (location.protocol === 'file:') {
         document.getElementById('loading').textContent =
-          '파일을 직접 열면 실행되지 않습니다. 저장소 루트에서 npm start 를 실행한 뒤 http://localhost:8000 으로 접속하세요.';
+          '파일을 직접 열면 실행되지 않습니다. 저장소 루트에서 npm start 를 실행한 뒤 http://localhost:8000 으로 접속하세요. / ' +
+          'This page does not work when opened as a file. Run npm start from the repository root and visit http://localhost:8000.';
       }
     </script>
 
     <section id="menu" hidden>
-      <h1>3D 포커</h1>
-      <p>컴퓨터와 1:1로 겨룰 종목을 고르세요.</p>
+      <h1 data-i18n="menu.title">3D 포커</h1>
+      <p data-i18n="menu.lead">컴퓨터와 1:1로 겨룰 종목을 고르세요.</p>
       <div id="menu-list"></div>
     </section>
 
@@ -51,22 +57,22 @@
       </div>
       <div id="controls" hidden>
         <div id="raise-row">
-          <button type="button" data-preset="min">최소</button>
-          <button type="button" data-preset="0.5">½ 팟</button>
-          <button type="button" data-preset="1">팟</button>
-          <button type="button" data-preset="max">올인</button>
-          <input id="raise-slider" type="range" aria-label="베팅 금액" />
+          <button type="button" data-preset="min" data-i18n="preset.min">최소</button>
+          <button type="button" data-preset="0.5" data-i18n="preset.half">½ 팟</button>
+          <button type="button" data-preset="1" data-i18n="preset.pot">팟</button>
+          <button type="button" data-preset="max" data-i18n="preset.allIn">올인</button>
+          <input id="raise-slider" type="range" aria-label="베팅 금액" data-i18n-aria-label="betAmount" />
         </div>
         <div class="actions">
-          <button type="button" id="btn-fold">폴드</button>
-          <button type="button" id="btn-call">체크</button>
-          <button type="button" id="btn-raise" class="primary">벳</button>
+          <button type="button" id="btn-fold" data-i18n="fold">폴드</button>
+          <button type="button" id="btn-call" data-i18n="check">체크</button>
+          <button type="button" id="btn-raise" class="primary" data-i18n="bet">벳</button>
         </div>
       </div>
       <div id="draw-controls" hidden>
-        <button type="button" id="btn-draw" class="primary">교환 없이 진행</button>
+        <button type="button" id="btn-draw" class="primary" data-i18n="drawSkip">교환 없이 진행</button>
       </div>
-      <button type="button" id="btn-next" class="primary" hidden>다음 핸드</button>
+      <button type="button" id="btn-next" class="primary" hidden data-i18n="nextHand">다음 핸드</button>
     </footer>
 
     <script type="module" src="js/main.js"></script>

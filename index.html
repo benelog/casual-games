@@ -4,6 +4,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Casual Games</title>
+    <meta name="theme-color" content="#0b0d12" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+    <script src="shared/pwa.js" defer></script>
     <style>
       :root {
         --ink: #f3ecdc;
@@ -22,8 +27,27 @@
         font-family: 'Pretendard', 'Noto Sans KR', system-ui, sans-serif;
       }
       main {
+        position: relative;
         max-width: 880px;
         margin: 0 auto;
+      }
+      .lang-toggle {
+        position: absolute;
+        top: -44px;
+        right: 0;
+        padding: 6px 14px;
+        border: 1px solid rgba(243, 236, 220, 0.24);
+        border-radius: 999px;
+        background: rgba(243, 236, 220, 0.06);
+        color: var(--ink);
+        font: inherit;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      .lang-toggle:hover,
+      .lang-toggle:focus-visible {
+        border-color: var(--brass);
+        outline: none;
       }
       h1 {
         margin: 0 0 6px;
@@ -82,55 +106,85 @@
   <body>
     <main>
       <h1>Casual Games</h1>
-      <p>가볍게 즐기는 게임 모음</p>
+      <p data-i18n="tagline">가볍게 즐기는 게임 모음</p>
       <ul class="games" id="games"></ul>
     </main>
-    <script>
+    <script type="module">
+      import { lang, createT, applyI18n, mountLangToggle } from './shared/i18n.js';
+
       // 새 게임은 디렉토리를 만들고 여기에 한 줄 추가한다
       const games = [
         {
           path: 'poker/index.html',
-          title: '3D 포커',
-          description: '컴퓨터와 1:1로 겨루는 텍사스 홀덤 · 오마하 · 파이브 카드 드로우 · 세븐 카드 스터드',
+          title: { ko: '3D 포커', en: '3D Poker' },
+          description: {
+            ko: '컴퓨터와 1:1로 겨루는 텍사스 홀덤 · 오마하 · 파이브 카드 드로우 · 세븐 카드 스터드',
+            en: "Heads-up against the computer: Texas Hold'em · Omaha · Five-Card Draw · Seven-Card Stud",
+          },
           art: '♠',
           background: 'radial-gradient(circle at 50% 40%, #1f8a55, #0b4a2c)',
         },
         {
           path: 'darts/index.html',
-          title: '다트 301',
-          description: '흔들리는 조준점을 맞춰 던지는 3D 다트. 컴퓨터보다 먼저 301점을 0으로',
+          title: { ko: '다트 301', en: 'Darts 301' },
+          description: {
+            ko: '흔들리는 조준점을 맞춰 던지는 3D 다트. 컴퓨터나 친구보다 먼저 301점을 0으로',
+            en: 'Time your throw against a wobbling aim. Bring 301 down to zero before the computer or a friend',
+          },
           art: '🎯',
           background: 'radial-gradient(circle at 50% 40%, #8a4a2a, #3a1c10)',
         },
         {
           path: 'bowling/index.html',
-          title: '볼링',
-          description: '위치·방향·세기를 맞춰 굴리는 3D 텐핀 볼링. 컴퓨터와 10프레임 승부',
+          title: { ko: '볼링', en: 'Bowling' },
+          description: {
+            ko: '위치·방향·세기를 맞춰 굴리는 3D 텐핀 볼링. 컴퓨터나 친구와 10프레임 승부',
+            en: 'Line up position, direction and power in 3D ten-pin bowling. Ten frames against the computer or a friend',
+          },
           art: '🎳',
           background: 'radial-gradient(circle at 50% 40%, #b07a3a, #4a2c12)',
         },
         {
           path: 'blackjack/index.html',
-          title: '3D 블랙잭',
-          description: '6덱 슈로 딜러와 겨루는 블랙잭. 히트 · 스탠드 · 더블 · 스플릿 · 인슈어런스, 블랙잭 3:2',
+          title: { ko: '3D 블랙잭', en: '3D Blackjack' },
+          description: {
+            ko: '6덱 슈로 딜러와 겨루는 블랙잭. 히트 · 스탠드 · 더블 · 스플릿 · 인슈어런스, 블랙잭 3:2',
+            en: 'Beat the dealer from a six-deck shoe. Hit · Stand · Double · Split · Insurance, blackjack pays 3:2',
+          },
           art: '🂡',
           background: 'radial-gradient(circle at 50% 40%, #1f6f8a, #0b3a4a)',
         },
         {
           path: 'defense/index.html',
-          title: '타워 디펜스',
-          description: '길목에 궁수탑·대포·빙결탑을 세워 20웨이브의 UFO 침공을 막아내는 3D 타워 디펜스',
+          title: { ko: '타워 디펜스', en: 'Tower Defense' },
+          description: {
+            ko: '길목에 궁수탑·대포·빙결탑을 세워 20웨이브의 UFO 침공을 막아내는 3D 타워 디펜스',
+            en: 'Build archer, cannon and frost towers along the path to hold off 20 waves of UFOs',
+          },
           art: '🏰',
           background: 'radial-gradient(circle at 50% 40%, #3f8a5a, #16402a)',
         },
         {
           path: 'tetris3d/index.html',
-          title: '3D 테트리스',
-          description: '입체 조각을 세 축으로 돌려 우물 바닥을 채우는 블록아웃식 3D 테트리스. 한 층이 꽉 차면 사라진다',
+          title: { ko: '3D 테트리스', en: '3D Tetris' },
+          description: {
+            ko: '입체 조각을 세 축으로 돌려 우물 바닥을 채우는 블록아웃식 3D 테트리스. 한 층이 꽉 차면 사라진다',
+            en: 'Blockout-style 3D Tetris: rotate pieces on three axes to fill the pit. Complete layers vanish',
+          },
           art: '🧊',
           background: 'radial-gradient(circle at 50% 40%, #4a5fb0, #1c2350)',
         },
       ];
+
+      const t = createT({
+        ko: { tagline: '가볍게 즐기는 게임 모음' },
+        en: { tagline: 'Quick games to play right in your browser' },
+      });
+      const pick = (text) => text[lang] ?? text.ko;
+
+      applyI18n(t);
+      mountLangToggle(document.querySelector('main'));
+
       const list = document.getElementById('games');
       for (const game of games) {
         const item = document.createElement('li');
@@ -143,9 +197,9 @@
         const text = document.createElement('div');
         text.className = 'text';
         const title = document.createElement('h2');
-        title.textContent = game.title;
+        title.textContent = pick(game.title);
         const description = document.createElement('p');
-        description.textContent = game.description;
+        description.textContent = pick(game.description);
         text.append(title, description);
         link.append(art, text);
         item.append(link);

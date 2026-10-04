@@ -292,7 +292,7 @@ export class PokerGame {
     let winners = [0, 1];
     if (hands[0].score > hands[1].score) winners = [0];
     else if (hands[0].score < hands[1].score) winners = [1];
-    this.#emit({ type: 'showdown', hands: hands.map(({ name, cards }) => ({ name, cards })), winners });
+    this.#emit({ type: 'showdown', hands: hands.map(({ key, cards }) => ({ key, cards })), winners });
     this.#award(winners, 'showdown');
   }
 

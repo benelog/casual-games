@@ -1,9 +1,9 @@
 // 타워 정의. 레벨은 1~3 이고 levels[레벨 - 1] 이 그 레벨의 성능이다.
 // 사거리·착탄 반경은 타일 단위, rate 는 초당 발사 횟수, 발사체 speed 는 초당 타일.
+// 화면에 보이는 이름은 i18n.js 의 'tower.종류' 문구다.
 
 export const TOWERS = {
   archer: {
-    name: '궁수탑',
     cost: 50,
     upgrade: [40, 40], // 1→2, 2→3
     projectile: 9,
@@ -14,7 +14,6 @@ export const TOWERS = {
     ],
   },
   cannon: {
-    name: '대포',
     cost: 100,
     upgrade: [80, 80],
     projectile: 5,
@@ -25,7 +24,6 @@ export const TOWERS = {
     ],
   },
   frost: {
-    name: '빙결탑',
     cost: 80,
     upgrade: [64, 64],
     projectile: 7,

@@ -5,6 +5,7 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { createRenderer } from '../../shared/gpu.js';
 
 // 쌓인 칸은 높이(층)마다 색이 다르다. 몇 층까지 찼는지 한눈에 보이도록
 export const LAYER_COLORS = [
@@ -38,9 +39,7 @@ const damp = (k, dt) => 1 - Math.exp(-k * dt);
 export class TetrisScene {
   constructor(container) {
     this.container = container;
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    this.renderer.shadowMap.enabled = true;
+    this.renderer = createRenderer(THREE, { antialias: true, alpha: true });
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.setClearColor(0x000000, 0);
     container.appendChild(this.renderer.domElement);

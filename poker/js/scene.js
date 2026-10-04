@@ -4,7 +4,10 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+import { createRenderer } from '../../shared/gpu.js';
 import { cardId } from './cards.js';
+import { formatNumber } from '../../shared/i18n.js';
+import { t } from './i18n.js';
 
 const ASSETS = new URL('../assets/', import.meta.url);
 const asset = (path) => new URL(path, ASSETS).href;
@@ -50,13 +53,13 @@ const SUIT_FILE = ['spades', 'hearts', 'diamonds', 'clubs'];
 const cardFile = (card) => `cards/${RANK_FILE[card.rank] ?? card.rank}_of_${SUIT_FILE[card.suit]}.png`;
 
 const easeInOut = (k) => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
-const fmt = (n) => n.toLocaleString('ko-KR');
+const fmt = formatNumber;
 
 function loadImage(url) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error(`이미지를 불러오지 못했습니다: ${url}`));
+    img.onerror = () => reject(new Error(t('imageFailed', { url })));
     img.src = url;
   });
 }
@@ -125,9 +128,7 @@ function chipBreakdown(amount) {
 export class TableScene {
   constructor(container) {
     this.container = container;
-    this.renderer = new THREE.WebGLRenderer({ antialias: true });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    this.renderer.shadowMap.enabled = true;
+    this.renderer = createRenderer(THREE, { antialias: true });
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     container.appendChild(this.renderer.domElement);
@@ -144,7 +145,7 @@ export class TableScene {
     this.cards = { hole: [[], []], board: [] };
     this.chipGroups = {};
     this.snap = { chips: [0, 0], bets: [0, 0], pot: 0 };
-    this.names = ['나', '컴퓨터'];
+    this.names = [t('me'), t('computer')];
     this.opponentRevealed = false;
 
     this.anchors = [];
@@ -530,7 +531,7 @@ export class TableScene {
       this.setLabel(this.labels.bets[i], snap.bets[i] ? fmt(snap.bets[i]) : '');
     }
     this.placeChips('pot', snap.pot, POS.pot);
-    this.setLabel(this.labels.pot, snap.pot ? `팟 ${fmt(snap.pot)}` : '');
+    this.setLabel(this.labels.pot, snap.pot ? t('pot', { amount: fmt(snap.pot) }) : '');
   }
 
   async flyChips(amount, from, to) {

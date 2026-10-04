@@ -73,6 +73,26 @@ export class LanePhysics {
 
     this.accumulator = 0;
     this.rolling = null; // 굴러가는 동안의 상태
+    this.onImpact = null; // (kind, speed) => void, 효과음용. kind: ball-pin · pin-pin · pin-floor · ball-floor
+    this.onGutter = null; // () => void, 공이 거터에 빠지는 순간
+    this.listenImpacts();
+  }
+
+  /** 처음 닿는 순간마다 부딪힌 속도를 알린다. 한 쌍의 충돌이 두 바디에서 모두 들어오므로 한쪽에서만 센다 */
+  listenImpacts() {
+    const report = (kind, event) => this.onImpact?.(kind, Math.abs(event.contact.getImpactVelocityAlongNormal()));
+    this.ball.addEventListener('collide', (event) => {
+      if (event.body.number) report('ball-pin', event);
+      else if (event.body.mass === 0) report('ball-floor', event);
+    });
+    for (const pin of this.pins) {
+      pin.addEventListener('collide', (event) => {
+        const other = event.body;
+        if (other.number) {
+          if (pin.id < other.id) report('pin-pin', event);
+        } else if (other.mass === 0) report('pin-floor', event);
+      });
+    }
   }
 
   buildLane() {
@@ -209,7 +229,10 @@ export class LanePhysics {
       ball.position.z < HEAD_PIN_Z + 0.4 || ball.position.y < -0.05 || ball.velocity.length() < 0.15;
     if (r.reachedPins === null && arrived) r.reachedPins = r.time;
     // 핀에 닿기 전에 레인 밖으로 떨어지면 거터
-    if (r.reachedPins === null && Math.abs(ball.position.x) > LANE_WIDTH / 2 + 0.02) r.gutter = true;
+    if (!r.gutter && r.reachedPins === null && Math.abs(ball.position.x) > LANE_WIDTH / 2 + 0.02) {
+      r.gutter = true;
+      this.onGutter?.();
+    }
 
     // 누운 핀은 원통이라 한참 데굴데굴 구르므로, 아직 서 있거나 빠르게 움직이는 핀만 멈추기를 기다린다
     const up = scratch;
@@ -223,6 +246,16 @@ export class LanePhysics {
     r.quiet = quiet ? r.quiet + STEP : 0;
     const sincePins = r.reachedPins === null ? 0 : r.time - r.reachedPins;
     r.finished = (sincePins > 1.5 && r.quiet > 0.4) || sincePins > 6 || r.time > 15;
+  }
+
+  /** 공이 레인이나 거터 바닥을 구르고 있으면 { speed, gutter }, 핏에 떨어졌거나 떠 있으면 null */
+  ballRoll() {
+    if (!this.rolling || !this.ballInPlay) return null;
+    const { position, velocity } = this.ball;
+    const gutter = Math.abs(position.x) > LANE_WIDTH / 2;
+    const floor = gutter ? BALL_RADIUS - GUTTER_DROP : BALL_RADIUS;
+    if (position.z < PIT_Z || Math.abs(position.y - floor) > 0.02) return null;
+    return { speed: Math.hypot(velocity.x, velocity.z), gutter };
   }
 
   /** 서 있는 핀 번호 목록 */

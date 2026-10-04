@@ -75,3 +75,61 @@ test('컴퓨터의 겨냥', () => {
   const exact = computerThrow(301, () => 0.5, 0);
   assert.equal(scoreAt(exact.x, exact.y).label, 'T20');
 });
+
+test('기본은 컴퓨터 대전', () => {
+  const game = new DartsGame();
+  assert.equal(game.mode, 'computer');
+  assert.deepEqual(
+    game.players.map((p) => [p.id, p.human]),
+    [
+      ['me', true],
+      ['computer', false],
+    ],
+  );
+  assert.throws(() => new DartsGame({ mode: 'solo' }));
+});
+
+test('2인 대전: 두 사람이 번갈아 던진다', () => {
+  const game = new DartsGame({ mode: 'versus' });
+  assert.deepEqual(
+    game.players.map((p) => [p.id, p.human]),
+    [
+      ['p1', true],
+      ['p2', true],
+    ],
+  );
+  for (const score of [60, 60, 60]) game.throwDart(hit(score));
+  assert.equal(game.turnTotal, 180);
+  game.nextTurn();
+  assert.equal(game.current, 1);
+  assert.equal(game.player.id, 'p2');
+  assert.equal(game.turnTotal, 0);
+  for (const score of [20, 1, 5]) game.throwDart(hit(score));
+  game.nextTurn();
+  assert.equal(game.player.id, 'p1');
+  assert.deepEqual(
+    game.players.map((p) => p.remaining),
+    [121, 275],
+  );
+});
+
+test('2인 대전: 버스트는 그 사람의 턴 시작 점수로 돌아가고, 두 번째 사람도 이길 수 있다', () => {
+  const game = new DartsGame({ start: 40, mode: 'versus' });
+  game.throwDart(hit(20));
+  game.throwDart(hit(20 - 1));
+  game.throwDart(hit(0));
+  game.nextTurn(); // p1 은 1 남음
+  game.throwDart(hit(30));
+  assert.equal(game.throwDart(hit(20)).bust, true);
+  assert.equal(game.players[1].remaining, 40);
+  game.nextTurn();
+  assert.equal(game.throwDart(hit(2)).bust, true);
+  assert.equal(game.players[0].remaining, 1);
+  game.nextTurn();
+  game.throwDart(hit(20));
+  const result = game.throwDart(hit(20));
+  assert.equal(result.win, true);
+  assert.equal(game.winner, 1);
+  assert.equal(game.players[game.winner].id, 'p2');
+  assert.throws(() => game.throwDart(hit(1)));
+});

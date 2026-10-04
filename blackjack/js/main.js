@@ -1,15 +1,22 @@
 // 게임 엔진의 이벤트를 3D 씬 애니메이션과 HUD 로 재생하는 컨트롤러.
 
 import { BlackjackGame } from './game.js';
-import { describeHand } from './rules.js';
+import { describeHand, isBust } from './rules.js';
 import { TableScene } from './scene.js';
+import { applyI18n, formatNumber, mountLangToggle } from '../../shared/i18n.js';
+import { t } from './i18n.js';
 
 const $ = (id) => document.getElementById(id);
-const fmt = (n) => n.toLocaleString('ko-KR');
+const fmt = formatNumber;
 const signed = (n) => (n > 0 ? `+${fmt(n)}` : n < 0 ? `−${fmt(-n)}` : '0');
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const params = new URLSearchParams(location.search);
+
+applyI18n(t);
+for (const el of document.querySelectorAll('[data-shortcut]')) el.title = t('shortcut', { key: el.dataset.shortcut });
+mountLangToggle(document.querySelector('.top nav'), { className: 'back' });
+
 const scene = new TableScene($('stage'));
 const CHIP_VALUES = [10, 50, 100, 500];
 
@@ -45,30 +52,22 @@ function handText(i) {
 function updateLabels() {
   shownHands.forEach((cards, i) => {
     const value = handText(i);
-    const tone = value.startsWith('버스트') ? 'lose' : undefined;
+    const tone = isBust(cards) ? 'lose' : undefined;
     scene.setHandLabel(i, value && bets[i] ? `${value} · ${fmt(bets[i])}` : value, tone);
   });
   const visible = shownDealer.filter(Boolean);
   // 앞면 한 장만 보일 때 A 는 '소프트 11' 대신 A 로
   const dealer = visible.length === 1 && visible[0].rank === 14 ? 'A' : describeHand(visible);
-  scene.setDealerLabel(visible.length ? `딜러 ${dealer}` : '');
+  scene.setDealerLabel(visible.length ? t('dealer', { hand: dealer }) : '');
   const active = legal ? game.active : -1;
-  $('my-hand').textContent = shownHands[active] ? `내 핸드: ${handText(active)}` : '';
+  $('my-hand').textContent = shownHands[active] ? t('myHand', { hand: handText(active) }) : '';
 }
 
 function updateInfo(snap) {
-  $('info').textContent = `핸드 #${game.round} · 슈 ${snap.shoe}장 남음`;
+  $('info').textContent = t('info', { n: game.round, shoe: fmt(snap.shoe) });
 }
 
-const ACTION_TEXT = { hit: '히트', stand: '스탠드', double: '더블 다운', split: '스플릿' };
-
-const OUTCOME = {
-  blackjack: { text: '블랙잭', tone: 'win' },
-  win: { text: '승', tone: 'win' },
-  push: { text: '푸시', tone: 'push' },
-  lose: { text: '패', tone: 'lose' },
-  bust: { text: '버스트', tone: 'lose' },
-};
+const OUTCOME_TONE = { blackjack: 'win', win: 'win', push: 'push', lose: 'lose', bust: 'lose' };
 
 async function flushDealing() {
   if (dealing.length === 0) return;
@@ -82,8 +81,8 @@ async function handle(ev) {
   if (!(ev.type === 'deal' && ev.initial)) await flushDealing();
   switch (ev.type) {
     case 'shuffle':
-      setStatus('컷 카드가 나왔습니다. 슈를 다시 섞습니다');
-      scene.say('셔플');
+      setStatus(t('shuffling'));
+      scene.say(t('sayShuffle'));
       await scene.shuffle();
       await sleep(300);
       scene.say('');
@@ -114,30 +113,32 @@ async function handle(ev) {
       break;
     }
     case 'insurance-offer':
-      scene.say('인슈어런스?');
+      scene.say(t('sayInsurance'));
       break;
     case 'insurance':
       scene.say('');
       if (ev.taken) await scene.animateBet(snap);
-      setStatus(ev.taken ? `나: 보험 ${fmt(ev.amount)}` : '나: 보험 거절');
+      setStatus(ev.taken ? t('insuranceTaken', { amount: fmt(ev.amount) }) : t('insuranceDeclined'));
       break;
     case 'peek':
-      setStatus('딜러가 홀 카드를 확인합니다');
+      setStatus(t('peeking'));
       await scene.peek();
       setStatus('');
-      if (ev.blackjack) scene.say('블랙잭!');
+      if (ev.blackjack) scene.say(t('sayBlackjack'));
       break;
     case 'insurance-result':
-      insuranceNote = ev.won ? `보험 ${signed(ev.payout - ev.amount)}` : `보험 ${signed(-ev.amount)}`;
-      setStatus(ev.won ? `보험금 ${fmt(ev.payout - ev.amount)} 을 받았습니다` : '딜러가 블랙잭이 아니라 보험금을 잃었습니다');
+      insuranceNote = t('insuranceNote', { amount: signed(ev.won ? ev.payout - ev.amount : -ev.amount) });
+      setStatus(ev.won ? t('insuranceWon', { amount: fmt(ev.payout - ev.amount) }) : t('insuranceLost'));
       await scene.insuranceResult(ev, snap);
       break;
     case 'turn':
       scene.setActive(ev.hand);
       break;
-    case 'action':
-      setStatus(`나: ${ACTION_TEXT[ev.action]}${shownHands.length > 1 ? ` (핸드 ${ev.hand + 1})` : ''}`);
+    case 'action': {
+      const text = t(`action.${ev.action}`);
+      setStatus(t('mine', { text: shownHands.length > 1 ? t('handN', { text, n: ev.hand + 1 }) : text }));
       break;
+    }
     case 'double':
       bets = [...snap.bets];
       await scene.animateBet(snap);
@@ -158,7 +159,7 @@ async function handle(ev) {
         await scene.loseHand(ev.hand);
         scene.setMood('happy');
       } else if (ev.reason === 'blackjack') {
-        scene.say('블랙잭!');
+        scene.say(t('sayBlackjack'));
       }
       await sleep(250);
       break;
@@ -170,30 +171,35 @@ async function handle(ev) {
       await sleep(350);
       break;
     case 'dealer-done':
-      scene.say(ev.bust ? '버스트!' : `${ev.total}`);
+      scene.say(ev.bust ? t('sayBust') : `${ev.total}`);
       await sleep(500);
       break;
     case 'settle': {
       for (const r of ev.results) {
-        const { text, tone } = OUTCOME[r.outcome];
+        const text = t(`outcome.${r.outcome}`);
+        const tone = OUTCOME_TONE[r.outcome];
         const amount = r.payout - r.bet;
         scene.setHandLabel(r.hand, amount ? `${text} ${signed(amount)}` : text, tone);
       }
       await scene.settle(ev.results, snap);
       const dealer = describeHand(shownDealer);
       const mine = shownHands.map((_, i) => handText(i)).join(' / ');
-      const detail = [`딜러 ${dealer} · 나 ${mine}`, insuranceNote].filter(Boolean).join(' · ');
+      const detail = [t('settleDetail', { dealer, mine }), insuranceNote].filter(Boolean).join(' · ');
       const natural = ev.results.length === 1 && ev.results[0].outcome === 'blackjack';
       if (ev.net > 0) {
         scene.setMood('sad');
-        showBanner(natural ? `블랙잭! ${signed(ev.net)}` : `승리 ${signed(ev.net)}`, natural ? `3:2 지급 · ${detail}` : detail, 'win');
+        showBanner(
+          t(natural ? 'bannerBlackjack' : 'bannerWin', { amount: signed(ev.net) }),
+          natural ? t('paid32', { detail }) : detail,
+          'win',
+        );
       } else if (ev.net < 0) {
         scene.setMood('happy');
-        showBanner(`패배 ${signed(ev.net)}`, detail, 'lose');
+        showBanner(t('bannerLose', { amount: signed(ev.net) }), detail, 'lose');
       } else if (ev.results.every((r) => r.outcome === 'push')) {
-        showBanner('푸시', `베팅을 돌려받습니다 · ${detail}`, 'push');
+        showBanner(t('bannerPush'), t('pushDetail', { detail }), 'push');
       } else {
-        showBanner('본전', detail, 'push');
+        showBanner(t('bannerEven'), detail, 'push');
       }
       setStatus('');
       $('my-hand').textContent = '';
@@ -204,7 +210,7 @@ async function handle(ev) {
       updateInfo(snap);
       if (ev.gameOver) {
         scene.setMood('happy');
-        showBanner('게임 오버', `칩이 ${fmt(snap.chips)} 남아 더 베팅할 수 없습니다`, 'lose');
+        showBanner(t('gameOver'), t('gameOverDetail', { amount: fmt(snap.chips) }), 'lose');
       }
       break;
   }
@@ -232,7 +238,7 @@ function updateBetControls() {
   }
   $('btn-clear').disabled = pendingBet === 0;
   $('btn-deal').disabled = !game.canBet(pendingBet);
-  $('btn-deal').textContent = pendingBet ? `딜 · ${fmt(pendingBet)}` : '딜';
+  $('btn-deal').textContent = pendingBet ? t('dealAmount', { amount: fmt(pendingBet) }) : t('deal');
   scene.previewBet(pendingBet, game.chips);
 }
 
@@ -240,7 +246,7 @@ function promptBet() {
   betting = true;
   if (game.lastBet) pendingBet = game.lastBet;
   updateBetControls();
-  setStatus(`베팅액을 고르세요 (최소 ${game.rules.minBet})`);
+  setStatus(t('placeBet', { min: fmt(game.rules.minBet) }));
   $('bet-controls').hidden = false;
 }
 
@@ -271,8 +277,8 @@ async function deal() {
 function promptInsurance() {
   insuring = true;
   const cost = Math.floor(game.hands[0].bet / 2);
-  $('btn-insure').textContent = `보험 들기 · ${fmt(cost)}`;
-  setStatus('딜러가 A 를 보입니다. 보험(인슈어런스)을 들까요? 딜러가 블랙잭이면 2:1 로 받습니다');
+  $('btn-insure').textContent = t('insureAmount', { amount: fmt(cost) });
+  setStatus(t('insurancePrompt'));
   $('insurance-controls').hidden = false;
 }
 
@@ -291,9 +297,9 @@ function promptPlayer() {
   $('btn-stand').disabled = !legal.stand;
   $('btn-double').disabled = !legal.double;
   $('btn-split').disabled = !legal.split;
-  $('btn-double').textContent = legal.double ? `더블 · ${fmt(game.activeHand.bet)}` : '더블';
+  $('btn-double').textContent = legal.double ? t('doubleAmount', { amount: fmt(game.activeHand.bet) }) : t('double');
   scene.setActive(game.active);
-  setStatus(game.hands.length > 1 ? `핸드 ${game.active + 1} / ${game.hands.length} 차례입니다` : '당신 차례입니다');
+  setStatus(game.hands.length > 1 ? t('handTurn', { n: game.active + 1, count: game.hands.length }) : t('yourTurn'));
   updateLabels();
   $('controls').hidden = false;
 }
@@ -379,5 +385,5 @@ try {
 } catch (error) {
   console.error(error);
   $('loading').hidden = false;
-  $('loading').textContent = `불러오기에 실패했습니다: ${error.message}`;
+  $('loading').textContent = t('loadFailed', { message: error.message });
 }

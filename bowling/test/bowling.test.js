@@ -267,3 +267,32 @@ test('컴퓨터의 겨냥', () => {
     assert.ok(Math.abs(predictX(t, HEAD_PIN_Z)) < 0.4);
   }
 });
+
+test('대전 방식: 2인 대전은 두 자리 모두 사람이 던진다', () => {
+  const solo = new BowlingGame();
+  assert.equal(solo.mode, 'computer');
+  assert.equal(solo.isHuman(0), true);
+  assert.equal(solo.isHuman(1), false);
+
+  const versus = new BowlingGame('versus');
+  assert.equal(versus.isHuman(0), true);
+  assert.equal(versus.isHuman(1), true);
+  assert.throws(() => new BowlingGame('online'), /대전 방식/);
+
+  // 진행 규칙은 같다: 프레임마다 번갈아 던지고 총점이 높은 쪽이 이긴다
+  for (let f = 0; f < 10; f++) {
+    assert.equal(versus.current, 0);
+    versus.roll(3);
+    versus.roll(4);
+    versus.nextTurn();
+    assert.equal(versus.current, 1);
+    assert.equal(versus.isHuman(), true);
+    // 마지막 프레임은 스트라이크 뒤 보너스 두 공
+    for (const pins of f === 9 ? [10, 2, 1] : [5, 4]) versus.roll(pins);
+    if (!versus.over) versus.nextTurn();
+  }
+  assert.equal(versus.over, true);
+  assert.equal(versus.card(0).total, 70);
+  assert.equal(versus.card(1).total, 9 * 9 + 13);
+  assert.equal(versus.winner, 1);
+});

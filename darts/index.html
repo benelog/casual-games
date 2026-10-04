@@ -3,7 +3,12 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>다트 301 · Casual Games</title>
+    <title data-i18n="doc.title">다트 301 · Casual Games</title>
+    <meta name="theme-color" content="#0b0d12" />
+    <link rel="manifest" href="../manifest.webmanifest" />
+    <link rel="icon" href="../icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png" />
+    <script src="../shared/pwa.js" defer></script>
     <link rel="stylesheet" href="style.css" />
     <script type="importmap">
       {
@@ -18,31 +23,35 @@
     <div id="stage"></div>
 
     <header class="top">
-      <a class="back" href="../index.html">← 게임 목록</a>
-      <span class="title">다트 301</span>
+      <a class="back" href="../index.html" data-i18n="back">← 게임 목록</a>
+      <div class="actions" id="actions">
+        <span class="title" data-i18n="title">다트 301</span>
+        <button type="button" class="chip" id="btn-sound" aria-pressed="true" data-i18n="sound" data-i18n-title="sound.title">소리</button>
+      </div>
     </header>
 
-    <div id="loading">다트보드를 거는 중…</div>
+    <div id="loading" data-i18n="loading">다트보드를 거는 중…</div>
     <script>
       // file:// 로 열면 브라우저가 모듈 스크립트와 에셋 로딩을 막아 아래 main.js 가 실행되지 않는다
       if (location.protocol === 'file:') {
         document.getElementById('loading').textContent =
-          '파일을 직접 열면 실행되지 않습니다. 저장소 루트에서 npm start 를 실행한 뒤 http://localhost:8000 으로 접속하세요.';
+          '파일을 직접 열면 실행되지 않습니다. 저장소 루트에서 npm start 를 실행한 뒤 http://localhost:8000 으로 접속하세요. ' +
+          '/ Opening the file directly does not work. Run npm start in the repository root and visit http://localhost:8000.';
       }
     </script>
 
-    <aside id="hud" hidden>
+    <aside id="hud" hidden data-i18n-aria-label="hud.aria" aria-label="점수판">
       <div class="player" id="player-0">
-        <span class="name"><i class="dot me"></i>나</span>
+        <span class="name"><i class="dot me"></i><span id="name-0">나</span></span>
         <strong id="score-0">301</strong>
       </div>
       <div class="player" id="player-1">
-        <span class="name"><i class="dot computer"></i>컴퓨터</span>
+        <span class="name"><i class="dot computer"></i><span id="name-1">컴퓨터</span></span>
         <strong id="score-1">301</strong>
       </div>
       <div class="turn">
         <div id="darts"><span></span><span></span><span></span></div>
-        <span class="total">이번 턴 <b id="turn-total">0</b></span>
+        <span class="total"><span data-i18n="turn.total">이번 턴</span> <b id="turn-total">0</b></span>
       </div>
     </aside>
 
@@ -51,8 +60,11 @@
         <strong id="banner-title"></strong>
         <span id="banner-detail"></span>
       </div>
-      <div id="status"></div>
-      <button type="button" id="btn-new" hidden>새 게임</button>
+      <div id="status" role="status" aria-live="polite"></div>
+      <div id="modes" role="group" hidden data-i18n-aria-label="mode.aria" aria-label="대전 방식">
+        <button type="button" data-mode="computer" data-i18n="mode.computer">컴퓨터와 대전</button>
+        <button type="button" class="ghost" data-mode="versus" data-i18n="mode.versus" data-i18n-title="mode.versus.title">2인 대전</button>
+      </div>
     </footer>
 
     <script type="module" src="js/main.js"></script>

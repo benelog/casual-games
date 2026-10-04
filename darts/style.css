@@ -120,6 +120,12 @@ body {
   color: var(--muted);
 }
 
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 #loading {
   position: fixed;
   inset: 0;
@@ -301,12 +307,75 @@ button {
   pointer-events: auto;
 }
 
+button.ghost {
+  background: var(--panel);
+  color: var(--ink);
+}
+
+button.ghost:hover {
+  background: rgba(217, 180, 106, 0.16);
+}
+
+/* 머리글의 소리·언어 버튼: 게임 목록 링크와 같은 알약 모양 */
+button.chip {
+  min-width: 0;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border-color: var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 400;
+}
+
+button.chip:hover {
+  border-color: var(--brass);
+}
+
+button.chip[aria-pressed='false'] {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+#modes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+#modes button {
+  min-width: 170px;
+  white-space: nowrap;
+}
+
 button:focus-visible {
   outline: 2px solid var(--ink);
   outline-offset: 2px;
 }
 
 @media (max-width: 560px) {
+  .top {
+    padding: 12px 10px;
+    font-size: 13px;
+  }
+  .actions {
+    gap: 6px;
+  }
+  .back,
+  .title,
+  button.chip {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+  #modes {
+    width: 100%;
+  }
+  #modes button {
+    flex: 1;
+    min-width: 0;
+    max-width: 200px;
+  }
   #hud {
     flex-direction: row;
     left: 10px;

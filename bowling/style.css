@@ -71,6 +71,33 @@ body {
   color: var(--muted);
 }
 
+.tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 소리·언어 버튼은 뒤로 가기 링크와 같은 알약 모양 */
+button.chip {
+  min-width: 0;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 400;
+}
+
+button.chip:hover {
+  border-color: var(--brass);
+}
+
+button.chip[aria-pressed='false'] {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
 #loading {
   position: fixed;
   inset: 0;
@@ -170,6 +197,11 @@ body {
 
 .dot.computer {
   background: var(--computer);
+}
+
+/* 좁은 화면에서 2인 대전일 때 이름 대신 보여 주는 번호 */
+#card td.name .short {
+  display: none;
 }
 
 .marks {
@@ -381,6 +413,61 @@ body {
   display: none;
 }
 
+#status .dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: 7px;
+  border-radius: 50%;
+}
+
+/* ---------- 대전 방식 고르기 ---------- */
+
+#menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px 16px;
+  border-radius: 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  pointer-events: auto;
+}
+
+#menu-title {
+  font-family: Georgia, 'Noto Serif KR', serif;
+  font-size: 20px;
+  font-weight: 400;
+}
+
+.modes {
+  display: flex;
+  gap: 10px;
+}
+
+.modes button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 150px;
+  padding: 10px 14px;
+  touch-action: manipulation;
+}
+
+.modes button[data-mode='versus'] {
+  background: transparent;
+  color: var(--ink);
+}
+
+.modes small {
+  font-size: 12px;
+  word-break: keep-all;
+  font-weight: 400;
+  opacity: 0.75;
+}
+
 #banner {
   display: flex;
   flex-direction: column;
@@ -451,6 +538,20 @@ button:focus-visible {
   .name .dot {
     margin: 0;
   }
+  #card tr.versus td.name .dot {
+    display: none;
+  }
+  #card tr.versus td.name .short {
+    display: inline;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  #card tr.versus#row-0 td.name .short {
+    color: var(--me);
+  }
+  #card tr.versus#row-1 td.name .short {
+    color: var(--computer);
+  }
   #card th {
     font-size: 10px;
   }
@@ -477,5 +578,20 @@ button:focus-visible {
   }
   .meter {
     width: 160px;
+  }
+  .top {
+    padding: 12px 12px;
+    font-size: 13px;
+  }
+  .tools {
+    gap: 6px;
+  }
+  button.chip {
+    font-size: 13px;
+    padding: 6px 10px;
+  }
+  .modes button {
+    min-width: 0;
+    flex: 1;
   }
 }

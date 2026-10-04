@@ -16,6 +16,7 @@ import {
   BALL_START_Z,
   predictX,
 } from './lane.js';
+import { createRenderer } from '../../shared/gpu.js';
 import { LanePhysics } from './physics.js';
 
 const ASSETS = new URL('../assets/', import.meta.url);
@@ -130,9 +131,7 @@ export class BowlingScene {
   constructor(container, pinCamFrame) {
     this.container = container;
     this.pinCamFrame = pinCamFrame;
-    this.renderer = new THREE.WebGLRenderer({ antialias: true });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    this.renderer.shadowMap.enabled = true;
+    this.renderer = createRenderer(THREE, { antialias: true });
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     container.appendChild(this.renderer.domElement);

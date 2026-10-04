@@ -5,13 +5,20 @@ import { PokerGame } from './game.js';
 import { decideAction, decideDraw } from './ai.js';
 import { VARIANTS } from './variants.js';
 import { TableScene } from './scene.js';
+import { applyI18n, formatNumber, mountLangToggle } from '../../shared/i18n.js';
+import { t } from './i18n.js';
 
 const $ = (id) => document.getElementById(id);
-const fmt = (n) => n.toLocaleString('ko-KR');
+const fmt = formatNumber;
+const variantName = (v) => t(`variant.${v.id}.name`);
+const handName = (hand) => t(`hand.${hand.key}`);
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const params = new URLSearchParams(location.search);
 const variant = VARIANTS[params.get('game')];
+
+applyI18n(t);
+mountLangToggle(document.querySelector('.top nav'), { className: 'back' });
 
 const scene = new TableScene($('stage'));
 const slider = $('raise-slider');
@@ -28,27 +35,27 @@ function setStatus(text) {
 }
 
 function actionText(ev) {
-  const suffix = ev.allIn ? ' (올인)' : '';
+  const suffix = ev.allIn ? t('allInSuffix') : '';
   switch (ev.action) {
     case 'fold':
-      return '폴드';
+      return t('fold');
     case 'check':
-      return '체크';
+      return t('check');
     case 'call':
-      return `콜 ${fmt(ev.amount)}${suffix}`;
+      return t('call', { amount: fmt(ev.amount) }) + suffix;
     case 'bet':
-      return `벳 ${fmt(ev.to)}${suffix}`;
+      return t('betTo', { amount: fmt(ev.to) }) + suffix;
     default:
-      return `레이즈 ${fmt(ev.to)}${suffix}`;
+      return t('raiseTo', { amount: fmt(ev.to) }) + suffix;
   }
 }
 
-const drawText = (count) => (count ? `${count}장 교환` : '교환 없음');
+const drawText = (count) => (count ? t('drawCount', { n: count }) : t('drawNone'));
 
 function updateMyHand() {
   // 스터드는 받은 카드만으로, 나머지는 5장이 모인 뒤부터 족보를 보여 준다
   const ready = variant.id === 'stud' ? shownHole.length > 0 : shownHole.length + shownBoard.length >= 5;
-  $('my-hand').textContent = ready ? `내 패: ${variant.evaluate(shownHole, shownBoard).name}` : '';
+  $('my-hand').textContent = ready ? t('myHand', { name: handName(variant.evaluate(shownHole, shownBoard)) }) : '';
 }
 
 function showBanner(title, detail, tone) {
@@ -74,8 +81,10 @@ async function handle(ev) {
       setStatus('');
       $('my-hand').textContent = '';
       const stakes =
-        variant.forced === 'ante' ? `앤티 ${game.smallBlind}` : `블라인드 ${game.smallBlind}/${game.bigBlind}`;
-      $('info').textContent = `${variant.name} · 핸드 #${ev.handNumber} · ${stakes}`;
+        variant.forced === 'ante'
+          ? t('ante', { n: fmt(game.smallBlind) })
+          : t('blinds', { small: fmt(game.smallBlind), big: fmt(game.bigBlind) });
+      $('info').textContent = t('info', { name: variantName(variant), n: ev.handNumber, stakes });
       await scene.setDealer(ev.dealer);
       break;
     }
@@ -90,7 +99,7 @@ async function handle(ev) {
       break;
     case 'draw':
       if (ev.player === 1) scene.say(drawText(ev.indices.length));
-      else setStatus(`나: ${drawText(ev.indices.length)}`);
+      else setStatus(t('mine', { text: drawText(ev.indices.length) }));
       await scene.replaceCards(ev.player, ev.indices, ev.cards);
       if (ev.player === 0) {
         ev.indices.forEach((index, k) => (shownHole[index] = ev.cards[k]));
@@ -103,7 +112,7 @@ async function handle(ev) {
         scene.say(actionText(ev));
         if (ev.amount > 0) scene.setMood('act');
       } else {
-        setStatus(`나: ${actionText(ev)}`);
+        setStatus(t('mine', { text: actionText(ev) }));
       }
       await scene.animateBet(ev.player, snap);
       if (ev.action === 'fold') await scene.muck(ev.player);
@@ -126,25 +135,25 @@ async function handle(ev) {
     case 'showdown':
       showdown = ev;
       scene.highlight(ev.winners.flatMap((w) => ev.hands[w].cards));
-      scene.say(ev.hands[1].name);
+      scene.say(handName(ev.hands[1]));
       await sleep(600);
       break;
     case 'award': {
       await scene.awardPot(ev.amounts, snap);
       const detail =
         ev.reason === 'showdown'
-          ? `${showdown.hands[0].name} vs ${showdown.hands[1].name}`
+          ? `${handName(showdown.hands[0])} vs ${handName(showdown.hands[1])}`
           : ev.winners[0] === 0
-            ? '컴퓨터가 폴드했습니다'
-            : '폴드했습니다';
+            ? t('computerFolded')
+            : t('youFolded');
       if (ev.winners.length === 2) {
-        showBanner('무승부', `${detail} · 팟을 나눕니다`, 'tie');
+        showBanner(t('tie'), t('splitPot', { detail }), 'tie');
       } else if (ev.winners[0] === 0) {
         scene.setMood('sad');
-        showBanner(`승리 +${fmt(ev.amounts[0])}`, detail, 'win');
+        showBanner(t('win', { amount: fmt(ev.amounts[0]) }), detail, 'win');
       } else {
         scene.setMood('happy');
-        showBanner(`패배 · 컴퓨터 +${fmt(ev.amounts[1])}`, detail, 'lose');
+        showBanner(t('lose', { amount: fmt(ev.amounts[1]) }), detail, 'lose');
       }
       break;
     }
@@ -152,9 +161,13 @@ async function handle(ev) {
       if (ev.gameOver) {
         const won = ev.winner === 0;
         scene.setMood(won ? 'dead' : 'happy');
-        showBanner(won ? '게임 승리!' : '게임 오버', won ? '컴퓨터의 칩을 모두 땄습니다' : '칩을 모두 잃었습니다', won ? 'win' : 'lose');
+        showBanner(
+          t(won ? 'gameWon' : 'gameOver'),
+          t(won ? 'gameWonDetail' : 'gameOverDetail'),
+          won ? 'win' : 'lose',
+        );
       }
-      $('btn-next').textContent = ev.gameOver ? '새 게임' : '다음 핸드';
+      $('btn-next').textContent = t(ev.gameOver ? 'newGame' : 'nextHand');
       $('btn-next').hidden = false;
       break;
   }
@@ -172,7 +185,7 @@ async function run(events) {
 }
 
 async function computerTurn(decide) {
-  setStatus('컴퓨터가 생각 중…');
+  setStatus(t('thinking'));
   await sleep(600 + Math.random() * 700);
   setStatus('');
   run(decide());
@@ -182,8 +195,8 @@ async function computerTurn(decide) {
 
 function updateRaiseButton() {
   const amount = Number(slider.value);
-  const verb = amount === legal.allInTo ? '올인' : game.currentBet === 0 ? '벳' : '레이즈';
-  $('btn-raise').textContent = `${verb} ${fmt(amount)}`;
+  const kind = amount === legal.allInTo ? 'allInTo' : game.currentBet === 0 ? 'betTo' : 'raiseTo';
+  $('btn-raise').textContent = t(kind, { amount: fmt(amount) });
 }
 
 function setRaise(amount) {
@@ -195,7 +208,9 @@ function promptPlayer() {
   legal = game.legalActions();
   const allIn = legal.callAmount === game.players[0].chips;
   $('btn-fold').disabled = legal.canCheck;
-  $('btn-call').textContent = legal.canCheck ? '체크' : `콜 ${fmt(legal.callAmount)}${allIn ? ' (올인)' : ''}`;
+  $('btn-call').textContent = legal.canCheck
+    ? t('check')
+    : t('call', { amount: fmt(legal.callAmount) }) + (allIn ? t('allInSuffix') : '');
   $('raise-row').hidden = $('btn-raise').hidden = !legal.canRaise;
   if (legal.canRaise) {
     slider.min = legal.minRaiseTo;
@@ -203,7 +218,7 @@ function promptPlayer() {
     slider.step = (legal.maxRaiseTo - legal.minRaiseTo) % 10 === 0 ? 10 : 1;
     setRaise(legal.minRaiseTo);
   }
-  setStatus('당신 차례입니다');
+  setStatus(t('yourTurn'));
   $('controls').hidden = false;
 }
 
@@ -218,10 +233,10 @@ function playerAct(action) {
 
 function promptDraw() {
   drawing = true;
-  const update = (indices) => ($('btn-draw').textContent = indices.length ? drawText(indices.length) : '교환 없이 진행');
+  const update = (indices) => ($('btn-draw').textContent = indices.length ? drawText(indices.length) : t('drawSkip'));
   scene.enableSelection(update);
   update([]);
-  setStatus('바꿀 카드를 클릭해 고르세요');
+  setStatus(t('pickDraw'));
   $('draw-controls').hidden = false;
 }
 
@@ -281,9 +296,9 @@ function showMenu() {
     const link = document.createElement('a');
     link.href = `?game=${v.id}`;
     const name = document.createElement('strong');
-    name.textContent = v.name;
+    name.textContent = variantName(v);
     const summary = document.createElement('span');
-    summary.textContent = v.summary;
+    summary.textContent = t(`variant.${v.id}.summary`);
     link.append(name, summary);
     $('menu-list').append(link);
   }
@@ -299,9 +314,9 @@ try {
   await scene.load();
   $('loading').hidden = true;
   if (variant) {
-    document.title = `${variant.name} · 3D 포커`;
+    document.title = t('variant.title', { name: variantName(variant) });
     $('change').hidden = false;
-    document.querySelector('[data-preset="max"]').textContent = variant.potLimit ? '최대' : '올인';
+    document.querySelector('[data-preset="max"]').textContent = t(variant.potLimit ? 'preset.max' : 'preset.allIn');
     game = new PokerGame({ variant: variant.id });
     run(game.startHand());
   } else {
@@ -310,5 +325,5 @@ try {
 } catch (error) {
   console.error(error);
   $('loading').hidden = false;
-  $('loading').textContent = `불러오기에 실패했습니다: ${error.message}`;
+  $('loading').textContent = t('loadFailed', { message: error.message });
 }

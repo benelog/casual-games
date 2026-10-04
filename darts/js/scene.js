@@ -4,6 +4,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+import { createRenderer } from '../../shared/gpu.js';
 import { RADIUS } from './board.js';
 
 const ASSETS = new URL('../assets/', import.meta.url);
@@ -30,9 +31,7 @@ function loadTexture(loader, name, suffix, srgb, repeat) {
 export class DartsScene {
   constructor(container) {
     this.container = container;
-    this.renderer = new THREE.WebGLRenderer({ antialias: true });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    this.renderer.shadowMap.enabled = true;
+    this.renderer = createRenderer(THREE, { antialias: true });
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     container.appendChild(this.renderer.domElement);

@@ -140,6 +140,11 @@ body {
   border-color: var(--brass);
 }
 
+/* 한/EN 전환 버튼. 옆의 링크와 같은 모양으로 */
+.lang-toggle {
+  font-weight: 400;
+}
+
 #info {
   padding: 6px 12px;
   border-radius: 999px;
