@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>당구 · Casual Games</title>
+    <meta name="theme-color" content="#0b0d12" />
+    <link rel="manifest" href="../manifest.webmanifest" />
+    <link rel="icon" href="../icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png" />
+    <script src="../shared/pwa.js" defer></script>
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="stage" tabindex="0" role="application" aria-label="당구대" data-i18n-aria-label="tableLabel"></div>
+
+    <!-- 지금 차례인 사람의 색이 화면 가장자리에 번진다 -->
+    <div id="glow" hidden></div>
+
+    <header class="top" id="top">
+      <a class="back" href="../index.html" data-i18n="back">← 게임 목록</a>
+      <div id="versus" hidden>
+        <div class="player" id="player-0" data-player="0">
+          <i class="ball"></i>
+          <span class="name"></span>
+          <b class="score">0</b>
+          <small class="group"></small>
+        </div>
+        <span class="goal" id="goal"></span>
+        <div class="player" id="player-1" data-player="1">
+          <i class="ball"></i>
+          <span class="name"></span>
+          <b class="score">0</b>
+          <small class="group"></small>
+        </div>
+      </div>
+      <div class="controls" id="controls">
+        <button type="button" class="chip" id="btn-sound" title="소리 (M)" data-i18n-title="soundTitle" aria-pressed="true" data-i18n="sound">소리</button>
+      </div>
+      <div class="controls" id="lang-controls"></div>
+    </header>
+
+    <p class="turn" id="turn" role="status" aria-live="polite" hidden><b id="turn-name"></b><span id="turn-hint"></span></p>
+
+    <!-- 세기: 막대를 아래로 끌어 큐를 당기고, 놓으면 친다 -->
+    <div id="power" hidden>
+      <div class="track" id="power-track" role="slider" aria-label="세기" data-i18n-aria-label="power" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="-1">
+        <div class="fill" id="power-fill"></div>
+        <div class="mark" id="power-mark"></div>
+        <span class="grip" data-i18n="pull">당겨서 치기</span>
+      </div>
+    </div>
+
+    <footer class="bar" id="bar" hidden>
+      <div class="spin" id="spin" title="회전: 수구의 어디를 칠지 누르세요 (W A S D, X 가운데)" data-i18n-title="spinTitle">
+        <div class="spin-ball" id="spin-ball" role="group" aria-label="회전" data-i18n-aria-label="spin"><i id="spin-dot"></i></div>
+      </div>
+      <div class="fine">
+        <button type="button" class="secondary" id="btn-left" title="왼쪽으로 조금 (←, Shift 는 더 조금)" data-i18n-title="leftTitle" aria-label="왼쪽으로 조금" data-i18n-aria-label="leftTitle">◀</button>
+        <button type="button" class="secondary" id="btn-right" title="오른쪽으로 조금 (→, Shift 는 더 조금)" data-i18n-title="rightTitle" aria-label="오른쪽으로 조금" data-i18n-aria-label="rightTitle">▶</button>
+      </div>
+      <button type="button" class="secondary" id="btn-shoot" title="지금 세기로 치기 (Space)" data-i18n-title="shootTitle" data-i18n="shoot">치기</button>
+      <button type="button" class="secondary" id="btn-camera" title="시점 바꾸기 (C)" data-i18n-title="cameraTitle" data-i18n="camera.top">위에서</button>
+      <button type="button" class="secondary" id="btn-menu" title="메뉴 (Esc)" data-i18n-title="menuTitle" data-i18n="menu">메뉴</button>
+    </footer>
+
+    <div id="loading" data-i18n="loading">당구대를 닦는 중…</div>
+    <script>
+      // file:// 로 열면 브라우저가 모듈 스크립트와 에셋 로딩을 막아 아래 main.js 가 실행되지 않는다
+      if (location.protocol === 'file:') {
+        document.getElementById('loading').textContent =
+          '파일을 직접 열면 실행되지 않습니다. 저장소 루트에서 npm start 를 실행한 뒤 http://localhost:8000 으로 접속하세요. / ' +
+          'Opening the file directly does not work. Run npm start in the repository root and visit http://localhost:8000.';
+      }
+    </script>
+
+    <div id="menu" class="overlay" hidden>
+      <div class="card">
+        <h1 data-i18n="heading">당구</h1>
+        <fieldset>
+          <legend data-i18n="variantLegend">종목</legend>
+          <div class="segmented" id="variant-options"></div>
+        </fieldset>
+        <p class="lead" id="variant-lead"></p>
+        <fieldset>
+          <legend data-i18n="opponentLegend">상대</legend>
+          <div class="segmented" id="opponent-options"></div>
+        </fieldset>
+        <fieldset id="level-field">
+          <legend data-i18n="levelLegend">컴퓨터 실력</legend>
+          <div class="segmented" id="level-options"></div>
+        </fieldset>
+        <fieldset>
+          <legend id="target-legend"></legend>
+          <div class="segmented" id="target-options"></div>
+        </fieldset>
+        <fieldset>
+          <legend data-i18n="guideLegend">보조선</legend>
+          <div class="segmented" id="guide-options"></div>
+        </fieldset>
+        <p class="best" id="menu-record"></p>
+        <button type="button" id="btn-start"><span data-i18n="start">시작</span> <kbd>Enter</kbd></button>
+        <button type="button" class="secondary" id="btn-resume" data-i18n="resume" hidden>이어서 치기</button>
+        <details class="help">
+          <summary data-i18n="help">규칙 · 조작법</summary>
+          <p id="help-rules"></p>
+          <dl>
+            <dt data-i18n="helpAimKey">탭 · 끌기</dt>
+            <dd data-i18n="helpAim">누른 곳을 겨누고, 끌면 수구를 중심으로 천천히 돌린다</dd>
+            <dt data-i18n="helpPowerKey">오른쪽 막대</dt>
+            <dd data-i18n="helpPower">아래로 당긴 만큼 세게, 놓으면 친다</dd>
+            <dt data-i18n="helpSpinKey">왼쪽 아래 공</dt>
+            <dd data-i18n="helpSpin">큐로 칠 자리 (위: 밀어치기, 아래: 끌어치기, 옆: 회전)</dd>
+            <dt data-i18n="helpKeysKey">← → · ↑ ↓ · Space</dt>
+            <dd data-i18n="helpKeys">조준(Shift 는 미세) · 세기 · 치기</dd>
+            <dt data-i18n="helpOtherKey">W A S D · X · C · M · Esc</dt>
+            <dd data-i18n="helpOther">회전 · 회전 없애기 · 시점 · 소리 · 메뉴</dd>
+          </dl>
+        </details>
+      </div>
+    </div>
+
+    <div id="result" class="overlay" hidden>
+      <div class="card">
+        <h1 id="result-title"></h1>
+        <p id="result-detail"></p>
+        <p class="best" id="result-record"></p>
+        <button type="button" id="btn-again"><span data-i18n="again">한 판 더</span> <kbd>Enter</kbd></button>
+        <button type="button" class="secondary" id="btn-view" data-i18n="view">당구대 보기</button>
+        <button type="button" class="secondary" id="btn-result-menu" data-i18n="changeSettings">설정 바꾸기</button>
+      </div>
+    </div>
+
+    <div id="toast" role="status"></div>
+
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>

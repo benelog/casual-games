@@ -1,0 +1,794 @@
+:root {
+  --ink: #f3ecdc;
+  --muted: #b9b09c;
+  --brass: #d9b46a;
+  --panel: rgba(12, 14, 19, 0.82);
+  --line: rgba(243, 236, 220, 0.16);
+  --accent: #8fe0b0;
+  --p0: #4db8ff; /* 플레이어 색 */
+  --p1: #ffd23f;
+  --bar-h: 64px; /* 아래쪽 조작부 높이. js/main.js 가 실제 크기를 재서 씬에 알린다 */
+}
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #0e0d0c;
+  color: var(--ink);
+  font-family: 'Pretendard', 'Noto Sans KR', system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+#stage {
+  position: fixed;
+  inset: 0;
+  touch-action: none;
+}
+
+#stage canvas {
+  display: block;
+}
+
+#stage:focus {
+  outline: none;
+}
+
+/* ---------- 위쪽 막대 ---------- */
+
+.top {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: max(10px, env(safe-area-inset-top)) 14px 8px;
+  font-size: 14px;
+  pointer-events: none;
+  z-index: 1; /* 시작 화면 위에서도 목록·언어 버튼을 누를 수 있게 */
+}
+
+.back {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  text-decoration: none;
+  pointer-events: auto;
+  white-space: nowrap;
+}
+
+.back:hover {
+  border-color: var(--brass);
+}
+
+.controls {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+#versus:not([hidden]) + #controls {
+  margin-left: 0;
+}
+
+/* 언어 버튼은 메뉴에서도 보이도록 #controls 바깥에 둔다 */
+#controls:not([hidden]) + #lang-controls {
+  margin-left: 0;
+}
+
+/* ---------- 버튼 ---------- */
+
+button {
+  padding: 10px 14px;
+  border: 1px solid var(--brass);
+  border-radius: 10px;
+  background: var(--brass);
+  color: #1a1408;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+
+button.secondary,
+button.chip {
+  background: var(--panel);
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+button.chip {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+}
+
+button.chip[aria-pressed='false'] {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+kbd {
+  display: inline-block;
+  min-width: 1.4em;
+  padding: 0 4px;
+  border-radius: 4px;
+  border: 1px solid currentColor;
+  font: inherit;
+  font-size: 11px;
+  line-height: 1.4;
+  text-align: center;
+  opacity: 0.7;
+}
+
+/* ---------- 점수판과 차례 ---------- */
+
+#versus {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 auto;
+  min-width: 0;
+}
+
+.goal {
+  padding: 0 4px;
+  color: #d8cfbd;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.player {
+  --color: var(--p0);
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 12px 4px 6px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 2px solid color-mix(in srgb, var(--color) 45%, transparent);
+  color: var(--muted);
+  opacity: 0.65;
+  transition:
+    transform 0.2s,
+    opacity 0.2s,
+    background 0.2s;
+}
+
+.player[data-player='1'] {
+  --color: var(--p1);
+}
+
+/* 수구 색 (캐롬은 흰 공·노란 공, 포켓볼은 남은 무리) */
+.player .ball {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--ball, #f4f1e6);
+  box-shadow:
+    inset -3px -3px 5px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(0, 0, 0, 0.4);
+  flex: none;
+}
+
+.player .ball.stripe {
+  background: linear-gradient(#f6f3ea 28%, var(--ball) 28% 72%, #f6f3ea 72%);
+}
+
+.player .ball.none {
+  background: radial-gradient(circle at 50% 50%, #888 0 30%, transparent 32%), rgba(255, 255, 255, 0.12);
+}
+
+.player .name {
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.player .score {
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color);
+}
+
+.player .group {
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.player .group:empty {
+  display: none;
+}
+
+/* 차례인 사람: 자기 색으로 꽉 채우고 키운다 */
+.player.active {
+  background: var(--color);
+  border-color: var(--color);
+  color: #10141c;
+  font-weight: 700;
+  opacity: 1;
+  transform: scale(1.06);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--color) 60%, transparent);
+}
+
+.player.active .score {
+  color: #10141c;
+}
+
+.turn {
+  --color: var(--p0);
+  position: fixed;
+  top: 54px;
+  left: 50%;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  max-width: calc(100% - 20px);
+  margin: 0;
+  padding: 5px 16px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 2px solid var(--color);
+  transform: translateX(-50%);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.turn[data-player='1'],
+#glow[data-player='1'] {
+  --color: var(--p1);
+}
+
+.turn b {
+  color: var(--color);
+  font-size: 16px;
+}
+
+.turn span {
+  color: var(--muted);
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.turn.swap {
+  animation: swap 0.5s ease-out;
+}
+
+@keyframes swap {
+  0% {
+    transform: translateX(-50%) scale(1.25);
+    background: var(--color);
+  }
+  100% {
+    transform: translateX(-50%) scale(1);
+  }
+}
+
+#glow {
+  --color: var(--p0);
+  position: fixed;
+  inset: 0;
+  box-shadow:
+    inset 0 0 0 3px var(--color),
+    inset 0 0 60px color-mix(in srgb, var(--color) 35%, transparent);
+  pointer-events: none;
+  transition: box-shadow 0.3s;
+}
+
+/* ---------- 세기 막대 ---------- */
+
+#power {
+  position: fixed;
+  right: max(8px, env(safe-area-inset-right));
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.track {
+  position: relative;
+  width: 46px;
+  height: min(46vh, 300px);
+  border-radius: 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  pointer-events: auto;
+  touch-action: none;
+  cursor: ns-resize;
+}
+
+.track .fill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 0;
+  background: linear-gradient(#8fe0b0, #d9b46a 55%, #e5533d);
+}
+
+/* 키보드·치기 버튼에 쓰는 세기 */
+.track .mark {
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--ink);
+  opacity: 0.8;
+  top: 50%;
+}
+
+.track .grip {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  writing-mode: vertical-rl;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  pointer-events: none;
+}
+
+.track.locked {
+  pointer-events: none;
+}
+
+.track.pulling .grip,
+.track.locked .grip {
+  opacity: 0;
+}
+
+/* ---------- 아래쪽 조작부 ---------- */
+
+.bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px max(10px, env(safe-area-inset-bottom));
+  pointer-events: none;
+}
+
+.bar button {
+  min-height: 44px;
+  padding: 8px 12px;
+}
+
+.bar button:hover {
+  border-color: var(--brass);
+}
+
+.bar.locked .fine,
+.bar.locked .spin,
+.bar.locked #btn-shoot {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.fine {
+  display: flex;
+  gap: 4px;
+}
+
+.fine button {
+  min-width: 44px;
+  padding: 8px 0;
+}
+
+.spin {
+  pointer-events: auto;
+}
+
+.spin-ball {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 34%, #ffffff, #e8e4d8 45%, #a9a496 100%);
+  box-shadow:
+    0 0 0 2px var(--panel),
+    0 0 0 3px var(--line);
+  touch-action: none;
+  cursor: crosshair;
+}
+
+/* 큐 끝이 갈 수 있는 범위 */
+.spin-ball::before {
+  content: '';
+  position: absolute;
+  inset: 18%;
+  border-radius: 50%;
+  border: 1px dashed rgba(0, 0, 0, 0.25);
+}
+
+.spin-ball::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 3px;
+  height: 3px;
+  margin: -1.5px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+#spin-dot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  margin: -6px;
+  border-radius: 50%;
+  background: #d4251c;
+  box-shadow: 0 0 0 2px #fff;
+}
+
+/* ---------- 알림 ---------- */
+
+#toast {
+  position: fixed;
+  left: 50%;
+  top: 30%;
+  transform: translate(-50%, -50%);
+  font-family: Georgia, 'Noto Serif KR', serif;
+  font-size: 26px;
+  white-space: nowrap;
+  text-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.85),
+    0 0 14px rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  pointer-events: none;
+}
+
+#toast[data-tone='big'] {
+  color: var(--brass);
+  font-size: 34px;
+}
+
+#toast[data-tone='foul'] {
+  color: #ff8a73;
+}
+
+#toast[data-tone='p0'] {
+  color: var(--p0);
+  font-size: 30px;
+}
+
+#toast[data-tone='p1'] {
+  color: var(--p1);
+  font-size: 30px;
+}
+
+#toast.show {
+  animation: pop 1.6s ease-out forwards;
+}
+
+@keyframes pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -30%) scale(0.85);
+  }
+  12% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -90%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .turn.swap {
+    animation: none;
+  }
+  #toast.show {
+    animation-name: fade;
+  }
+  @keyframes fade {
+    0%,
+    75% {
+      opacity: 1;
+      transform: translate(-50%, -50%);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-50%, -50%);
+    }
+  }
+}
+
+/* ---------- 메뉴·결과 ---------- */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 56px 16px 20px;
+  background: rgba(8, 10, 16, 0.5);
+  overflow-y: auto;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(420px, 100%);
+  padding: 22px 20px 20px;
+  border-radius: 18px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  text-align: center;
+}
+
+.card h1 {
+  margin: 0;
+  font-family: Georgia, 'Noto Serif KR', serif;
+  font-size: 30px;
+  font-weight: 400;
+}
+
+#result h1 {
+  color: var(--accent);
+}
+
+#result[data-tone='p0'] h1 {
+  color: var(--p0);
+}
+
+#result[data-tone='p1'] h1 {
+  color: var(--p1);
+}
+
+#result[data-tone='win'] h1 {
+  color: var(--brass);
+}
+
+#result[data-tone='lose'] h1 {
+  color: #ff8a73;
+}
+
+.card p {
+  margin: 0 0 4px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.card .best:empty {
+  display: none;
+}
+
+.card > button {
+  width: 100%;
+}
+
+fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+legend {
+  margin-bottom: 6px;
+  padding: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.segmented {
+  display: flex;
+  gap: 6px;
+}
+
+.segmented .option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 4px;
+  background: rgba(243, 236, 220, 0.06);
+  border-color: var(--line);
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.segmented .option small {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.segmented .option[aria-pressed='true'] {
+  border-color: var(--brass);
+  background: rgba(217, 180, 106, 0.22);
+}
+
+.help {
+  color: var(--muted);
+  font-size: 13px;
+  text-align: left;
+}
+
+.help summary {
+  cursor: pointer;
+  text-align: center;
+}
+
+.help p {
+  margin: 10px 0 0;
+  font-size: 13px;
+  white-space: pre-line;
+}
+
+.help dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 12px;
+  margin: 10px 0 0;
+}
+
+.help dt {
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.help dd {
+  margin: 0;
+}
+
+#loading {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* ---------- 좁은 화면 ---------- */
+
+@media (max-width: 720px) {
+  .top {
+    flex-wrap: wrap;
+    gap: 6px 8px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  /* 점수판이 둘째 줄로 내려가므로 버튼은 오른쪽 끝에 둔다 */
+  #versus:not([hidden]) + #controls {
+    margin-left: auto;
+  }
+
+  #versus {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .player {
+    padding: 3px 10px 3px 5px;
+    gap: 5px;
+  }
+
+  .player .name {
+    font-size: 12px;
+  }
+
+  .turn {
+    top: 92px;
+    padding: 4px 12px;
+  }
+
+  .turn b {
+    font-size: 14px;
+  }
+
+  .turn span {
+    font-size: 12px;
+  }
+
+  .bar {
+    gap: 6px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .bar button {
+    padding: 8px 9px;
+    font-size: 13px;
+  }
+
+  .fine button {
+    min-width: 38px;
+  }
+
+  .track {
+    width: 40px;
+  }
+}
+
+/* 낮은 가로 화면: 점수판을 한 줄에, 차례 안내는 점수판 바로 밑에 작게 */
+@media (max-height: 480px) and (orientation: landscape) {
+  .top {
+    flex-wrap: nowrap;
+    padding-top: max(6px, env(safe-area-inset-top));
+    padding-bottom: 4px;
+  }
+
+  #versus {
+    order: 0;
+    width: auto;
+  }
+
+  #versus:not([hidden]) + #controls {
+    margin-left: 0;
+  }
+
+  .turn {
+    top: 44px;
+    padding: 2px 12px;
+  }
+
+  .bar {
+    padding-top: 4px;
+    padding-bottom: max(6px, env(safe-area-inset-bottom));
+  }
+
+  .bar button {
+    min-height: 38px;
+  }
+
+  .spin-ball {
+    width: 44px;
+    height: 44px;
+  }
+
+  .track {
+    height: min(52vh, 220px);
+  }
+
+  .overlay {
+    padding-top: 44px;
+  }
+}
