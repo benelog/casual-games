@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title data-i18n="doc.title">양궁 · Casual Games</title>
+    <meta name="theme-color" content="#0b0d12" />
+    <link rel="manifest" href="../manifest.webmanifest" />
+    <link rel="icon" href="../icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png" />
+    <script src="../shared/pwa.js" defer></script>
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="stage"></div>
+
+    <header class="top">
+      <a class="back" href="../index.html" data-i18n="back">← 게임 목록</a>
+      <div class="actions" id="actions">
+        <span class="title" data-i18n="title">양궁</span>
+        <button type="button" class="chip" id="btn-sound" aria-pressed="true" data-i18n="sound" data-i18n-title="sound.title">소리</button>
+      </div>
+    </header>
+
+    <div id="loading" data-i18n="loading">사대에 과녁을 세우는 중…</div>
+    <script>
+      // file:// 로 열면 브라우저가 모듈 스크립트와 에셋 로딩을 막아 아래 main.js 가 실행되지 않는다
+      if (location.protocol === 'file:') {
+        document.getElementById('loading').textContent =
+          '파일을 직접 열면 실행되지 않습니다. 저장소 루트에서 npm start 를 실행한 뒤 http://localhost:8000 으로 접속하세요. ' +
+          '/ Opening the file directly does not work. Run npm start in the repository root and visit http://localhost:8000.';
+      }
+    </script>
+
+    <aside id="hud" hidden data-i18n-aria-label="hud.aria" aria-label="점수판">
+      <div id="round"></div>
+      <div class="board">
+        <div class="row" id="row-0">
+          <span class="name"><i class="dot p0"></i><span id="name-0"></span></span>
+          <span class="arrows" id="arrows-0"></span>
+          <b class="sum" id="sum-0">0</b>
+          <strong class="points" id="points-0">0</strong>
+        </div>
+        <div class="row" id="row-1">
+          <span class="name"><i class="dot p1"></i><span id="name-1"></span></span>
+          <span class="arrows" id="arrows-1"></span>
+          <b class="sum" id="sum-1">0</b>
+          <strong class="points" id="points-1">0</strong>
+        </div>
+      </div>
+    </aside>
+
+    <aside id="gauges" hidden>
+      <div class="gauge wind" id="wind" role="img">
+        <svg viewBox="-32 -32 64 64" aria-hidden="true">
+          <circle r="29" class="dial" />
+          <path d="M0 -26 V-21 M26 0 H21 M0 26 V21 M-26 0 H-21" class="ticks" />
+          <g id="wind-arrow">
+            <path d="M0 18 V-14" class="shaft" />
+            <path d="M-7 -8 L0 -19 L7 -8 Z" class="head" />
+          </g>
+        </svg>
+        <span><span data-i18n="wind.label">바람</span> <b id="wind-speed">0.0</b> m/s</span>
+      </div>
+      <div class="gauge clock" id="clock-box">
+        <strong id="clock">20</strong>
+        <span data-i18n="clock.label">남은 시간</span>
+      </div>
+    </aside>
+
+    <footer class="bottom">
+      <div id="panel" hidden>
+        <strong id="panel-title"></strong>
+        <span id="panel-detail"></span>
+        <ol id="bracket" hidden></ol>
+        <div id="panel-buttons" role="group"></div>
+      </div>
+      <div id="status" role="status" aria-live="polite"></div>
+    </footer>
+
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>
