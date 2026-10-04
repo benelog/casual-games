@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRng, shuffle, formatTime, damp } from '../util.js';
 import { JsonStore, mergeLowest, isInt, isTime } from '../storage.js';
+import { LANGUAGES, LANGS, setLang, createT, formatNumber } from '../i18n.js';
 
 test('createRng 는 같은 시드에서 같은 수열을 낸다', () => {
   const a = createRng(42);
@@ -82,4 +83,28 @@ test('mergeLowest 는 항목마다 작은 값을 남긴다', () => {
     record: { time: 4, moves: 9 },
     improved: { time: false, moves: true },
   });
+});
+
+test('LANGUAGES 의 언어마다 이름·라벨·로케일이 있다', () => {
+  assert.deepEqual(LANGS, Object.keys(LANGUAGES));
+  for (const code of LANGS) {
+    const { name, label, locale } = LANGUAGES[code];
+    assert.ok(name && label && locale, code);
+  }
+});
+
+test('createT 는 빠진 문구를 영어 → 한국어 → 키 순으로 채운다', () => {
+  const t = createT({
+    ko: { both: '둘 다', koOnly: '한국어만' },
+    en: { both: 'Both', enOnly: 'English only', score: '{n} pts' },
+  });
+  setLang('ko', { persist: false });
+  assert.equal(t('both'), '둘 다');
+  assert.equal(t('enOnly'), 'English only');
+  setLang('en', { persist: false });
+  assert.equal(t('koOnly'), '한국어만');
+  assert.equal(t('missing'), 'missing');
+  assert.equal(t('score', { n: 3 }), '3 pts');
+  assert.equal(formatNumber(12345), '12,345');
+  setLang('ko', { persist: false });
 });

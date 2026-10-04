@@ -51,10 +51,14 @@ npm test         # node --test
 
 ## 공통 모듈 (`shared/`)
 
-- **국제화** `shared/i18n.js`: 한국어/영어. 처음에는 브라우저 언어를 따르고(한국어가 아니면 영어),
-  각 화면의 `EN`/`한국어` 버튼으로 바꾸면 localStorage 에 남아 모든 게임에 적용된다.
+- **국제화** `shared/i18n.js`: 한국어/영어. 처음에는 브라우저 언어를 따르고(지원하지 않는 언어면 영어),
+  각 화면의 언어 버튼(지금 언어 이름이 적혀 있다)을 눌러 목록에서 고르면 localStorage 에 남아 모든 게임에 적용된다.
   게임마다 `js/i18n.js` 에 `{ ko, en }` 사전을 두고 `createT` 로 번역 함수를 만든다. HTML 의 고정 문구는
-  `data-i18n` 속성과 `applyI18n(t)` 로 채운다.
+  `data-i18n` 속성과 `applyI18n(t)` 로 채운다. 언어를 늘릴 때는 `LANGUAGES` 에 한 줄 더하고 각 사전에 그 언어를
+  채운다. 빠진 문구는 영어 → 한국어 순으로 물러선다.
+- **방문 통계** `shared/analytics.js`: Google Analytics 4. `shared/pwa.js` 가 모든 페이지에 붙인다.
+  게임별 방문자는 GA 보고서의 페이지 경로(`/poker/` 등)나 page_view 의 `game` 매개변수(GA 관리 화면에서
+  이벤트 범위 맞춤 측정기준 `game` 으로 등록)로 본다. 측정 ID(`MEASUREMENT_ID`)가 비어 있거나 로컬에서는 보내지 않는다.
 - **PWA** `manifest.webmanifest`, `sw.js`, `shared/pwa.js`, `icons/`: 같은 출처 파일은 네트워크를 먼저 쓰고
   안 되면 캐시를, CDN 라이브러리는 캐시를 먼저 쓴다. 한 번 연 게임은 오프라인에서도 열린다.
   껍데기 목록이나 캐시 방식을 바꾸면 `sw.js` 의 `VERSION` 을 올린다.

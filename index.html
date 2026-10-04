@@ -392,7 +392,7 @@
           tagAll: 'All',
         },
       });
-      const pick = (text) => text[lang] ?? text.ko;
+      const pick = (text) => text[lang] ?? text.en ?? text.ko;
 
       applyI18n(t);
       mountLangToggle(document.querySelector('main'));
