@@ -12,7 +12,7 @@
 | `sounds/step.mp3`, `push.mp3`, `blocked.mp3` | 걸음·상자 밀기·막힘 (`footstep_concrete_000`, `impactWood_medium_000`, `impactSoft_medium_000`) | [Kenney — Impact Sounds](https://kenney.nl/assets/impact-sounds) (1.0) | CC0 |
 | `sounds/goal.mp3`, `win.mp3`, `undo.mp3`, `restart.mp3`, `select.mp3` | 상자가 목표에 놓임·레벨 클리어·되돌리기·다시 시작·레벨 고르기 (`confirmation_001`, `confirmation_004`, `back_001`, `switch_001`, `click_001`) | [Kenney — Interface Sounds](https://kenney.nl/assets/interface-sounds) (1.0) | CC0 |
 
-- 모델은 원본 GLB 를 그대로 쓴다. 두 팩의 색상표 텍스처가 이름이 같아(`Textures/colormap.png`) 팩마다 디렉토리를 나눴다.
+- Kenney 모델은 원본 GLB 를 그대로 쓴다. 창고지기(`Worker.glb`)는 원본의 애니메이션 24개 가운데 쓰는 3개(`Idle`, `Run`, `Wave`)만 남겨 크기를 줄였다(1.3MB → 0.7MB). 두 팩의 색상표 텍스처가 이름이 같아(`Textures/colormap.png`) 팩마다 디렉토리를 나눴다.
   크기는 코드에서 칸에 맞춰 조절한다(벽은 뒤 칸을 가리지 않게 높이를 낮추고, 속이 빈 벽 모델 안은 어두운 상자로 채운다).
   창고지기는 작게 보여도 눈에 띄도록 코드에서 재질의 금속성을 없애고 색을 조금 밝힌다.
 - 효과음은 원본 OGG 를 어느 브라우저에서나 재생되도록 MP3(모노 64kbps)로 변환하고 파일 이름만 바꿨다.
