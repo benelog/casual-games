@@ -1,4 +1,4 @@
-// 3D 테트리스: 규칙(game.js), 3D 씬(scene.js), 저장(save.js)을 잇고 HUD·입력을 처리한다.
+// 3D 블록: 규칙(game.js), 3D 씬(scene.js), 저장(save.js)을 잇고 HUD·입력을 처리한다.
 
 import { Tetris3D, PIT_SIZES } from './game.js';
 import { SET_IDS, spawnCells } from './pieces.js';

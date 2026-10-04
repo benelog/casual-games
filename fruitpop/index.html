@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>과일 팡팡 · Casual Games</title>
+    <meta name="theme-color" content="#0b0d12" />
+    <link rel="manifest" href="../manifest.webmanifest" />
+    <link rel="icon" href="../icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png" />
+    <script src="../shared/pwa.js" defer></script>
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="stage" role="img" aria-label="과일 팡팡 대전 판" data-i18n-aria-label="stageLabel"></div>
+
+    <header class="top" id="top">
+      <a class="back" href="../index.html" data-i18n="back">← 게임 목록</a>
+      <div id="stats" hidden>
+        <span class="stat"><b id="time">0:00</b></span>
+        <span class="stat tally"><b id="tally">0 : 0</b></span>
+      </div>
+      <div class="controls" id="controls" hidden>
+        <button type="button" class="chip" id="btn-pause" title="일시정지 (P)" data-i18n-title="pauseTitle" data-i18n="pause">일시정지</button>
+        <button type="button" class="chip" id="btn-sound" title="소리 (M)" data-i18n-title="soundTitle" aria-pressed="true" data-i18n="sound">소리</button>
+      </div>
+      <div class="controls" id="lang-controls"></div>
+    </header>
+
+    <!-- 판 위에 맞춰 놓는 이름·점수와 연쇄 알림. 자리는 main.js 가 씬에서 받아 정한다 -->
+    <div class="plate" id="plate-0" hidden><b class="who"></b><span class="wins"></span><span class="score">0</span></div>
+    <div class="plate" id="plate-1" hidden><b class="who"></b><span class="wins"></span><span class="score">0</span></div>
+    <div class="chain" id="chain-0" role="status"></div>
+    <div class="chain" id="chain-1" role="status"></div>
+
+    <div id="loading" data-i18n="loading">과일을 따는 중…</div>
+    <script>
+      // file:// 로 열면 브라우저가 모듈 스크립트 로딩을 막아 아래 main.js 가 실행되지 않는다
+      if (location.protocol === 'file:') {
+        document.getElementById('loading').textContent =
+          '파일을 직접 열면 실행되지 않습니다. 저장소 루트에서 npm start 를 실행한 뒤 http://localhost:8000 으로 접속하세요. / ' +
+          'Opening the file directly does not work. Run npm start in the repository root and visit http://localhost:8000.';
+      }
+    </script>
+
+    <div id="menu" class="overlay" hidden>
+      <div class="card">
+        <h1 data-i18n="heading">과일 팡팡</h1>
+        <p class="lead" data-i18n="lead">같은 과일을 4개 이상 이어 터뜨리세요. 연쇄로 터뜨릴수록 상대 판에 코코넛이 쏟아집니다.</p>
+        <fieldset>
+          <legend data-i18n="opponent">상대</legend>
+          <div class="segmented" id="opponent-options"></div>
+        </fieldset>
+        <fieldset id="level-field">
+          <legend data-i18n="level">컴퓨터 실력</legend>
+          <div class="segmented" id="level-options"></div>
+        </fieldset>
+        <fieldset>
+          <legend data-i18n="colors">과일 종류</legend>
+          <div class="segmented" id="colors-options"></div>
+        </fieldset>
+        <p class="best" id="menu-record"></p>
+        <button type="button" id="btn-start"><span data-i18n="start">시작</span> <kbd>Enter</kbd></button>
+        <details class="help">
+          <summary data-i18n="help">규칙과 조작법</summary>
+          <ul>
+            <li data-i18n="helpRule1"></li>
+            <li data-i18n="helpRule2"></li>
+            <li data-i18n="helpRule3"></li>
+            <li data-i18n="helpRule4"></li>
+          </ul>
+          <h3 data-i18n="helpSolo">혼자서</h3>
+          <dl>
+            <dt><kbd>←</kbd> <kbd>→</kbd></dt>
+            <dd data-i18n="helpMove">옮기기</dd>
+            <dt><kbd>↓</kbd></dt>
+            <dd data-i18n="helpSoft">빨리 내리기</dd>
+            <dt><kbd>↑</kbd> <kbd>X</kbd> · <kbd>Z</kbd></dt>
+            <dd data-i18n="helpTurn">돌리기 (시계 · 반시계)</dd>
+            <dt><kbd>Space</kbd></dt>
+            <dd data-i18n="helpDrop">바로 떨어뜨리기</dd>
+          </dl>
+          <h3 data-i18n="helpDuo">친구와</h3>
+          <dl>
+            <dt>1P <kbd>A</kbd> <kbd>D</kbd> · 2P <kbd>←</kbd> <kbd>→</kbd></dt>
+            <dd data-i18n="helpMove">옮기기</dd>
+            <dt>1P <kbd>S</kbd> · 2P <kbd>↓</kbd></dt>
+            <dd data-i18n="helpSoft">빨리 내리기</dd>
+            <dt>1P <kbd>W</kbd> · <kbd>Q</kbd> · 2P <kbd>↑</kbd> · <kbd>/</kbd></dt>
+            <dd data-i18n="helpTurn">돌리기 (시계 · 반시계)</dd>
+            <dt>1P <kbd>Space</kbd> · 2P <kbd>Enter</kbd></dt>
+            <dd data-i18n="helpDrop">바로 떨어뜨리기</dd>
+            <dt><kbd>P</kbd> · <kbd>M</kbd></dt>
+            <dd data-i18n="helpEtc">일시정지 · 소리</dd>
+          </dl>
+        </details>
+      </div>
+    </div>
+
+    <div id="pause" class="overlay" hidden>
+      <div class="card">
+        <h1 data-i18n="pause">일시정지</h1>
+        <button type="button" id="btn-resume"><span data-i18n="resume">계속</span> <kbd>P</kbd></button>
+        <button type="button" class="secondary" id="btn-quit" data-i18n="quit">그만두고 메뉴로</button>
+      </div>
+    </div>
+
+    <div id="result" class="overlay" hidden>
+      <div class="card">
+        <h1 id="result-title"></h1>
+        <p id="result-detail"></p>
+        <p class="best" id="result-tally"></p>
+        <p class="best" id="result-record"></p>
+        <button type="button" id="btn-again"><span data-i18n="again">한 판 더</span> <kbd>Enter</kbd></button>
+        <button type="button" class="secondary" id="btn-menu" data-i18n="changeSettings">설정 바꾸기</button>
+      </div>
+    </div>
+
+    <footer class="pad" id="pad" hidden>
+      <div class="player-pad" data-player="0">
+        <div class="cluster move">
+          <button type="button" data-action="left" aria-label="왼쪽으로" data-i18n-aria-label="padLeft">◀<kbd></kbd></button>
+          <button type="button" data-action="soft" aria-label="빨리 내리기" data-i18n-aria-label="padSoft">▼<kbd></kbd></button>
+          <button type="button" data-action="right" aria-label="오른쪽으로" data-i18n-aria-label="padRight">▶<kbd></kbd></button>
+        </div>
+        <div class="cluster turn">
+          <button type="button" data-action="ccw" aria-label="반시계 방향으로 돌리기" data-i18n-aria-label="padCcw">⟲<kbd></kbd></button>
+          <button type="button" data-action="drop" class="drop" aria-label="바로 떨어뜨리기" data-i18n-aria-label="padDrop">⤓<kbd></kbd></button>
+          <button type="button" data-action="cw" aria-label="시계 방향으로 돌리기" data-i18n-aria-label="padCw">⟳<kbd></kbd></button>
+        </div>
+      </div>
+      <div class="player-pad" data-player="1">
+        <div class="cluster move">
+          <button type="button" data-action="left" aria-label="왼쪽으로" data-i18n-aria-label="padLeft">◀<kbd></kbd></button>
+          <button type="button" data-action="soft" aria-label="빨리 내리기" data-i18n-aria-label="padSoft">▼<kbd></kbd></button>
+          <button type="button" data-action="right" aria-label="오른쪽으로" data-i18n-aria-label="padRight">▶<kbd></kbd></button>
+        </div>
+        <div class="cluster turn">
+          <button type="button" data-action="ccw" aria-label="반시계 방향으로 돌리기" data-i18n-aria-label="padCcw">⟲<kbd></kbd></button>
+          <button type="button" data-action="drop" class="drop" aria-label="바로 떨어뜨리기" data-i18n-aria-label="padDrop">⤓<kbd></kbd></button>
+          <button type="button" data-action="cw" aria-label="시계 방향으로 돌리기" data-i18n-aria-label="padCw">⟳<kbd></kbd></button>
+        </div>
+      </div>
+    </footer>
+
+    <div id="toast" role="status"></div>
+
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>

@@ -1,7 +1,7 @@
 {
   "name": "Casual Games",
   "short_name": "Casual Games",
-  "description": "3D poker, darts, bowling, blackjack, tower defense, 3D Tetris and archery in your browser",
+  "description": "3D poker, darts, bowling, blackjack, tower defense, 3D Blocks and archery in your browser",
   "id": "/",
   "start_url": "./",
   "scope": "./",

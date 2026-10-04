@@ -14,3 +14,9 @@
   [headers.values]
     Content-Type = "application/manifest+json"
     Cache-Control = "no-cache"
+
+# 예전 주소로 들어온 요청은 새 디렉토리로 보낸다
+[[redirects]]
+  from = "/tetris3d/*"
+  to = "/blocks3d/:splat"
+  status = 301

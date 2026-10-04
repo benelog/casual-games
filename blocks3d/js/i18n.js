@@ -1,10 +1,10 @@
-// 3D 테트리스의 한/영 문구. 언어 선택과 치환 규칙은 shared/i18n.js 에 있다.
+// 3D 블록의 한/영 문구. 언어 선택과 치환 규칙은 shared/i18n.js 에 있다.
 
 import { createT } from '../../shared/i18n.js';
 
 export const t = createT({
   ko: {
-    title: '3D 테트리스 · Casual Games',
+    title: '3D 블록 · Casual Games',
     back: '← 게임 목록',
     score: '점수',
     layers: '층',
@@ -16,7 +16,7 @@ export const t = createT({
     soundTitle: '소리 (M)',
     next: '다음',
     loading: '우물을 파는 중…',
-    heading: '3D 테트리스',
+    heading: '3D 블록',
     lead: '위에서 떨어지는 입체 조각을 돌리고 옮겨 우물 바닥을 채우세요. 한 층이 꽉 차면 사라집니다.',
     pieces: '조각',
     pitSize: '우물 크기',
@@ -86,7 +86,7 @@ export const t = createT({
     levelUp: '레벨 {n}',
   },
   en: {
-    title: '3D Tetris · Casual Games',
+    title: '3D Blocks · Casual Games',
     back: '← All games',
     score: 'Score',
     layers: 'Layers',
@@ -98,7 +98,7 @@ export const t = createT({
     soundTitle: 'Sound (M)',
     next: 'Next',
     loading: 'Digging the well…',
-    heading: '3D Tetris',
+    heading: '3D Blocks',
     lead: 'Turn and move the falling 3D pieces to fill the floor of the well. A full layer disappears.',
     pieces: 'Pieces',
     pitSize: 'Well size',
