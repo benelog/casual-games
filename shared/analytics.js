@@ -4,7 +4,7 @@
 // 모든 페이지가 불러오는 shared/pwa.js 가 이 파일을 붙이므로 새 게임은 따로 할 일이 없다.
 // 측정 ID 가 비어 있거나 로컬 개발 서버·파일로 열면 아무것도 보내지 않는다.
 (() => {
-  const MEASUREMENT_ID = '';
+  const MEASUREMENT_ID = 'G-SSZLQ0WJ93';
   const LOCAL_HOSTS = ['localhost', '127.0.0.1', '[::1]'];
   if (!MEASUREMENT_ID || !location.protocol.startsWith('http') || LOCAL_HOSTS.includes(location.hostname)) return;
 

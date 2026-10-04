@@ -64,7 +64,8 @@ npm test         # node --test
   채운다. 빠진 문구는 영어 → 한국어 순으로 물러선다.
 - **방문 통계** `shared/analytics.js`: Google Analytics 4. `shared/pwa.js` 가 모든 페이지에 붙인다.
   게임별 방문자는 GA 보고서의 페이지 경로(`/poker/` 등)나 page_view 의 `game` 매개변수(GA 관리 화면에서
-  이벤트 범위 맞춤 측정기준 `game` 으로 등록)로 본다. 측정 ID(`MEASUREMENT_ID`)가 비어 있거나 로컬에서는 보내지 않는다.
+  이벤트 범위 맞춤 측정기준 `game` 으로 등록해 두었다)로 본다. GA 속성은 benelog.net 계정의 `casual-games.benelog.net`
+  (측정 ID `G-SSZLQ0WJ93`). 측정 ID(`MEASUREMENT_ID`)가 비어 있거나 로컬에서는 보내지 않는다.
 - **PWA** `manifest.webmanifest`, `sw.js`, `shared/pwa.js`, `icons/`: 같은 출처 파일은 네트워크를 먼저 쓰고
   안 되면 캐시를, CDN 라이브러리는 캐시를 먼저 쓴다. 한 번 연 게임은 오프라인에서도 열린다.
   껍데기 목록이나 캐시 방식을 바꾸면 `sw.js` 의 `VERSION` 을 올린다.
