@@ -1,7 +1,7 @@
 // Three.js 소코반 씬. 게임 상태(game.js)와 사건을 받아 그리기만 하고 규칙은 건드리지 않는다.
 // 지도 칸 (x, y) 는 월드 좌표 (x, 0, y) 방향에 놓인다 (three.js 는 y 가 위쪽). 판 가운데가 원점이고 한 칸이 1 단위다.
 // 카메라는 남쪽 위에서 비스듬히 내려다보므로 지도의 위쪽이 화면 안쪽이 된다.
-// 모델은 Kenney 의 CC0 에셋이다 (assets/CREDITS.md).
+// 모델은 Kenney 와 Quaternius 의 CC0 에셋이다 (assets/CREDITS.md).
 
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -13,14 +13,14 @@ const asset = (path) => new URL(`../assets/${path}`, import.meta.url).href;
 const MODELS = {
   floor: 'mini-dungeon/floor',
   wall: 'mini-dungeon/wall',
-  character: 'mini-dungeon/character-human',
+  character: 'quaternius/Worker',
   crate: 'platformer-kit/crate',
   crateDone: 'platformer-kit/crate-item', // 목표에 놓인 상자
 };
 
 const WALL_HEIGHT = 0.5; // 뒤 칸을 가리지 않도록 원본(1.1)보다 낮춘다
 const CRATE_SIZE = 0.84;
-const CHARACTER_HEIGHT = 1.05;
+const CHARACTER_HEIGHT = 1.5;
 const MIN_VIEW = { W: 7, H: 7 }; // 카메라를 맞출 때 판을 적어도 이 크기로 친다
 const POLAR = 0.5; // 수직에서 기운 각도(라디안)
 const SPEED = 7.5; // 칸/초. 밀려 있으면 더 빨리 따라잡는다
@@ -109,7 +109,13 @@ export class SokobanScene {
     const model = gltf.scene;
     model.scale.setScalar(this.fitScale(model, CHARACTER_HEIGHT));
     model.traverse((o) => {
-      if (o.isMesh) o.frustumCulled = false; // 뼈대로 움직이는 모델은 경계 상자가 맞지 않는다
+      if (!o.isMesh) return;
+      o.frustumCulled = false; // 뼈대로 움직이는 모델은 경계 상자가 맞지 않는다
+      // 비칠 환경이 없는 장면이라 금속성이 남아 있으면 색이 어둡게 죽는다. 작게 보여도 눈에 띄도록 색도 조금 밝힌다
+      for (const material of [o.material].flat()) {
+        material.metalness = 0;
+        material.color.multiplyScalar(1.5);
+      }
     });
     this.character = new THREE.Group();
     this.character.add(model);
@@ -121,10 +127,12 @@ export class SokobanScene {
 
     this.mixer = new THREE.AnimationMixer(model);
     this.actions = {};
-    for (const clip of gltf.animations) this.actions[clip.name] = this.mixer.clipAction(clip);
-    if (this.actions.walk) this.actions.walk.timeScale = 1.7;
+    for (const clip of gltf.animations) {
+      const name = clip.name.split('|').pop(); // 'CharacterArmature|Idle' -> 'Idle'
+      this.actions[name] = this.mixer.clipAction(clip);
+    }
     this.currentAction = null;
-    this.play('idle');
+    this.play('Idle');
   }
 
   /** 캐릭터 동작을 부드럽게 바꾼다. 모델에 없는 동작이면 그대로 둔다 */
@@ -427,11 +435,11 @@ export class SokobanScene {
     if (this.pendingCelebration && !moving) this.celebrate();
     if (this.celebrating >= 0) {
       this.celebrating += dt;
-      this.play(this.actions['emote-yes'] ? 'emote-yes' : 'idle');
+      this.play('Wave');
       this.character.position.y = Math.abs(Math.sin(this.celebrating * 8)) * 0.22 * Math.max(0, 1 - this.celebrating / 2.2);
     } else {
       this.character.position.y = 0;
-      this.play(arrived ? 'idle' : 'walk');
+      this.play(arrived ? 'Idle' : 'Run');
     }
 
     // 빈 목표는 깜빡여 눈에 띄게, 상자가 놓이면 상자에 가려진다
@@ -506,7 +514,7 @@ export class SokobanScene {
   // ---------- 프레임 ----------
 
   frame(now) {
-    const dt = Math.min(0.05, (now - this.last) / 1000);
+    const dt = Math.min(0.05, Math.max(0, (now - this.last) / 1000));
     this.last = now;
     this.time += dt;
     this.onFrame?.(dt);
