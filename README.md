@@ -45,6 +45,8 @@ npm test         # node --test
    `../shared/pwa.js` 줄을 넣는다.
 2. 루트 `index.html` 의 `games` 배열에 항목(한/영 제목·설명)을 추가한다. `modes` 로 보여 줄 탭을 정한다:
    혼자서(컴퓨터와 1:1 포함)는 `'solo'`, 여러 사람이 할 수 있으면 `'multi'`, 둘 다면 둘 다 적는다.
+   `tags` 에는 분류 필터에 쓰는 `TAGS` 의 키(`sports`·`puzzle`·`card`·`board`·`strategy`)를 하나 이상 적는다.
+   새 분류가 필요하면 `TAGS` 에 한/영 이름과 함께 추가한다.
 3. 렌더러는 `shared/gpu.js` 의 `createRenderer(THREE, options)` 로 만든다 (아래 모바일 GPU 참고).
 
 ## 공통 모듈 (`shared/`)

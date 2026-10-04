@@ -84,6 +84,36 @@
         background: rgba(217, 180, 106, 0.16);
         color: var(--ink);
       }
+      .filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 14px 0 0;
+      }
+      .filters button {
+        padding: 5px 12px;
+        border: 1px solid rgba(243, 236, 220, 0.16);
+        border-radius: 8px;
+        background: transparent;
+        color: var(--muted);
+        font: inherit;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      .filters button:hover,
+      .filters button:focus-visible {
+        border-color: var(--brass);
+        outline: none;
+      }
+      .filters button[aria-pressed='true'] {
+        border-color: var(--brass);
+        background: rgba(217, 180, 106, 0.16);
+        color: var(--ink);
+      }
+      .filters .count {
+        margin-left: 5px;
+        opacity: 0.6;
+      }
       .games {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -126,6 +156,11 @@
         font-size: 14px;
         line-height: 1.5;
       }
+      .text .tags {
+        margin: 10px 0 0;
+        color: var(--brass);
+        font-size: 12px;
+      }
     </style>
   </head>
   <body>
@@ -136,6 +171,7 @@
         <button type="button" role="tab" id="tab-solo" data-tab="solo" aria-controls="games" data-i18n="tabSolo">혼자서</button>
         <button type="button" role="tab" id="tab-multi" data-tab="multi" aria-controls="games" data-i18n="tabMulti">여럿이</button>
       </div>
+      <div class="filters" role="group" data-i18n-aria-label="filterLabel" aria-label="분류"></div>
       <ul class="games" id="games" role="tabpanel"></ul>
     </main>
     <script type="module">
@@ -143,10 +179,19 @@
 
       // 새 게임은 디렉토리를 만들고 여기에 한 줄 추가한다.
       // modes: 'solo' 는 혼자서(컴퓨터와 1:1 포함), 'multi' 는 여러 사람이 할 수 있는 게임. 둘 다면 두 탭에 모두 나온다
+      // tags: 분류 필터에 쓰는 TAGS 의 키. 여러 개를 달 수 있다
+      const TAGS = {
+        sports: { ko: '스포츠', en: 'Sports' },
+        puzzle: { ko: '퍼즐', en: 'Puzzle' },
+        card: { ko: '카드', en: 'Cards' },
+        board: { ko: '보드', en: 'Board' },
+        strategy: { ko: '전략', en: 'Strategy' },
+      };
       const games = [
         {
           path: 'poker/index.html',
           modes: ['solo'],
+          tags: ['card'],
           title: { ko: '3D 포커', en: '3D Poker' },
           description: {
             ko: '컴퓨터와 1:1로 겨루는 텍사스 홀덤 · 오마하 · 파이브 카드 드로우 · 세븐 카드 스터드',
@@ -158,6 +203,7 @@
         {
           path: 'darts/index.html',
           modes: ['solo', 'multi'],
+          tags: ['sports'],
           title: { ko: '다트 301', en: 'Darts 301' },
           description: {
             ko: '흔들리는 조준점을 맞춰 던지는 3D 다트. 컴퓨터나 친구보다 먼저 301점을 0으로',
@@ -169,6 +215,7 @@
         {
           path: 'bowling/index.html',
           modes: ['solo', 'multi'],
+          tags: ['sports'],
           title: { ko: '볼링', en: 'Bowling' },
           description: {
             ko: '위치·방향·세기를 맞춰 굴리는 3D 텐핀 볼링. 컴퓨터나 친구와 10프레임 승부',
@@ -180,6 +227,7 @@
         {
           path: 'blackjack/index.html',
           modes: ['solo'],
+          tags: ['card'],
           title: { ko: '3D 블랙잭', en: '3D Blackjack' },
           description: {
             ko: '6덱 슈로 딜러와 겨루는 블랙잭. 히트 · 스탠드 · 더블 · 스플릿 · 인슈어런스, 블랙잭 3:2',
@@ -191,6 +239,7 @@
         {
           path: 'defense/index.html',
           modes: ['solo'],
+          tags: ['strategy'],
           title: { ko: '타워 디펜스', en: 'Tower Defense' },
           description: {
             ko: '길목에 궁수탑·대포·빙결탑을 세워 20웨이브의 UFO 침공을 막아내는 3D 타워 디펜스',
@@ -202,6 +251,7 @@
         {
           path: 'blocks3d/index.html',
           modes: ['solo'],
+          tags: ['puzzle'],
           title: { ko: '3D 블록', en: '3D Blocks' },
           description: {
             ko: '입체 조각을 세 축으로 돌려 우물 바닥을 채우는 3D 블록 퍼즐. 한 층이 꽉 차면 사라진다',
@@ -213,6 +263,7 @@
         {
           path: 'archery/index.html',
           modes: ['solo', 'multi'],
+          tags: ['sports'],
           title: { ko: '양궁', en: 'Archery' },
           description: {
             ko: '바람을 읽고 70m 과녁을 노리는 리커브 양궁. 컴퓨터와 8강·4강·결승을 이겨 금메달, 또는 친구와 1:1',
@@ -224,6 +275,7 @@
         {
           path: 'sokoban/index.html',
           modes: ['solo'],
+          tags: ['puzzle'],
           title: { ko: '3D 소코반', en: '3D Sokoban' },
           description: {
             ko: '창고의 상자를 밀어 모두 목표 칸에 넣는 상자 밀기 퍼즐. 되돌리기와 최소 이동 기록',
@@ -235,6 +287,7 @@
         {
           path: 'pipes/index.html',
           modes: ['solo'],
+          tags: ['puzzle'],
           title: { ko: '파이프 연결', en: 'Pipes' },
           description: {
             ko: '파이프 조각을 돌려 수원에서 모든 칸까지 물길을 잇는 퍼즐. 매번 새 퍼즐과 오늘의 퍼즐',
@@ -246,6 +299,7 @@
         {
           path: 'fruitpop/index.html',
           modes: ['solo', 'multi'],
+          tags: ['puzzle'],
           title: { ko: '과일 팡팡', en: 'Fruit Pop' },
           description: {
             ko: '같은 과일 4개를 이어 터뜨리는 대전 퍼즐. 연쇄로 코코넛을 보내 컴퓨터나 친구의 판을 먼저 채운다',
@@ -257,6 +311,7 @@
         {
           path: 'memory/index.html',
           modes: ['solo', 'multi'],
+          tags: ['puzzle'],
           title: { ko: '메모리 카드', en: 'Memory Cards' },
           description: {
             ko: '카드를 두 장씩 뒤집어 같은 동물 짝을 찾는 기억력 게임. 혼자서 시간·턴 수 신기록에 도전하거나 친구와 1:1',
@@ -268,6 +323,7 @@
         {
           path: 'billiards/index.html',
           modes: ['solo', 'multi'],
+          tags: ['sports'],
           title: { ko: '3D 당구', en: '3D Billiards' },
           description: {
             ko: '4구 · 3쿠션 · 포켓볼(8볼). 회전(당점)까지 계산하는 물리로 컴퓨터나 친구와 1:1',
@@ -279,6 +335,7 @@
         {
           path: 'curling/index.html',
           modes: ['solo', 'multi'],
+          tags: ['sports'],
           title: { ko: '컬링', en: 'Curling' },
           description: {
             ko: '회전을 걸어 휘어 들어가는 스톤을 하우스에 붙이고 스위핑으로 거리를 맞추는 3D 컬링. 컴퓨터나 친구와 엔드 승부',
@@ -290,6 +347,7 @@
         {
           path: 'yut/index.html',
           modes: ['solo', 'multi'],
+          tags: ['board'],
           title: { ko: '윷놀이', en: 'Yut Nori' },
           description: {
             ko: '윷가락을 던져 말을 옮기는 전통 놀이. 업기·잡기·지름길로 네 말을 먼저 내보내기, 컴퓨터나 친구와 2~4편',
@@ -301,6 +359,7 @@
         {
           path: 'alkkagi/index.html',
           modes: ['solo', 'multi'],
+          tags: ['board'],
           title: { ko: '알까기', en: 'Alkkagi' },
           description: {
             ko: '바둑판 위의 바둑돌을 손가락으로 튕겨 상대 돌을 판 밖으로 떨어뜨리는 놀이. 컴퓨터나 친구와 1:1',
@@ -312,6 +371,7 @@
         {
           path: 'basketball/index.html',
           modes: ['solo', 'multi'],
+          tags: ['sports'],
           title: { ko: '농구 자유투', en: 'Free Throw' },
           description: {
             ko: '화면을 밀어 올려 던지는 3D 농구 슛. 자유투에서 3점 슛까지, 60초·12구 기록 도전 또는 친구와 번갈아 대결',
@@ -323,8 +383,14 @@
       ];
 
       const t = createT({
-        ko: { tagline: '브라우저에서 바로 즐기는 게임 모음', tabSolo: '혼자서', tabMulti: '여럿이' },
-        en: { tagline: 'Quick games to play right in your browser', tabSolo: 'Solo', tabMulti: 'Multiplayer' },
+        ko: { tagline: '브라우저에서 바로 즐기는 게임 모음', tabSolo: '혼자서', tabMulti: '여럿이', filterLabel: '분류', tagAll: '전체' },
+        en: {
+          tagline: 'Quick games to play right in your browser',
+          tabSolo: 'Solo',
+          tabMulti: 'Multiplayer',
+          filterLabel: 'Category',
+          tagAll: 'All',
+        },
       });
       const pick = (text) => text[lang] ?? text.ko;
 
@@ -333,7 +399,29 @@
 
       const list = document.getElementById('games');
       const tabs = [...document.querySelectorAll('.tabs button')];
+      const filters = document.querySelector('.filters');
       const TAB_KEY = 'casual-games:tab';
+      const TAG_KEY = 'casual-games:tag';
+
+      function load(key) {
+        try {
+          return localStorage.getItem(key);
+        } catch {
+          return null;
+        }
+      }
+
+      function save(key, value) {
+        try {
+          localStorage.setItem(key, value);
+        } catch {
+          // 저장이 막혀 있어도 화면은 바뀐다
+        }
+      }
+
+      let mode = load(TAB_KEY) === 'multi' ? 'multi' : 'solo';
+      const savedTag = load(TAG_KEY);
+      let tag = Object.hasOwn(TAGS, savedTag ?? '') ? savedTag : 'all';
 
       function createCard(game) {
         const item = document.createElement('li');
@@ -349,36 +437,62 @@
         title.textContent = pick(game.title);
         const description = document.createElement('p');
         description.textContent = pick(game.description);
-        text.append(title, description);
+        const tags = document.createElement('p');
+        tags.className = 'tags';
+        tags.textContent = game.tags.map((key) => `#${pick(TAGS[key])}`).join(' ');
+        text.append(title, description, tags);
         link.append(art, text);
         item.append(link);
         return item;
       }
 
-      function showTab(mode) {
+      function createFilter(key, label, count, pressed) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.dataset.tag = key;
+        button.setAttribute('aria-pressed', String(pressed));
+        const badge = document.createElement('span');
+        badge.className = 'count';
+        badge.textContent = count;
+        button.append(label, badge);
+        button.addEventListener('click', () => {
+          tag = key;
+          save(TAG_KEY, key);
+          render();
+          // 버튼을 새로 만들었으니 키보드 포커스를 같은 분류로 되돌린다
+          filters.querySelector(`[data-tag="${key}"]`)?.focus();
+        });
+        return button;
+      }
+
+      // 탭에 맞는 게임만 세어 분류 버튼을 다시 만든다. 이 탭에 없는 분류는 숨기고, 고른 분류가 없으면 전체를 보인다.
+      // 고른 분류는 기억해 두었다가 그 분류가 있는 탭으로 돌아오면 다시 적용한다
+      function render() {
         for (const tab of tabs) tab.setAttribute('aria-selected', String(tab.dataset.tab === mode));
         list.setAttribute('aria-labelledby', `tab-${mode}`);
-        list.replaceChildren(...games.filter((game) => game.modes.includes(mode)).map(createCard));
+        const inMode = games.filter((game) => game.modes.includes(mode));
+        const counts = Object.keys(TAGS)
+          .map((key) => [key, inMode.filter((game) => game.tags.includes(key)).length])
+          .filter(([, count]) => count > 0);
+        const shown = counts.some(([key]) => key === tag) ? tag : 'all';
+        filters.replaceChildren(
+          createFilter('all', t('tagAll'), inMode.length, shown === 'all'),
+          ...counts.map(([key, count]) => createFilter(key, pick(TAGS[key]), count, shown === key)),
+        );
+        list.replaceChildren(
+          ...inMode.filter((game) => shown === 'all' || game.tags.includes(shown)).map(createCard),
+        );
       }
 
       for (const tab of tabs) {
         tab.addEventListener('click', () => {
-          showTab(tab.dataset.tab);
-          try {
-            localStorage.setItem(TAB_KEY, tab.dataset.tab);
-          } catch {
-            // 저장이 막혀 있어도 탭은 바뀐다
-          }
+          mode = tab.dataset.tab;
+          save(TAB_KEY, mode);
+          render();
         });
       }
 
-      let saved = null;
-      try {
-        saved = localStorage.getItem(TAB_KEY);
-      } catch {
-        // 저장소를 못 읽으면 첫 탭
-      }
-      showTab(saved === 'multi' ? 'multi' : 'solo');
+      render();
     </script>
   </body>
 </html>
