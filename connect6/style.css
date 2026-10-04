@@ -1,0 +1,750 @@
+:root {
+  --ink: #f3ecdc;
+  --muted: #b9b09c;
+  --brass: #d9b46a;
+  --panel: rgba(12, 14, 19, 0.82);
+  --line: rgba(243, 236, 220, 0.16);
+  --accent: #f0c27a;
+  --p0: #4db8ff; /* 플레이어 색 (흑 1P 파랑, 백 2P 노랑). js/scene.js 의 PLAYER_COLORS 와 같다 */
+  --p1: #ffd23f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #0e0c0a;
+  color: var(--ink);
+  font-family: 'Pretendard', 'Noto Sans KR', system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+#stage {
+  position: fixed;
+  inset: 0;
+  touch-action: none;
+}
+
+#stage canvas {
+  display: block;
+}
+
+#stage:focus {
+  outline: none;
+}
+
+/* ---------- 위쪽 막대 ---------- */
+
+.top {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: max(10px, env(safe-area-inset-top)) 14px 8px;
+  font-size: 14px;
+  pointer-events: none;
+  z-index: 2; /* 시작 화면 위에서도 목록·언어 버튼을 누를 수 있게 */
+}
+
+.back {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  text-decoration: none;
+  pointer-events: auto;
+  white-space: nowrap;
+}
+
+.back:hover {
+  border-color: var(--brass);
+}
+
+.controls {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+#versus:not([hidden]) + #controls {
+  margin-left: 0;
+}
+
+/* 언어 버튼은 메뉴에서도 보이도록 #controls 바깥에 둔다 */
+#controls:not([hidden]) + #lang-controls {
+  margin-left: 0;
+}
+
+/* ---------- 버튼 ---------- */
+
+button {
+  padding: 10px 14px;
+  border: 1px solid var(--brass);
+  border-radius: 10px;
+  background: var(--brass);
+  color: #1a1408;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+
+button.secondary,
+button.chip {
+  background: var(--panel);
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+button.chip {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+button.chip:hover,
+button.secondary:hover {
+  border-color: var(--brass);
+}
+
+button.chip[aria-pressed='false'] {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+kbd {
+  display: inline-block;
+  min-width: 1.4em;
+  padding: 0 4px;
+  border-radius: 4px;
+  border: 1px solid currentColor;
+  font: inherit;
+  font-size: 11px;
+  line-height: 1.4;
+  text-align: center;
+  opacity: 0.7;
+}
+
+#loading {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #0e0c0a;
+  color: var(--muted);
+  font-family: Georgia, 'Noto Serif KR', serif;
+  font-size: 18px;
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* ---------- 점수판과 차례 ---------- */
+
+#versus {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 auto;
+  min-width: 0;
+}
+
+.player {
+  --color: var(--p0);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 12px 4px 6px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 2px solid color-mix(in srgb, var(--color) 45%, transparent);
+  color: var(--muted);
+  opacity: 0.65;
+  transition:
+    transform 0.2s,
+    opacity 0.2s,
+    background 0.2s;
+}
+
+.player[data-player='1'] {
+  --color: var(--p1);
+}
+
+/* 바둑돌 그림 */
+.stone {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  box-shadow:
+    inset -3px -3px 5px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(0, 0, 0, 0.45);
+}
+
+.stone.black {
+  background: radial-gradient(circle at 36% 32%, #5b5d63, #141518 55%, #050506);
+}
+
+.stone.white {
+  background: radial-gradient(circle at 36% 32%, #ffffff, #ece8dc 55%, #b9b4a6);
+}
+
+.player .name {
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.player .count {
+  min-width: 1ch;
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color);
+}
+
+/* 차례인 사람: 자기 색으로 꽉 채우고 키운다 */
+.player.active {
+  background: var(--color);
+  border-color: var(--color);
+  color: #10141c;
+  font-weight: 700;
+  opacity: 1;
+  transform: scale(1.06);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--color) 60%, transparent);
+}
+
+.player.active .count {
+  color: #10141c;
+}
+
+.turn {
+  --color: var(--p0);
+  position: fixed;
+  top: 54px;
+  left: 50%;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  max-width: calc(100% - 20px);
+  margin: 0;
+  padding: 5px 16px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 2px solid var(--color);
+  transform: translateX(-50%);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.turn[data-player='1'],
+#glow[data-player='1'] {
+  --color: var(--p1);
+}
+
+.turn b {
+  color: var(--color);
+  font-size: 16px;
+}
+
+.turn .hint {
+  color: var(--muted);
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.turn .hint:empty {
+  display: none;
+}
+
+/* 이번 차례에 남은 돌: 남은 돌은 채운 돌, 이미 둔 돌은 빈 테 */
+.turn .left {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: center;
+  color: var(--ink);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.pips {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.pips .stone {
+  width: 15px;
+  height: 15px;
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
+}
+
+.pips .stone.used {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--muted);
+  opacity: 0.6;
+  transform: scale(0.8);
+}
+
+.turn.swap {
+  animation: swap 0.5s ease-out;
+}
+
+@keyframes swap {
+  0% {
+    transform: translateX(-50%) scale(1.25);
+    background: var(--color);
+  }
+  100% {
+    transform: translateX(-50%) scale(1);
+  }
+}
+
+#glow {
+  --color: var(--p0);
+  position: fixed;
+  inset: 0;
+  box-shadow:
+    inset 0 0 0 3px var(--color),
+    inset 0 0 60px color-mix(in srgb, var(--color) 35%, transparent);
+  pointer-events: none;
+  transition: box-shadow 0.3s;
+}
+
+/* ---------- 아래쪽 막대: 터치 확정 버튼과 확대·시점 ---------- */
+
+.bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 58px;
+  padding: 8px 12px max(10px, env(safe-area-inset-bottom));
+  pointer-events: none;
+}
+
+.confirm {
+  display: flex;
+  gap: 6px;
+}
+
+.confirm button {
+  padding: 9px 16px;
+  border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+#btn-place {
+  animation: ready 1.2s ease-in-out infinite;
+}
+
+@keyframes ready {
+  50% {
+    box-shadow: 0 0 0 4px rgba(217, 180, 106, 0.35);
+  }
+}
+
+.view-controls {
+  position: absolute;
+  right: max(12px, env(safe-area-inset-right));
+  bottom: max(10px, env(safe-area-inset-bottom));
+  display: flex;
+  gap: 6px;
+}
+
+button.chip.round {
+  width: 34px;
+  padding: 6px 0;
+  font-size: 17px;
+  line-height: 1;
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ---------- 알림 ---------- */
+
+#toast {
+  position: fixed;
+  left: 50%;
+  top: 34%;
+  transform: translate(-50%, -50%);
+  max-width: calc(100% - 24px);
+  font-family: Georgia, 'Noto Serif KR', serif;
+  font-size: 26px;
+  text-align: center;
+  text-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.85),
+    0 0 14px rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  pointer-events: none;
+}
+
+#toast[data-tone='big'] {
+  color: var(--accent);
+  font-size: 32px;
+}
+
+#toast[data-tone='bad'] {
+  color: #ff8a73;
+}
+
+#toast[data-tone='p0'] {
+  color: var(--p0);
+  font-size: 30px;
+}
+
+#toast[data-tone='p1'] {
+  color: var(--p1);
+  font-size: 30px;
+}
+
+#toast.show {
+  animation: pop 1.6s ease-out forwards;
+}
+
+@keyframes pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -30%) scale(0.85);
+  }
+  12% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -90%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .turn.swap,
+  #btn-place {
+    animation: none;
+  }
+  #toast.show {
+    animation-name: fade;
+  }
+  @keyframes fade {
+    0%,
+    75% {
+      opacity: 1;
+      transform: translate(-50%, -50%);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-50%, -50%);
+    }
+  }
+}
+
+/* ---------- 메뉴·결과 ---------- */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 64px 16px 20px;
+  background: rgba(8, 10, 16, 0.5);
+  overflow-y: auto;
+  z-index: 1;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(420px, 100%);
+  padding: 22px 20px 18px;
+  border-radius: 18px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  text-align: center;
+}
+
+.card h1 {
+  margin: 0;
+  font-family: Georgia, 'Noto Serif KR', serif;
+  font-size: 30px;
+  font-weight: 400;
+}
+
+#result h1 {
+  color: var(--accent);
+}
+
+#result[data-tone='win'] h1 {
+  color: var(--brass);
+}
+
+#result[data-tone='lose'] h1 {
+  color: #ff8a73;
+}
+
+#result[data-tone='p0'] h1 {
+  color: var(--p0);
+}
+
+#result[data-tone='p1'] h1 {
+  color: var(--p1);
+}
+
+.card p {
+  margin: 0 0 2px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+#result-detail {
+  white-space: pre-line;
+}
+
+.card .record:empty {
+  display: none;
+}
+
+.card > button {
+  width: 100%;
+}
+
+fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+legend {
+  margin-bottom: 6px;
+  padding: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.segmented {
+  display: flex;
+  gap: 6px;
+}
+
+.segmented .option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 6px;
+  background: rgba(243, 236, 220, 0.06);
+  border-color: var(--line);
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.segmented .option small {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.segmented .option[aria-pressed='true'] {
+  border-color: var(--brass);
+  background: rgba(217, 180, 106, 0.22);
+}
+
+.help {
+  color: var(--muted);
+  font-size: 13px;
+  text-align: left;
+}
+
+.help summary {
+  cursor: pointer;
+  text-align: center;
+}
+
+.help p {
+  margin: 10px 0 0;
+  font-size: 13px;
+}
+
+.help dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 12px;
+  margin: 10px 0 0;
+}
+
+.help dt {
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.help dd {
+  margin: 0;
+}
+
+/* ---------- 좁은 화면 ---------- */
+
+@media (max-width: 720px) {
+  .top {
+    flex-wrap: wrap;
+    gap: 6px 8px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  /* 점수판이 둘째 줄로 내려가므로 버튼은 오른쪽 끝에 둔다 */
+  #versus:not([hidden]) + #controls {
+    margin-left: auto;
+  }
+
+  #versus {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .player {
+    padding: 3px 10px 3px 5px;
+    gap: 5px;
+  }
+
+  .player .name {
+    font-size: 12px;
+  }
+
+  button.chip {
+    padding: 6px 10px;
+  }
+
+  .turn {
+    top: 92px;
+    padding: 4px 12px;
+  }
+
+  .turn b {
+    font-size: 14px;
+  }
+
+  .turn .hint {
+    font-size: 12px;
+  }
+
+  .turn {
+    gap: 8px;
+  }
+
+  /* 확정 버튼을 왼쪽에, 확대·시점은 오른쪽에 */
+  .bar {
+    justify-content: flex-start;
+  }
+
+  #toast {
+    font-size: 22px;
+  }
+
+  #toast[data-tone] {
+    font-size: 26px;
+  }
+
+  .help dl {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .help dd {
+    margin-bottom: 6px;
+  }
+}
+
+/* 낮은 화면: 시작 화면 카드를 촘촘하게 */
+@media (max-height: 720px) {
+  .overlay {
+    padding-top: 52px;
+  }
+  .card {
+    gap: 7px;
+    padding: 16px 16px 14px;
+  }
+  .card h1 {
+    font-size: 24px;
+  }
+  .segmented .option {
+    padding: 6px 6px;
+  }
+}
+
+/* 낮은 가로 화면: 점수판을 한 줄에, 차례 안내는 점수판 바로 밑에 작게 */
+@media (max-height: 480px) and (orientation: landscape) {
+  .top {
+    flex-wrap: nowrap;
+    padding-top: max(6px, env(safe-area-inset-top));
+    padding-bottom: 4px;
+  }
+
+  #versus {
+    order: 0;
+    width: auto;
+  }
+
+  #versus:not([hidden]) + #controls {
+    margin-left: 0;
+  }
+
+  .turn {
+    top: 44px;
+    padding: 2px 12px;
+  }
+
+  /* 아래쪽 막대는 판 옆(오른쪽 아래 구석)으로 비켜 판을 크게 */
+  .bar {
+    left: auto;
+    flex-direction: column;
+    align-items: flex-end;
+    min-height: 0;
+    padding: 0 max(10px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) 0;
+  }
+
+  .confirm {
+    flex-direction: column;
+  }
+
+  .view-controls {
+    position: static;
+  }
+
+  .overlay {
+    padding-top: 44px;
+  }
+}
