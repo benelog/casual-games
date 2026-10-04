@@ -45,6 +45,9 @@ export const t = createT({
     insurance: '보험 {amount}',
     dealer: '딜러 {hand}',
     myHand: '내 핸드: {hand}',
+    'zoom.dealer': '딜러',
+    'zoom.me': '내 핸드',
+    'zoom.hand': '핸드 {n}',
     mine: '나: {text}',
     handN: '{text} (핸드 {n})',
 
@@ -117,6 +120,9 @@ export const t = createT({
     insurance: 'Insurance {amount}',
     dealer: 'Dealer {hand}',
     myHand: 'Your hand: {hand}',
+    'zoom.dealer': 'Dealer',
+    'zoom.me': 'Your hand',
+    'zoom.hand': 'Hand {n}',
     mine: 'You: {text}',
     handN: '{text} (hand {n})',
 

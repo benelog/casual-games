@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 import { createRenderer } from '../../shared/gpu.js';
+import { showCardZoom, hideCardZoom, pickCard, isFaceUp } from '../../shared/card-zoom.js';
 import { cardId } from './cards.js';
 import { formatNumber } from '../../shared/i18n.js';
 import { t } from './i18n.js';
@@ -159,6 +160,7 @@ export class TableScene {
     this.selecting = null;
     this.raycaster = new THREE.Raycaster();
     this.renderer.domElement.addEventListener('pointerdown', (e) => this.onPointerDown(e));
+    this.renderer.domElement.addEventListener('click', (e) => this.onClick(e));
 
     new ResizeObserver(() => this.resize()).observe(container);
     this.resize();
@@ -604,6 +606,7 @@ export class TableScene {
   }
 
   clearCards() {
+    hideCardZoom();
     for (const card of this.allCards()) this.disposeCard(card);
     this.cards = { hole: [[], []], board: [] };
     this.opponentRevealed = false;
@@ -695,6 +698,7 @@ export class TableScene {
   }
 
   disableSelection() {
+    hideCardZoom();
     this.selecting = null;
     this.renderer.domElement.style.cursor = '';
     this.cards.hole[0].forEach((mesh, i) => {
@@ -714,8 +718,11 @@ export class TableScene {
     this.selecting?.(this.selection());
   }
 
+  // 마우스로는 내 카드를 바로 눌러 고른다. 손가락으로는 카드가 작아 맞히기 어려우니
+  // 누르면 카드를 크게 펼친 화면(onClick)이 열리고 거기서 고른다
   onPointerDown(event) {
-    if (!this.selecting) return;
+    this.picked = false;
+    if (!this.selecting || event.pointerType !== 'mouse') return;
     const rect = this.renderer.domElement.getBoundingClientRect();
     const pointer = new THREE.Vector2(
       ((event.clientX - rect.left) / rect.width) * 2 - 1,
@@ -723,7 +730,47 @@ export class TableScene {
     );
     this.raycaster.setFromCamera(pointer, this.camera);
     const hit = this.raycaster.intersectObjects(this.cards.hole[0], true)[0];
-    if (hit) this.toggleCard(this.cards.hole[0].indexOf(hit.object.parent));
+    if (!hit) return;
+    this.picked = true;
+    this.toggleCard(this.cards.hole[0].indexOf(hit.object.parent));
+  }
+
+  onClick(event) {
+    if (this.picked) return;
+    const card = pickCard(THREE, {
+      event,
+      canvas: this.renderer.domElement,
+      camera: this.camera,
+      raycaster: this.raycaster,
+      cards: this.allCards(),
+    });
+    if (card) this.showZoom();
+  }
+
+  /** 테이블의 카드를 상대·공용·내 카드 줄로 크게 보여 준다. 뒤집힌 카드는 뒷면으로 */
+  showZoom() {
+    const face = (mesh) => ({
+      src: isFaceUp(mesh) ? this.cardImages.get(mesh.userData.id).src : null,
+      dim: mesh.userData.faceMaterial.color.getHex() !== 0xffffff,
+      selected: mesh.userData.selected,
+    });
+    const mine = this.cards.hole[0];
+    const rows = [
+      { label: this.names[1], cards: this.cards.hole[1].map(face) },
+      { label: t('board'), cards: this.cards.board.map(face) },
+      {
+        label: this.names[0],
+        cards: mine.map(face),
+        pick: this.selecting
+          ? (i) => {
+              this.toggleCard(i);
+              return !!mine[i]?.userData.selected;
+            }
+          : null,
+      },
+    ];
+    this.backSrc ??= this.backMaterial.map.image.toDataURL();
+    showCardZoom(rows, { backSrc: this.backSrc });
   }
 
   async dealBoard(cards) {

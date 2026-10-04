@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 import { createRenderer } from '../../shared/gpu.js';
+import { showCardZoom, hideCardZoom, pickCard, isFaceUp } from '../../shared/card-zoom.js';
 import { cardId } from './cards.js';
 import { formatNumber } from '../../shared/i18n.js';
 import { t } from './i18n.js';
@@ -173,6 +174,9 @@ export class TableScene {
       hands: Array.from({ length: MAX_HANDS }, () => this.addLabel('hand', v(0, POS.betZ + 0.3), 0)),
       bubble: this.addLabel('bubble', v(1.0, -4.6, 1.7), 0),
     };
+
+    this.raycaster = new THREE.Raycaster();
+    this.renderer.domElement.addEventListener('click', (e) => this.onClick(e));
 
     new ResizeObserver(() => this.resize()).observe(container);
     this.resize();
@@ -798,6 +802,7 @@ export class TableScene {
       g.fillRect(0, 0, w, h);
       g.drawImage(this.cardImages.get(cardId(card)), 9, 12, w - 18, h - 24);
     });
+    mesh.userData.id = cardId(card);
     const material = mesh.userData.faceMaterial;
     material.map?.dispose();
     material.map = texture;
@@ -816,6 +821,40 @@ export class TableScene {
 
   dimHand(index) {
     for (const card of this.hands[index]?.cards ?? []) card.userData.faceMaterial.color.set(0x6a6a6a);
+  }
+
+  // ---------- 카드 크게 보기 ----------
+
+  onClick(event) {
+    const card = pickCard(THREE, {
+      event,
+      canvas: this.renderer.domElement,
+      camera: this.camera,
+      raycaster: this.raycaster,
+      cards: [...this.dealerCards, ...this.hands.flatMap((hand) => hand.cards)],
+    });
+    if (card) this.showZoom();
+  }
+
+  /** 딜러와 내 핸드의 카드를 줄별로 크게 보여 준다. 줄 이름에는 테이블에 띄운 점수를 붙인다 */
+  showZoom() {
+    const face = (mesh) => ({
+      src: isFaceUp(mesh) && mesh.userData.id ? this.cardImages.get(mesh.userData.id).src : null,
+      dim: mesh.userData.faceMaterial.color.getHex() !== 0xffffff,
+    });
+    const withScore = (name, el) => (el?.textContent && !el.hidden ? `${name} · ${el.textContent}` : name);
+    const rows = [
+      {
+        label: this.labels.dealer.hidden ? t('zoom.dealer') : this.labels.dealer.textContent,
+        cards: this.dealerCards.map(face),
+      },
+      ...this.hands.map((hand, i) => ({
+        label: withScore(this.hands.length > 1 ? t('zoom.hand', { n: i + 1 }) : t('zoom.me'), this.labels.hands[i]),
+        cards: hand.cards.map(face),
+      })),
+    ];
+    this.backSrc ??= this.backMaterial.map.image.toDataURL();
+    showCardZoom(rows, { backSrc: this.backSrc });
   }
 
   /** { to: 'player' | 'dealer', hand, card, faceDown, sideways } */
@@ -920,6 +959,7 @@ export class TableScene {
 
   /** 라운드가 끝난 카드를 모두 버린 카드 더미로 치운다 */
   async clearTable() {
+    hideCardZoom();
     const cards = [...this.dealerCards, ...this.hands.flatMap((h) => h.cards)];
     for (const hand of this.hands) if (hand.chips) this.scene.remove(hand.chips);
     this.hands = [];

@@ -58,6 +58,7 @@ export const t = createT({
 
     me: '나',
     computer: '컴퓨터',
+    board: '공용 카드',
     mine: '나: {text}',
     myHand: '내 패: {name}',
     pot: '팟 {amount}',
@@ -134,6 +135,7 @@ export const t = createT({
 
     me: 'You',
     computer: 'Computer',
+    board: 'Board',
     mine: 'You: {text}',
     myHand: 'Your hand: {name}',
     pot: 'Pot {amount}',

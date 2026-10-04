@@ -50,11 +50,15 @@ npm test         # node --test
   잃고, 그 뒤 Chrome 이 사이트의 WebGL 을 막아 모든 게임이 로딩에서 멈추는 문제가 있었다.
   PowerVR 에서는 그림자를 끄고 픽셀 비율을 1.5 로 낮춘 안전 모드로 그린다(`?safe=1`/`?safe=0` 으로 강제).
   WebGL 을 만들 수 없거나 컨텍스트를 잃으면 로딩 화면에 안내와 다시 불러오기 버튼을 띄운다.
+- **카드 크게 보기** `shared/card-zoom.js`: 포커·블랙잭에서 카드 근처를 누르면 테이블의 카드를 줄별로
+  크게 펼쳐 보여 준다(모두 뒷면인 줄은 뺀다). 드로우 포커에서 손가락으로 누르면 이 화면에서 바꿀 카드를 고른다.
 
 ## 배포
 
-Netlify 가 GitHub `main` 브랜치를 그대로 배포한다(빌드 없음, 설정은 `netlify.toml`). 도메인
-`casual-games.benelog.net` 은 Netlify DNS 에서 관리한다.
+GitHub Pages 가 `main` 브랜치 루트를 그대로 배포한다(빌드 없음, `.nojekyll` 로 Jekyll 처리를 끈다).
+커스텀 도메인은 저장소의 `CNAME` 파일이고, DNS 는 Netlify DNS 의 `casual-games` CNAME → `benelog.github.io` 다.
+Netlify 로 직접 배포하면 커스텀 도메인 페이지에 "Powered by Netlify" 배지가 떠서 다른 사이트처럼 GitHub Pages 로 옮겼다.
+옛 주소 https://benelog.github.io/casual-games/ 는 여기로 넘어온다.
 
 ## 3D 포커
 
