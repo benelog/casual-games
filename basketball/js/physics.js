@@ -7,7 +7,6 @@
 // 바닥·백보드·림에 닿으면 같은 충돌 함수가 반발(법선 방향)과 마찰(접선 방향)을 함께 계산해,
 // 미끄러지는 만큼 회전이 붙고 회전이 다시 튀는 방향을 바꾼다. 림은 굵기가 있는 원환(토러스)이라
 // 앞 림을 맞고 튀거나, 림 위를 구르다 안으로 떨어지기도 한다.
-// 골대는 좌우로 움직일 수 있고(hoopX), 움직이는 골대에 부딪히면 그 속도까지 따진다.
 
 export const G = 9.81;
 export const BALL_RADIUS = 0.12; // 7호 공 (둘레 약 75cm)
@@ -94,7 +93,6 @@ export function swipeToShot(dx, dy, height) {
 
 /**
  * 서 있는 자리(distance, angle)에서 세기 power(0~1)·방향 yaw 로 던진 공의 처음 상태.
- * 골대가 움직이는 단계에서도 겨누는 기준은 골대가 오가는 가운데(x=0)다.
  */
 export function launch(distance, angle, { power, yaw = 0 }) {
   const from = releasePoint(distance, angle);
@@ -139,51 +137,23 @@ export function makeBall(p, v = { x: 0, y: 0, z: 0 }, w = { x: 0, y: 0, z: 0 }) 
   };
 }
 
-// ---------- 골대 ----------
-
-/** 골대가 좌우로 오가는 움직임. amplitude 를 바꾸면 갑자기 튀지 않고 서서히 따라간다 */
-export class HoopMotion {
-  constructor({ amplitude = 0, period = 4.5 } = {}) {
-    this.target = amplitude;
-    this.amplitude = amplitude;
-    this.period = period;
-    this.time = 0;
-    this.x = 0;
-    this.vx = 0;
-  }
-
-  setAmplitude(amplitude) {
-    this.target = amplitude;
-  }
-
-  step(dt) {
-    if (dt <= 0) return;
-    this.time += dt;
-    this.amplitude += (this.target - this.amplitude) * Math.min(1, dt * 1.2);
-    if (Math.abs(this.target - this.amplitude) < 1e-4) this.amplitude = this.target;
-    const x = this.amplitude * Math.sin((2 * Math.PI * this.time) / this.period);
-    this.vx = (x - this.x) / dt;
-    this.x = x;
-  }
-}
-
 // ---------- 충돌 ----------
 
 /**
- * 공과 면의 충돌. n: 면에서 공 중심 쪽 단위 법선, depth: 겹친 깊이, kind: 재질,
- * surfaceVx: 면이 움직이는 x 속도. 부딪힌 세기(법선 방향 속력)를 돌려준다
+ * 공과 면의 충돌. n: 면에서 공 중심 쪽 단위 법선, depth: 겹친 깊이, kind: 재질.
+ * 부딪힌 세기(법선 방향 속력)를 돌려준다
  */
-function collide(ball, n, depth, kind, surfaceVx = 0) {
+function collide(ball, n, depth, kind) {
   // 겹친 만큼 밀어낸다
   ball.x += n.x * depth;
   ball.y += n.y * depth;
   ball.z += n.z * depth;
   const R = BALL_RADIUS;
-  // 접점 r = -n·R 에서의 속도 = v + ω × r - 면의 속도
+  // 접점 r = -n·R 에서의 속도 = v + ω × r
   const rx = -n.x * R;
   const ry = -n.y * R;
   const rz = -n.z * R;
-  const cx = ball.vx + (ball.wy * rz - ball.wz * ry) - surfaceVx;
+  const cx = ball.vx + (ball.wy * rz - ball.wz * ry);
   const cy = ball.vy + (ball.wz * rx - ball.wx * rz);
   const cz = ball.vz + (ball.wx * ry - ball.wy * rx);
   const vn = cx * n.x + cy * n.y + cz * n.z;
@@ -236,13 +206,11 @@ function boxContact(ball, min, max) {
 }
 
 /** 림(원환)과의 충돌. 공 중심에서 가장 가까운 쇠막대 중심선 위의 점을 찾는다 */
-export function rimContact(ball, hoopX = 0) {
-  const dx = ball.x - hoopX;
-  const dz = ball.z;
-  const h = Math.hypot(dx, dz);
-  const ux = h > 1e-9 ? dx / h : 1;
-  const uz = h > 1e-9 ? dz / h : 0;
-  const qx = hoopX + ux * RIM_RADIUS;
+export function rimContact(ball) {
+  const h = Math.hypot(ball.x, ball.z);
+  const ux = h > 1e-9 ? ball.x / h : 1;
+  const uz = h > 1e-9 ? ball.z / h : 0;
+  const qx = ux * RIM_RADIUS;
   const qz = uz * RIM_RADIUS;
   const ex = ball.x - qx;
   const ey = ball.y - RIM_Y;
@@ -284,8 +252,7 @@ function spinQuat(q, wx, wy, wz, dt) {
  *   { type: 'miss', ball }  바닥에 먼저 닿았거나 시간이 다 되었다
  */
 export class Court {
-  constructor({ hoop = new HoopMotion() } = {}) {
-    this.hoop = hoop;
+  constructor() {
     this.balls = [];
     this.events = [];
     this.carry = 0;
@@ -311,7 +278,6 @@ export class Court {
     this.carry += dt;
     while (this.carry >= STEP) {
       this.carry -= STEP;
-      this.hoop.step(STEP);
       for (const ball of this.balls) if (!ball.resting) this.stepBall(ball, STEP);
     }
   }
@@ -325,11 +291,8 @@ export class Court {
     ball.time += dt;
     spinQuat(ball.q, ball.wx, ball.wy, ball.wz, dt);
 
-    const hx = this.hoop.x;
-    const hvx = this.hoop.vx;
-
     // 득점 판정: 공 중심이 림 높이를 위에서 아래로, 림 안쪽으로 지났다
-    const h = Math.hypot(ball.x - hx, ball.z);
+    const h = Math.hypot(ball.x, ball.z);
     if (h < RIM_RADIUS) {
       if (prevY < RIM_Y && ball.y >= RIM_Y) ball.fromBelow = true;
       if (prevY >= RIM_Y && ball.y < RIM_Y) {
@@ -352,17 +315,16 @@ export class Court {
       const depth = RIM_Y - ball.y;
       if (depth > NET_DEPTH + BALL_RADIUS || depth < -BALL_RADIUS) ball.inNet = false;
       else if (depth > 0) {
-        const dx = ball.x - hx;
         const room = netRadius(depth) - BALL_RADIUS * 0.55;
-        const hh = Math.hypot(dx, ball.z);
+        const hh = Math.hypot(ball.x, ball.z);
         if (hh > room && hh > 1e-9) {
           // 그물이 늘어난 만큼 안쪽으로 당기는 용수철
           const pull = (hh - room) * 900 * dt;
-          ball.vx -= (dx / hh) * pull;
+          ball.vx -= (ball.x / hh) * pull;
           ball.vz -= (ball.z / hh) * pull;
         }
         const k = Math.exp(-3.5 * dt);
-        ball.vx = hvx + (ball.vx - hvx) * k;
+        ball.vx *= k;
         ball.vz *= k;
         ball.vy *= Math.exp(-1.6 * dt);
       }
@@ -371,19 +333,19 @@ export class Court {
     // 백보드 (두께가 있는 판)
     const board = boxContact(
       ball,
-      { x: hx - BOARD_HALF_W, y: BOARD_BOTTOM, z: BOARD_Z - BOARD_THICK },
-      { x: hx + BOARD_HALF_W, y: BOARD_TOP, z: BOARD_Z },
+      { x: -BOARD_HALF_W, y: BOARD_BOTTOM, z: BOARD_Z - BOARD_THICK },
+      { x: BOARD_HALF_W, y: BOARD_TOP, z: BOARD_Z },
     );
     if (board) {
-      const speed = collide(ball, board.n, board.depth, 'board', hvx);
+      const speed = collide(ball, board.n, board.depth, 'board');
       if (speed > 0.05) ball.touchedBoard = true;
       if (speed > LOUD) this.events.push({ type: 'board', ball, speed });
     }
 
     // 림
-    const rim = rimContact(ball, hx);
+    const rim = rimContact(ball);
     if (rim) {
-      const speed = collide(ball, rim.n, rim.depth, 'rim', hvx);
+      const speed = collide(ball, rim.n, rim.depth, 'rim');
       if (speed > 0.05) ball.touchedRim = true;
       if (speed > LOUD * 0.6) this.events.push({ type: 'rim', ball, speed });
     }
@@ -421,8 +383,8 @@ export class Court {
  * 공 하나를 결과가 날 때까지(또는 limit 초) 굴려 본다. 테스트와 디버그용.
  * 결과와 그동안의 사건을 돌려준다.
  */
-export function simulate(ball, { hoop = new HoopMotion(), limit = 8, after = 0 } = {}) {
-  const court = new Court({ hoop });
+export function simulate(ball, { limit = 8, after = 0 } = {}) {
+  const court = new Court();
   court.add(ball);
   const events = [];
   let t = 0;

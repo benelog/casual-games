@@ -195,7 +195,7 @@ export class BasketballScene {
     this.scene.add(paint);
   }
 
-  /** 백보드·림·그물·기둥. 골대가 좌우로 움직이는 단계에서는 이 묶음이 통째로 움직인다 */
+  /** 백보드·림·그물·기둥 */
   buildHoop(model) {
     const hoop = new THREE.Group();
     this.hoop = hoop;
@@ -419,7 +419,7 @@ export class BasketballScene {
   shakeNet(ball, strength) {
     const net = this.net;
     const k = clamp(strength, 0, 1.5);
-    net.vx += clamp(ball.vx - (this.court?.hoop.vx ?? 0), -4, 4) * 0.5 * k;
+    net.vx += clamp(ball.vx, -4, 4) * 0.5 * k;
     net.vz += clamp(ball.vz, -4, 4) * 0.5 * k;
     net.vs += 1.2 * k;
     net.ripple = Math.max(net.ripple, 0.8 * k);
@@ -477,8 +477,7 @@ export class BasketballScene {
         if (event.type === 'rim') this.shakeNet(event.ball, event.speed / 12);
         this.onEvent?.(event);
       }
-      if (this.court.balls.some((b) => !b.resting) || this.court.hoop.amplitude > 0) lively = casters = true;
-      this.hoop.position.x = this.court.hoop.x;
+      if (this.court.balls.some((b) => !b.resting)) lively = casters = true;
     }
     this.syncBalls();
     if (this.updateNet(dt)) lively = casters = true;

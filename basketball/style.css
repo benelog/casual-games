@@ -359,10 +359,6 @@ kbd {
   font-size: 14px;
 }
 
-.spot.moving {
-  border-color: rgba(255, 138, 61, 0.6);
-}
-
 /* 2인 대전에서는 차례 안내 아래로 */
 #turn:not([hidden]) ~ .spot {
   top: 100px;

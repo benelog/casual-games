@@ -3,7 +3,7 @@
 // 혼자서 60초·12구 기록에 도전하거나, 2인 대전에서는 한 기기로 두 사람이 번갈아 던진다.
 
 import { ShootoutGame, MODES, STAGES, TIME_LIMIT } from './game.js';
-import { Court, HoopMotion, launch, swipeToShot, clamp, YAW_LIMIT } from './physics.js';
+import { Court, launch, swipeToShot, clamp, YAW_LIMIT } from './physics.js';
 import { BasketballScene } from './scene.js';
 import { SaveStore, browserStorage } from './save.js';
 import { Sound } from './sound.js';
@@ -31,7 +31,7 @@ const scene = new BasketballScene($('stage'));
 const store = new SaveStore(browserStorage());
 const sound = new Sound(new URL('../assets/sounds/', import.meta.url));
 const toast = createToast($('toast'), 1.5);
-const court = new Court({ hoop: new HoopMotion() });
+const court = new Court();
 scene.court = court;
 
 let settings = store.loadSettings();
@@ -91,7 +91,6 @@ function openMenu() {
   game = null;
   clockRunning = false;
   for (const ball of [...court.balls]) court.remove(ball);
-  court.hoop.setAmplitude(0);
   scene.setStage(STAGES[0]);
   scene.showHand(false);
   renderMenu();
@@ -115,7 +114,6 @@ function newGame(first) {
   lastTick = 0;
   game = new ShootoutGame({ mode: settings.mode, first });
   scene.setStage(game.stage, { cut: true });
-  court.hoop.setAmplitude(game.stage.move);
   setState('playing');
   updateHud();
   play(session);
@@ -142,7 +140,6 @@ function updateHud() {
   const stage = game.stage;
   $('spot-name').textContent = t(`stage.${stage.id}`);
   $('spot-points').textContent = t('pointsEach', { n: stage.points });
-  $('spot').classList.toggle('moving', stage.move > 0);
   $('spot').dataset.player = game.players > 1 ? p : '';
 }
 
@@ -228,7 +225,6 @@ async function play(token) {
   while (token === session && !game.over) {
     const stage = game.stage;
     scene.setStage(stage);
-    court.hoop.setAmplitude(stage.move);
     updateHud();
     updateTurn();
     if (game.players > 1 && (first || previous !== game.current)) {
@@ -260,7 +256,6 @@ async function play(token) {
     if (result.stageUp && !game.over) {
       const next = game.stage;
       toast.show(t('nextSpot', { name: t(`stage.${next.id}`), n: next.points }), 'big');
-      if (next.move > 0) setStatus(t('movingHint'));
       if (game.mode !== 'time') await sleep(700);
     }
     game.nextTurn();

@@ -9,7 +9,6 @@ import {
   ENTRY,
   G,
   Court,
-  HoopMotion,
   makeBall,
   launch,
   launchElevation,
@@ -205,43 +204,4 @@ test('결과가 안 나는 공은 시간이 지나면 실패로 친다', () => {
   const ball = at(0, 3.95 + BALL_RADIUS, BOARD_Z - 0.025);
   const { result } = simulate(ball, { limit: 8 });
   assert.equal(result, 'miss');
-});
-
-// ---------- 움직이는 골대 ----------
-
-test('골대는 좌우로 오가고, 폭은 서서히 바뀐다', () => {
-  const hoop = new HoopMotion({ amplitude: 0, period: 4 });
-  hoop.setAmplitude(0.4);
-  hoop.step(0.05);
-  assert.ok(hoop.amplitude > 0 && hoop.amplitude < 0.4);
-  for (let i = 0; i < 800; i++) hoop.step(0.01);
-  assert.ok(Math.abs(hoop.amplitude - 0.4) < 1e-3);
-  let min = Infinity;
-  let max = -Infinity;
-  for (let i = 0; i < 400; i++) {
-    hoop.step(0.01);
-    min = Math.min(min, hoop.x);
-    max = Math.max(max, hoop.x);
-  }
-  assert.ok(max > 0.39 && min < -0.39);
-});
-
-test('움직이는 골대: 가운데를 노리면 빗나가기도 하고, 골대가 올 자리를 노리면 들어간다', () => {
-  const stage = STAGES.find((s) => s.move > 0);
-  const results = [];
-  for (const time of [0, 1, 2, 3]) {
-    const hoop = new HoopMotion({ amplitude: stage.move, period: 4.5 });
-    hoop.time = time;
-    hoop.step(1e-3);
-    const ball = launch(stage.distance, stage.angle, { power: 0.5 });
-    // 골대가 공이 닿을 때 있을 자리 쪽으로 방향을 튼다
-    const flight = 0.95;
-    const future = stage.move * Math.sin((2 * Math.PI * (hoop.time + flight)) / hoop.period);
-    const lead = launch(stage.distance, stage.angle, { power: 0.5, yaw: -Math.atan2(future, stage.distance + 0.4) });
-    const straight = simulate(ball, { hoop: Object.assign(new HoopMotion({ amplitude: stage.move, period: 4.5 }), { time: hoop.time }) });
-    const aimed = simulate(lead, { hoop: Object.assign(new HoopMotion({ amplitude: stage.move, period: 4.5 }), { time: hoop.time }) });
-    results.push({ straight: straight.result, aimed: aimed.result });
-  }
-  assert.ok(results.some((r) => r.straight === 'miss'), JSON.stringify(results));
-  assert.ok(results.filter((r) => r.aimed === 'make').length >= 3, JSON.stringify(results));
 });

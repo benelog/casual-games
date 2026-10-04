@@ -15,16 +15,16 @@ export const STREAK_MAX = 3;
 export const CLEAN_BONUS = 1;
 
 /**
- * 던지는 자리. distance: 림 중심에서의 거리(m), angle: 정면에서 오른쪽(+)으로 돈 각도, move: 골대가 좌우로 오가는 폭(m).
- * 뒤로 갈수록 멀어지고, 마지막 두 자리는 골대가 움직인다.
+ * 던지는 자리. distance: 림 중심에서의 거리(m), angle: 정면에서 오른쪽(+)으로 돈 각도.
+ * 뒤로 갈수록 멀어진다.
  */
 export const STAGES = [
-  { id: 'freeThrow', distance: 4.22, angle: 0, points: 1, move: 0 },
-  { id: 'elbowLeft', distance: 4.88, angle: -0.526, points: 2, move: 0 },
-  { id: 'elbowRight', distance: 4.88, angle: 0.526, points: 2, move: 0 },
-  { id: 'top3', distance: 6.75, angle: 0, points: 3, move: 0 },
-  { id: 'freeThrowMoving', distance: 4.22, angle: 0, points: 2, move: 0.4 },
-  { id: 'wing3Moving', distance: 6.75, angle: 0.45, points: 4, move: 0.4 },
+  { id: 'freeThrow', distance: 4.22, angle: 0, points: 1 },
+  { id: 'elbowLeft', distance: 4.88, angle: -0.526, points: 2 },
+  { id: 'elbowRight', distance: 4.88, angle: 0.526, points: 2 },
+  { id: 'top3', distance: 6.75, angle: 0, points: 3 },
+  { id: 'wing3Left', distance: 6.75, angle: -0.45, points: 3 },
+  { id: 'wing3Right', distance: 6.75, angle: 0.45, points: 3 },
 ];
 
 export const TOTAL_SHOTS = STAGES.length * SHOTS_PER_STAGE;
