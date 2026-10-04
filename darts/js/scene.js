@@ -17,6 +17,8 @@ const BOARD_FACE_Z = 0.04; // 모델의 앞면 위치
 const BOARD_EDGE = 0.2253; // 숫자 링을 포함한 보드 반지름
 const HAND = new THREE.Vector3(0.1, -0.2, 1.0); // 다트가 출발하는 곳
 const SWAY = 0.03; // 조준점이 흔들리는 폭
+// 손가락이 조준점을 가리지 않도록 터치할 때는 조준점을 손가락보다 이만큼(CSS px) 위에 둔다
+const TOUCH_OFFSET = 90;
 const PLAYER_COLORS = [0xd8362c, 0x2d6fd1];
 
 const easeOut = (k) => 1 - (1 - k) * (1 - k);
@@ -230,9 +232,10 @@ export class DartsScene {
   pointTo(event) {
     if (!this.aiming) return;
     const rect = this.renderer.domElement.getBoundingClientRect();
+    const y = event.clientY - (event.pointerType === 'touch' ? TOUCH_OFFSET : 0);
     const pointer = new THREE.Vector2(
       ((event.clientX - rect.left) / rect.width) * 2 - 1,
-      1 - ((event.clientY - rect.top) / rect.height) * 2,
+      1 - ((y - rect.top) / rect.height) * 2,
     );
     this.raycaster.setFromCamera(pointer, this.camera);
     const hit = this.raycaster.ray.intersectPlane(this.boardPlane, new THREE.Vector3());
