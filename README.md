@@ -55,10 +55,9 @@ npm test         # node --test
 
 ## 배포
 
-GitHub Pages 가 `main` 브랜치 루트를 그대로 배포한다(빌드 없음, `.nojekyll` 로 Jekyll 처리를 끈다).
-커스텀 도메인은 저장소의 `CNAME` 파일이고, DNS 는 Netlify DNS 의 `casual-games` CNAME → `benelog.github.io` 다.
-Netlify 로 직접 배포하면 커스텀 도메인 페이지에 "Powered by Netlify" 배지가 떠서 다른 사이트처럼 GitHub Pages 로 옮겼다.
-옛 주소 https://benelog.github.io/casual-games/ 는 여기로 넘어온다.
+Netlify 가 GitHub `main` 브랜치를 그대로 배포한다(빌드 없음, 설정은 `netlify.toml`). 도메인
+`casual-games.benelog.net` 은 Netlify DNS 에서 관리한다. 2026-08-19 이후 무료 플랜에서 만든 프로젝트는
+"Powered by Netlify" 배지가 기본으로 켜지므로 Project configuration → General 에서 꺼 둔다.
 
 ## 3D 포커
 
