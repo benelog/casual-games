@@ -6,7 +6,7 @@ import { MemoryScene } from './scene.js';
 import { Sound } from './sound.js';
 import { t } from './i18n.js';
 import { applyI18n, mountLangToggle } from '../../shared/i18n.js';
-import { segmented, createToast } from '../../shared/ui.js';
+import { segmented, createToast, focusForKeyboard } from '../../shared/ui.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -104,7 +104,7 @@ function openMenu() {
   setKeyCursor(-1);
   renderMenu();
   setState('menu');
-  $('btn-start').focus();
+  focusForKeyboard($('btn-start'));
 }
 
 function deal(first) {
@@ -167,7 +167,7 @@ function finished() {
 
 function showResult() {
   show('result', true);
-  $('btn-next').focus();
+  focusForKeyboard($('btn-next'));
 }
 
 // ---------- HUD ----------

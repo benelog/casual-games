@@ -1,38 +1,6 @@
 :root {
-  --ink: #f3ecdc;
-  --muted: #b9b09c;
-  --brass: #d9b46a;
   --win: #7fd69a;
   --lose: #e8857a;
-  --panel: rgba(12, 14, 19, 0.78);
-  --line: rgba(243, 236, 220, 0.16);
-}
-
-* {
-  box-sizing: border-box;
-}
-
-[hidden] {
-  display: none !important;
-}
-
-html,
-body {
-  height: 100%;
-  margin: 0;
-  overflow: hidden;
-  background: #0b0d12;
-  color: var(--ink);
-  font-family: 'Pretendard', 'Noto Sans KR', system-ui, sans-serif;
-}
-
-#stage {
-  position: fixed;
-  inset: 0;
-}
-
-#stage canvas {
-  display: block;
 }
 
 .labels {
@@ -111,10 +79,9 @@ body {
   right: 0;
   display: flex;
   z-index: 2;
-  justify-content: space-between;
   align-items: center;
   gap: 8px;
-  padding: 14px 18px;
+  padding: max(10px, env(safe-area-inset-top)) 14px 8px;
   font-size: 14px;
   color: var(--muted);
   pointer-events: none;
@@ -125,27 +92,8 @@ body {
   gap: 8px;
 }
 
-.back {
-  pointer-events: auto;
-  color: var(--ink);
-  text-decoration: none;
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  white-space: nowrap;
-}
-
-.back:hover {
-  border-color: var(--brass);
-}
-
-/* 한/EN 전환 버튼. 옆의 링크와 같은 모양으로 */
-.lang-toggle {
-  font-weight: 400;
-}
-
 #info {
+  margin-left: auto;
   padding: 6px 12px;
   border-radius: 999px;
   background: var(--panel);
@@ -154,20 +102,6 @@ body {
 
 #info:empty {
   display: none;
-}
-
-#loading {
-  position: fixed;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  background: #0b0d12;
-  color: var(--muted);
-  font-family: Georgia, 'Noto Serif KR', serif;
-  font-size: 18px;
-  padding: 24px;
-  text-align: center;
-  line-height: 1.6;
 }
 
 .bottom {
@@ -201,7 +135,7 @@ body {
 }
 
 #banner-title {
-  font-family: Georgia, 'Noto Serif KR', serif;
+  font-family: var(--font-display);
   font-size: 24px;
 }
 
@@ -279,11 +213,6 @@ button:hover:not(:disabled) {
   border-color: var(--brass);
 }
 
-button:focus-visible {
-  outline: 2px solid var(--brass);
-  outline-offset: 2px;
-}
-
 button:disabled {
   opacity: 0.35;
   cursor: default;
@@ -296,7 +225,7 @@ button.primary {
 }
 
 /* 칩 버튼: 테이블 칩과 같은 색 (Kenney 칩 이미지의 색에 맞춤) */
-button.chip {
+button.bet-chip {
   width: 54px;
   height: 54px;
   padding: 0;
@@ -308,24 +237,24 @@ button.chip {
   background: var(--chip);
 }
 
-button.chip:hover:not(:disabled) {
+button.bet-chip:hover:not(:disabled) {
   border-color: #fff;
   transform: translateY(-2px);
 }
 
-button.chip[data-chip='10'] {
+button.bet-chip[data-chip='10'] {
   --chip: #c8362e;
 }
 
-button.chip[data-chip='50'] {
+button.bet-chip[data-chip='50'] {
   --chip: #2d6fd1;
 }
 
-button.chip[data-chip='100'] {
+button.bet-chip[data-chip='100'] {
   --chip: #2b2b2e;
 }
 
-button.chip[data-chip='500'] {
+button.bet-chip[data-chip='500'] {
   --chip: #2f9e5c;
 }
 

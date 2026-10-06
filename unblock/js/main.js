@@ -10,7 +10,7 @@ import { UnblockScene } from './scene.js';
 import { Sound } from './sound.js';
 import { t } from './i18n.js';
 import { applyI18n, formatNumber, mountLangToggle } from '../../shared/i18n.js';
-import { createToast } from '../../shared/ui.js';
+import { createToast, focusForKeyboard } from '../../shared/ui.js';
 
 const $ = (id) => document.getElementById(id);
 const show = (id, visible) => {
@@ -249,7 +249,7 @@ function showResult() {
   const hasNext = !daily && !last && store.isUnlocked(index + 1);
   show('btn-next', hasNext);
   show('result', true);
-  (hasNext ? $('btn-next') : $('btn-result-levels')).focus();
+  focusForKeyboard(hasNext ? $('btn-next') : $('btn-result-levels'));
 }
 
 // ---------- HUD ----------

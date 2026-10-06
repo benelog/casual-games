@@ -9,7 +9,7 @@ import { SaveStore, browserStorage, OPPONENTS, COLORS } from './save.js';
 import { Sound } from './sound.js';
 import { t } from './i18n.js';
 import { applyI18n, mountLangToggle } from '../../shared/i18n.js';
-import { segmented, createToast } from '../../shared/ui.js';
+import { segmented, createToast, focusForKeyboard } from '../../shared/ui.js';
 
 const $ = (id) => document.getElementById(id);
 const show = (id, on) => {
@@ -117,7 +117,7 @@ function openMenu() {
   show('menu', true);
   show('result', false);
   updateChrome();
-  $('btn-start').focus();
+  focusForKeyboard($('btn-start'));
 }
 
 function start() {
@@ -535,7 +535,7 @@ function endGame() {
   $('result').dataset.tone = tone;
   sound.play(tone === 'lose' ? 'lose' : 'win');
   show('result', true);
-  $('btn-again').focus();
+  focusForKeyboard($('btn-again'));
 }
 
 $('btn-start').addEventListener('click', start);

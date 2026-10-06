@@ -1,39 +1,6 @@
 :root {
-  --ink: #f3ecdc;
-  --muted: #b9b09c;
-  --brass: #d9b46a;
-  --panel: rgba(12, 14, 19, 0.8);
-  --line: rgba(243, 236, 220, 0.16);
   --me: #d8362c;
   --computer: #2d6fd1;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-[hidden] {
-  display: none !important;
-}
-
-html,
-body {
-  height: 100%;
-  margin: 0;
-  overflow: hidden;
-  background: #0b0d12;
-  color: var(--ink);
-  font-family: 'Pretendard', 'Noto Sans KR', system-ui, sans-serif;
-}
-
-#stage {
-  position: fixed;
-  inset: 0;
-  touch-action: none;
-}
-
-#stage canvas {
-  display: block;
 }
 
 .top {
@@ -44,7 +11,8 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 18px;
+  gap: 8px;
+  padding: max(10px, env(safe-area-inset-top)) 14px 8px;
   font-size: 14px;
   pointer-events: none;
 }
@@ -54,17 +22,6 @@ body {
   padding: 6px 12px;
   border-radius: 999px;
   background: var(--panel);
-}
-
-.back {
-  pointer-events: auto;
-  color: var(--ink);
-  text-decoration: none;
-  border: 1px solid var(--line);
-}
-
-.back:hover {
-  border-color: var(--brass);
 }
 
 .title {
@@ -91,25 +48,6 @@ button.chip {
 
 button.chip:hover {
   border-color: var(--brass);
-}
-
-button.chip[aria-pressed='false'] {
-  color: var(--muted);
-  text-decoration: line-through;
-}
-
-#loading {
-  position: fixed;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  padding: 24px;
-  background: #0b0d12;
-  color: var(--muted);
-  font-family: Georgia, 'Noto Serif KR', serif;
-  font-size: 18px;
-  text-align: center;
-  line-height: 1.6;
 }
 
 /* ---------- 점수표 ---------- */
@@ -253,7 +191,7 @@ button.chip[aria-pressed='false'] {
 }
 
 #card td.total {
-  font-family: Georgia, serif;
+  font-family: var(--font-display);
   font-size: 22px;
 }
 
@@ -281,7 +219,7 @@ button.chip[aria-pressed='false'] {
   border-radius: 14px;
   background: var(--panel);
   border: 1px solid var(--line);
-  font-family: Georgia, 'Noto Serif KR', serif;
+  font-family: var(--font-display);
   font-size: 34px;
   white-space: nowrap;
   pointer-events: none;
@@ -436,7 +374,7 @@ button.chip[aria-pressed='false'] {
 }
 
 #menu-title {
-  font-family: Georgia, 'Noto Serif KR', serif;
+  font-family: var(--font-display);
   font-size: 20px;
   font-weight: 400;
 }
@@ -484,7 +422,7 @@ button.chip[aria-pressed='false'] {
 }
 
 #banner-title {
-  font-family: Georgia, 'Noto Serif KR', serif;
+  font-family: var(--font-display);
   font-size: 28px;
 }
 
@@ -508,11 +446,6 @@ button {
   font-weight: 600;
   cursor: pointer;
   pointer-events: auto;
-}
-
-button:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 2px;
 }
 
 @media (max-width: 560px) {

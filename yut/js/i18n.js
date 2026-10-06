@@ -99,7 +99,7 @@ export const MESSAGES = {
   },
   en: {
     title: 'Yut Nori · Casual Games',
-    back: '← Games',
+    back: '← All games',
     boardLabel: 'Yut board',
     sound: 'Sound',
     soundTitle: 'Sound (M)',

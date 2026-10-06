@@ -8,7 +8,7 @@ import { ParkingScene } from './scene.js';
 import { Sound } from './sound.js';
 import { t } from './i18n.js';
 import { applyI18n, formatNumber, lang, mountLangToggle } from '../../shared/i18n.js';
-import { createToast } from '../../shared/ui.js';
+import { createToast, focusForKeyboard } from '../../shared/ui.js';
 import { formatTime } from '../../shared/util.js';
 
 const $ = (id) => document.getElementById(id);
@@ -112,7 +112,7 @@ function openSelect() {
   setState('select');
   $('banner').classList.remove('show');
   sound.setEngine(0, 0);
-  $('btn-continue').focus();
+  focusForKeyboard($('btn-continue'));
 }
 
 /** 판만 새로 놓는다 (단계 선택 뒤 배경으로도 쓴다) */
@@ -183,14 +183,14 @@ function showResult() {
   $('result').dataset.tone = result.stars === 3 ? 'win' : '';
   show('btn-next', !last);
   show('result', true);
-  (last ? $('btn-result-levels') : $('btn-next')).focus();
+  focusForKeyboard(last ? $('btn-result-levels') : $('btn-next'));
 }
 
 function showFail() {
   const level = LEVELS[index];
   $('fail-reason').textContent = run.failReason === 'crash' ? t('reason.crash') : t('reason.contacts', { n: level.maxContacts + 1 });
   show('fail', true);
-  $('btn-retry').focus();
+  focusForKeyboard($('btn-retry'));
 }
 
 // ---------- HUD ----------

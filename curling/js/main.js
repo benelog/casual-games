@@ -20,7 +20,7 @@ import { SaveStore, browserStorage, OPPONENTS } from './save.js';
 import { Sound } from './sound.js';
 import { t } from './i18n.js';
 import { applyI18n, mountLangToggle } from '../../shared/i18n.js';
-import { segmented, createToast } from '../../shared/ui.js';
+import { segmented, createToast, focusForKeyboard } from '../../shared/ui.js';
 import { damp } from '../../shared/util.js';
 
 const $ = (id) => document.getElementById(id);
@@ -145,7 +145,7 @@ function openMenu() {
   $('bottom').hidden = true;
   $('btn-menu').hidden = true;
   setStatus('');
-  $('btn-start').focus();
+  focusForKeyboard($('btn-start'));
 }
 
 function start() {
@@ -587,7 +587,7 @@ function endGame() {
   if (won) sound.play('cheer');
   setStatus('');
   $('result').hidden = false;
-  $('btn-again').focus();
+  focusForKeyboard($('btn-again'));
 }
 
 /** 한 판 더: 첫 엔드의 해머를 바꾼다 */

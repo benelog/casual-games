@@ -66,7 +66,7 @@ export const t = createT({
   },
   en: {
     title: 'Memory Cards · Casual Games',
-    back: '← Games',
+    back: '← All games',
     boardLabel: 'Card table',
     turns: 'Turns',
     time: 'Time',

@@ -10,7 +10,7 @@ import { SaveStore, browserStorage, MODES } from './save.js';
 import { Sound } from './sound.js';
 import { t } from './i18n.js';
 import { applyI18n, mountLangToggle } from '../../shared/i18n.js';
-import { segmented, createToast } from '../../shared/ui.js';
+import { segmented, createToast, focusForKeyboard } from '../../shared/ui.js';
 
 const $ = (id) => document.getElementById(id);
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -124,7 +124,7 @@ function openMenu() {
   renderMenu();
   setState('menu');
   setStatus('');
-  $('btn-start').focus();
+  focusForKeyboard($('btn-start'));
 }
 
 function start() {
@@ -413,7 +413,7 @@ function endGame() {
   $('result').dataset.tone = tone;
   setStatus('');
   $('result').hidden = false;
-  $('btn-again').focus();
+  focusForKeyboard($('btn-again'));
 }
 
 /** 한 판 더: 대결에서는 먼저 던지는 사람을 바꾼다 */

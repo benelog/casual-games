@@ -46,6 +46,7 @@ function showProblem(message, reload) {
   const box = document.getElementById('loading');
   if (!box) return;
   box.hidden = false;
+  box.dataset.problem = ''; // 받는 중 표시 줄을 숨긴다
   box.replaceChildren(message);
   if (reload) {
     const button = document.createElement('button');
@@ -79,7 +80,9 @@ export function createRenderer(THREE, options = {}, { shadows = true } = {}) {
     showProblem(t('lost'), true);
   });
   renderer.domElement.addEventListener('webglcontextrestored', () => {
-    document.getElementById('loading').hidden = true;
+    const box = document.getElementById('loading');
+    box.hidden = true;
+    delete box.dataset.problem;
   });
   return renderer;
 }

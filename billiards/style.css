@@ -1,47 +1,9 @@
 :root {
-  --ink: #f3ecdc;
-  --muted: #b9b09c;
-  --brass: #d9b46a;
-  --panel: rgba(12, 14, 19, 0.82);
-  --line: rgba(243, 236, 220, 0.16);
   --accent: #8fe0b0;
   --p0: #4db8ff; /* 플레이어 색 */
   --p1: #ffd23f;
   --bar-h: 64px; /* 아래쪽 조작부 높이. js/main.js 가 실제 크기를 재서 씬에 알린다 */
-}
-
-* {
-  box-sizing: border-box;
-}
-
-[hidden] {
-  display: none !important;
-}
-
-html,
-body {
-  height: 100%;
-  margin: 0;
-  overflow: hidden;
-  background: #0e0d0c;
-  color: var(--ink);
-  font-family: 'Pretendard', 'Noto Sans KR', system-ui, sans-serif;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-}
-
-#stage {
-  position: fixed;
-  inset: 0;
-  touch-action: none;
-}
-
-#stage canvas {
-  display: block;
-}
-
-#stage:focus {
-  outline: none;
+  --bg: #0e0d0c;
 }
 
 /* ---------- 위쪽 막대 ---------- */
@@ -60,27 +22,6 @@ body {
   z-index: 1; /* 시작 화면 위에서도 목록·언어 버튼을 누를 수 있게 */
 }
 
-.back {
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  color: var(--ink);
-  text-decoration: none;
-  pointer-events: auto;
-  white-space: nowrap;
-}
-
-.back:hover {
-  border-color: var(--brass);
-}
-
-.controls {
-  display: flex;
-  gap: 6px;
-  margin-left: auto;
-}
-
 #versus:not([hidden]) + #controls {
   margin-left: 0;
 }
@@ -92,58 +33,9 @@ body {
 
 /* ---------- 버튼 ---------- */
 
-button {
-  padding: 10px 14px;
-  border: 1px solid var(--brass);
-  border-radius: 10px;
-  background: var(--brass);
-  color: #1a1408;
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-  pointer-events: auto;
-  touch-action: manipulation;
-}
-
-button.secondary,
-button.chip {
-  background: var(--panel);
-  color: var(--ink);
-  border-color: var(--line);
-}
-
-button.chip {
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-size: 13px;
-}
-
-button.chip[aria-pressed='false'] {
-  color: var(--muted);
-  text-decoration: line-through;
-}
-
-button:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 2px;
-}
-
 button:disabled {
   opacity: 0.45;
   cursor: default;
-}
-
-kbd {
-  display: inline-block;
-  min-width: 1.4em;
-  padding: 0 4px;
-  border-radius: 4px;
-  border: 1px solid currentColor;
-  font: inherit;
-  font-size: 11px;
-  line-height: 1.4;
-  text-align: center;
-  opacity: 0.7;
 }
 
 /* ---------- 점수판과 차례 ---------- */
@@ -464,7 +356,7 @@ kbd {
   left: 50%;
   top: 30%;
   transform: translate(-50%, -50%);
-  font-family: Georgia, 'Noto Serif KR', serif;
+  font-family: var(--font-display);
   font-size: 26px;
   white-space: nowrap;
   text-shadow:
@@ -559,13 +451,6 @@ kbd {
   text-align: center;
 }
 
-.card h1 {
-  margin: 0;
-  font-family: Georgia, 'Noto Serif KR', serif;
-  font-size: 30px;
-  font-weight: 400;
-}
-
 #result h1 {
   color: var(--accent);
 }
@@ -597,28 +482,6 @@ kbd {
   display: none;
 }
 
-.card > button {
-  width: 100%;
-}
-
-fieldset {
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-legend {
-  margin-bottom: 6px;
-  padding: 0;
-  color: var(--muted);
-  font-size: 12px;
-}
-
-.segmented {
-  display: flex;
-  gap: 6px;
-}
-
 .segmented .option {
   flex: 1;
   display: flex;
@@ -631,58 +494,10 @@ legend {
   font-size: 14px;
 }
 
-.segmented .option small {
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 400;
-}
-
-.segmented .option[aria-pressed='true'] {
-  border-color: var(--brass);
-  background: rgba(217, 180, 106, 0.22);
-}
-
-.help {
-  color: var(--muted);
-  font-size: 13px;
-  text-align: left;
-}
-
-.help summary {
-  cursor: pointer;
-  text-align: center;
-}
-
 .help p {
   margin: 10px 0 0;
   font-size: 13px;
   white-space: pre-line;
-}
-
-.help dl {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 6px 12px;
-  margin: 10px 0 0;
-}
-
-.help dt {
-  color: var(--ink);
-  white-space: nowrap;
-}
-
-.help dd {
-  margin: 0;
-}
-
-#loading {
-  position: fixed;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  padding: 20px;
-  color: var(--muted);
-  text-align: center;
 }
 
 /* ---------- 좁은 화면 ---------- */

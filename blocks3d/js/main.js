@@ -8,7 +8,7 @@ import { TetrisScene, layerColor } from './scene.js';
 import { Sound } from './sound.js';
 import { t } from './i18n.js';
 import { applyI18n, formatNumber, mountLangToggle } from '../../shared/i18n.js';
-import { segmented, createToast } from '../../shared/ui.js';
+import { segmented, createToast, focusForKeyboard } from '../../shared/ui.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -114,7 +114,7 @@ function openMenu() {
   backdrop = null;
   renderMenu();
   setState('menu');
-  $('btn-start').focus();
+  focusForKeyboard($('btn-start'));
 }
 
 function start() {
@@ -156,7 +156,7 @@ function gameOver() {
     : describeBest(previous);
   $('result').dataset.tone = isBest ? 'win' : '';
   setState('over');
-  $('btn-again').focus();
+  focusForKeyboard($('btn-again'));
 }
 
 // ---------- HUD ----------

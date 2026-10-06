@@ -48,17 +48,27 @@ npm test         # node --test
 ## 새 게임 추가
 
 1. 최상위에 게임 디렉토리를 만들고 `index.html` 을 둔다. `<head>` 에는 다른 게임처럼 manifest·아이콘·
-   `../shared/pwa.js` 줄을 넣는다.
+   `../shared/pwa.js` 줄과 글꼴(Pretendard·Hahmlet)·`../shared/theme.css`·`../shared/game.css`·`style.css` 링크를
+   넣는다. 게임의 `style.css` 에는 공통 틀과 다른 점과 게임 고유 색(`--bg`, `--accent`, `--p0` 등)만 적고,
+   `theme-color` 는 `--bg` 의 바깥쪽 색으로 맞춘다.
 2. 루트 `index.html` 의 `games` 배열에 항목(한/영 제목·설명)을 추가한다. `modes` 로 보여 줄 탭을 정한다:
    혼자서(컴퓨터와 1:1 포함)는 `'solo'`, 여러 사람이 할 수 있으면 `'multi'`, 둘 다면 둘 다 적는다.
    `tags` 에는 분류 필터에 쓰는 `TAGS` 의 키(`sports`·`puzzle`·`card`·`board`·`strategy`)를 하나 이상 적는다.
    새 분류가 필요하면 `TAGS` 에 한/영 이름과 함께 추가한다.
 3. 렌더러는 `shared/gpu.js` 의 `createRenderer(THREE, options)` 로 만든다 (아래 모바일 GPU 참고).
+4. `npm run thumbs -- <디렉토리>` 로 게임 목록 카드의 썸네일 `thumbs/<디렉토리>.webp` 를 만든다.
+   헤드리스 Chrome(`google-chrome`)으로 게임을 열어 3D 장면만 찍는다. 메뉴 뒤 장면이 비어 있으면
+   `scripts/thumbs.mjs` 의 `BEFORE` 에 찍기 전에 누를 버튼을 적는다.
 
 ## 공통 모듈 (`shared/`)
 
+- **공통 스타일** `shared/theme.css`, `shared/game.css`: `theme.css` 는 게임 목록과 모든 게임이 같이 쓰는 색 토큰
+  (`--ink`·`--muted`·`--brass`·`--panel`·`--line`·`--bg`), 글꼴(`--font-body` 는 Pretendard, `--font-display` 는
+  제목·큰 숫자용 Hahmlet), 키보드 포커스 표시. `game.css` 는 게임 화면의 공통 틀(바탕, 게임 목록·언어 버튼,
+  버튼과 chip, 키 표시, 로딩 화면, 시작 메뉴 카드)이다. 손가락으로 누르는 화면에서는 버튼의 키 이름을 숨기고
+  작은 알약 버튼의 누르는 자리를 넓힌다. 글꼴은 jsDelivr 에서 한글을 쓰는 만큼만 받는다.
 - **국제화** `shared/i18n.js`: 한국어/영어. 처음에는 브라우저 언어를 따르고(지원하지 않는 언어면 영어),
-  각 화면의 언어 버튼(지금 언어 이름이 적혀 있다)을 눌러 목록에서 고르면 localStorage 에 남아 모든 게임에 적용된다.
+  각 화면의 언어 버튼(지금 언어 이름이 적혀 있다. 좁은 화면에서는 한·EN 처럼 짧게)을 눌러 목록에서 고르면 localStorage 에 남아 모든 게임에 적용된다.
   게임마다 `js/i18n.js` 에 `{ ko, en }` 사전을 두고 `createT` 로 번역 함수를 만든다. HTML 의 고정 문구는
   `data-i18n` 속성과 `applyI18n(t)` 로 채운다. 언어를 늘릴 때는 `LANGUAGES` 에 한 줄 더하고 각 사전에 그 언어를
   채운다. 빠진 문구는 영어 → 한국어 순으로 물러선다.
@@ -80,7 +90,8 @@ npm test         # node --test
 - **저장** `shared/storage.js`: `browserStorage()`, 예외를 삼키는 JSON 저장소 `JsonStore`, 검증용 `isInt`·`isTime`,
   항목별 최고 기록을 합치는 `mergeLowest`. 게임의 `js/save.js` 는 `JsonStore` 를 상속해 검증만 맡는다.
 - **유틸** `shared/util.js`: 시드 난수 `createRng`, `shuffle`, `formatTime`, 프레임 보간 `damp`.
-- **메뉴·HUD** `shared/ui.js`: 선택 버튼 묶음 `segmented`, 잠깐 뜨는 알림 `createToast`.
+- **메뉴·HUD** `shared/ui.js`: 선택 버튼 묶음 `segmented`, 잠깐 뜨는 알림 `createToast`, 메뉴가 열릴 때
+  키보드 사용자에게만 기본 버튼으로 포커스를 옮기는 `focusForKeyboard`.
 - **공용 에셋** `shared/assets/`: 여러 게임이 같이 쓰는 카드·칩·텍스처·캐릭터·HDRI. 출처는 `shared/assets/CREDITS.md`.
 
 ## 배포

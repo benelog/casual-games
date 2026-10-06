@@ -18,7 +18,7 @@ const params = new URLSearchParams(location.search);
 const variant = VARIANTS[params.get('game')];
 
 applyI18n(t);
-mountLangToggle(document.querySelector('.top nav'), { className: 'back' });
+mountLangToggle($('lang-controls'), { className: 'chip' });
 
 const scene = new TableScene($('stage'));
 const slider = $('raise-slider');

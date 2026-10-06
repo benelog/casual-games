@@ -9,6 +9,7 @@ import { DefenseScene } from './scene.js';
 import { Sound } from './sound.js';
 import { t } from './i18n.js';
 import { applyI18n, formatNumber, mountLangToggle } from '../../shared/i18n.js';
+import { focusForKeyboard } from '../../shared/ui.js';
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
@@ -459,7 +460,7 @@ function showMenu(saved) {
     newGame();
   };
   $('menu').hidden = false;
-  $('btn-continue').focus();
+  focusForKeyboard($('btn-continue'));
 }
 
 const sideLayout = window.matchMedia('(max-height: 520px) and (min-aspect-ratio: 4/3)');

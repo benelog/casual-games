@@ -2,6 +2,8 @@
   --ink: #f2f4f7;
   --muted: #a9b0bc;
   --accent: #ffc531;
+  --brass: var(--accent); /* 공통 버튼·테두리 강조색을 노란 차선색으로 */
+  --bg: #0f1217;
   --panel: rgba(14, 17, 23, 0.82);
   --line: rgba(242, 244, 247, 0.16);
   --done: #3fe08a;
@@ -9,36 +11,9 @@
   --wheel: min(150px, 38vw);
 }
 
-* {
-  box-sizing: border-box;
-}
-
-[hidden] {
-  display: none !important;
-}
-
-html,
 body {
-  height: 100%;
-  margin: 0;
-  overflow: hidden;
-  background: #0f1217;
-  color: var(--ink);
-  font-family: 'Pretendard', 'Noto Sans KR', system-ui, sans-serif;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
-}
-
-#stage {
-  position: fixed;
-  inset: 0;
-  touch-action: none; /* 휠 확대 말고는 화면을 끌어 움직이지 않는다 */
-}
-
-#stage canvas {
-  display: block;
 }
 
 /* ---------- 위쪽 막대 ---------- */
@@ -55,21 +30,6 @@ body {
   font-size: 14px;
   pointer-events: none;
   z-index: 2; /* 단계 선택 화면 위에서도 목록·언어 버튼을 누를 수 있게 */
-}
-
-.back {
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  color: var(--ink);
-  text-decoration: none;
-  pointer-events: auto;
-  white-space: nowrap;
-}
-
-.back:hover {
-  border-color: var(--accent);
 }
 
 #stats {
@@ -103,75 +63,23 @@ body {
   color: var(--bad);
 }
 
-.controls {
-  display: flex;
-  gap: 6px;
-  margin-left: auto;
-}
-
 #stats:not([hidden]) + .controls,
-#controls + #lang-controls {
+#controls:not([hidden]) + #lang-controls {
   margin-left: 0;
 }
 
 /* ---------- 버튼 ---------- */
 
-button {
-  padding: 10px 14px;
-  border: 1px solid var(--accent);
-  border-radius: 10px;
-  background: var(--accent);
-  color: #1d1604;
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-  pointer-events: auto;
-  touch-action: manipulation;
-}
-
-button.secondary,
-button.chip {
-  background: var(--panel);
-  color: var(--ink);
-  border-color: var(--line);
-}
-
 button.chip {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-size: 13px;
   white-space: nowrap;
-}
-
-button.chip[aria-pressed='false'] {
-  color: var(--muted);
-  text-decoration: line-through;
-}
-
-button:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 2px;
 }
 
 button:disabled {
   opacity: 0.4;
   cursor: default;
-}
-
-kbd {
-  display: inline-block;
-  min-width: 1.4em;
-  padding: 0 4px;
-  border-radius: 4px;
-  border: 1px solid currentColor;
-  font: inherit;
-  font-size: 11px;
-  line-height: 1.4;
-  text-align: center;
-  opacity: 0.7;
 }
 
 /* ---------- 시점·궤적 ---------- */
@@ -502,7 +410,7 @@ kbd {
   left: 50%;
   top: 28%;
   transform: translate(-50%, -50%);
-  font-family: Georgia, 'Noto Serif KR', serif;
+  font-family: var(--font-display);
   font-size: 26px;
   white-space: nowrap;
   text-shadow:
@@ -592,13 +500,6 @@ kbd {
   width: min(560px, 100%);
 }
 
-.card h1 {
-  margin: 0;
-  font-family: Georgia, 'Noto Serif KR', serif;
-  font-size: 30px;
-  font-weight: 400;
-}
-
 #result[data-tone='win'] h1 {
   color: var(--accent);
 }
@@ -616,10 +517,6 @@ kbd {
 
 .card .best:empty {
   display: none;
-}
-
-.card > button {
-  width: 100%;
 }
 
 .stars {
@@ -723,43 +620,6 @@ kbd {
 .level-grid .level.current {
   border-color: var(--accent);
   box-shadow: 0 0 0 1px var(--accent);
-}
-
-.help {
-  color: var(--muted);
-  font-size: 13px;
-  text-align: left;
-}
-
-.help summary {
-  cursor: pointer;
-  text-align: center;
-}
-
-.help dl {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 6px 12px;
-  margin: 10px 0 0;
-}
-
-.help dt {
-  color: var(--ink);
-  white-space: nowrap;
-}
-
-.help dd {
-  margin: 0;
-}
-
-#loading {
-  position: fixed;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  padding: 20px;
-  color: var(--muted);
-  text-align: center;
 }
 
 /* ---------- 좁은 화면 ---------- */

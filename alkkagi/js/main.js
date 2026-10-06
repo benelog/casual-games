@@ -10,7 +10,7 @@ import { SaveStore, browserStorage, OPPONENTS } from './save.js';
 import { Sound } from './sound.js';
 import { t } from './i18n.js';
 import { applyI18n, mountLangToggle } from '../../shared/i18n.js';
-import { segmented, createToast } from '../../shared/ui.js';
+import { segmented, createToast, focusForKeyboard } from '../../shared/ui.js';
 
 const $ = (id) => document.getElementById(id);
 const show = (id, on) => {
@@ -121,7 +121,7 @@ function openMenu() {
   show('menu', true);
   show('result', false);
   updateChrome();
-  $('btn-start').focus();
+  focusForKeyboard($('btn-start'));
 }
 
 function start() {
@@ -526,7 +526,7 @@ function endGame() {
   $('result').dataset.tone = versus ? `p${winner}` : won ? 'win' : 'lose';
   sound.play(won ? 'win' : 'lose');
   show('result', true);
-  $('btn-again').focus();
+  focusForKeyboard($('btn-again'));
 }
 
 /** 한 판 더: 먼저 하는 편을 바꾼다 */

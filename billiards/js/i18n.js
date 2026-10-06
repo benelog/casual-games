@@ -136,7 +136,7 @@ export const MESSAGES = {
   },
   en: {
     title: 'Billiards · Casual Games',
-    back: '← Games',
+    back: '← All games',
     tableLabel: 'Billiards table',
     loading: 'Brushing the cloth…',
     loadFailed: 'Could not load: {message}',

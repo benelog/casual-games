@@ -9,40 +9,7 @@
   --p1: #3a86e8;
   --p2: #f0c02f;
   --p3: #3fae6a;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-[hidden] {
-  display: none !important;
-}
-
-html,
-body {
-  height: 100%;
-  margin: 0;
-  overflow: hidden;
-  background: radial-gradient(circle at 50% 40%, #3a2c1e, #0c0a08 75%);
-  color: var(--ink);
-  font-family: 'Pretendard', 'Noto Sans KR', system-ui, sans-serif;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-}
-
-#stage {
-  position: fixed;
-  inset: 0;
-  touch-action: none;
-}
-
-#stage canvas {
-  display: block;
-}
-
-#stage:focus {
-  outline: none;
+  --bg: radial-gradient(circle at 50% 40%, #3a2c1e, #0c0a08 75%);
 }
 
 /* ---------- 위쪽 막대 ---------- */
@@ -59,27 +26,6 @@ body {
   font-size: 14px;
   pointer-events: none;
   z-index: 1; /* 시작 화면 위에서도 목록·언어 버튼을 누를 수 있게 */
-}
-
-.back {
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  color: var(--ink);
-  text-decoration: none;
-  pointer-events: auto;
-  white-space: nowrap;
-}
-
-.back:hover {
-  border-color: var(--brass);
-}
-
-.controls {
-  display: flex;
-  gap: 6px;
-  margin-left: auto;
 }
 
 #teams:not([hidden]) + #controls {
@@ -299,7 +245,7 @@ button.result {
 }
 
 button.result b {
-  font-family: Georgia, 'Noto Serif KR', serif;
+  font-family: var(--font-display);
   font-size: 21px;
 }
 
@@ -357,57 +303,6 @@ button.result:disabled[aria-pressed='false'] {
   cursor: default;
 }
 
-/* ---------- 버튼 ---------- */
-
-button {
-  padding: 10px 14px;
-  border: 1px solid var(--brass);
-  border-radius: 10px;
-  background: var(--brass);
-  color: #1a1408;
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-  pointer-events: auto;
-  touch-action: manipulation;
-}
-
-button.secondary,
-button.chip {
-  background: var(--panel);
-  color: var(--ink);
-  border-color: var(--line);
-}
-
-button.chip {
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-size: 13px;
-}
-
-button.chip[aria-pressed='false'] {
-  color: var(--muted);
-  text-decoration: line-through;
-}
-
-button:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 2px;
-}
-
-kbd {
-  display: inline-block;
-  min-width: 1.4em;
-  padding: 0 4px;
-  border-radius: 4px;
-  border: 1px solid currentColor;
-  font: inherit;
-  font-size: 11px;
-  line-height: 1.4;
-  text-align: center;
-  opacity: 0.7;
-}
-
 /* ---------- 알림 ---------- */
 
 #toast {
@@ -415,7 +310,7 @@ kbd {
   left: 50%;
   top: 34%;
   transform: translate(-50%, -50%);
-  font-family: Georgia, 'Noto Serif KR', serif;
+  font-family: var(--font-display);
   font-size: 28px;
   white-space: nowrap;
   text-shadow:
@@ -516,13 +411,6 @@ kbd {
   text-align: center;
 }
 
-.card h1 {
-  margin: 0;
-  font-family: Georgia, 'Noto Serif KR', serif;
-  font-size: 30px;
-  font-weight: 400;
-}
-
 #result h1 {
   color: var(--color, var(--accent));
 }
@@ -554,28 +442,6 @@ kbd {
   display: none;
 }
 
-.card > button {
-  width: 100%;
-}
-
-fieldset {
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-legend {
-  margin-bottom: 6px;
-  padding: 0;
-  color: var(--muted);
-  font-size: 12px;
-}
-
-.segmented {
-  display: flex;
-  gap: 6px;
-}
-
 .segmented .option {
   flex: 1;
   display: flex;
@@ -586,12 +452,6 @@ legend {
   border-color: var(--line);
   color: var(--ink);
   font-size: 14px;
-}
-
-.segmented .option small {
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 400;
 }
 
 .segmented .option[aria-pressed='true'] {
@@ -638,48 +498,6 @@ legend {
 
 .seat .option {
   padding: 6px;
-}
-
-.help {
-  color: var(--muted);
-  font-size: 13px;
-  text-align: left;
-}
-
-.help summary {
-  cursor: pointer;
-  text-align: center;
-}
-
-.help p {
-  margin: 10px 0 0;
-  font-size: 13px;
-}
-
-.help dl {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 6px 12px;
-  margin: 10px 0 0;
-}
-
-.help dt {
-  color: var(--ink);
-  white-space: nowrap;
-}
-
-.help dd {
-  margin: 0;
-}
-
-#loading {
-  position: fixed;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  padding: 20px;
-  color: var(--muted);
-  text-align: center;
 }
 
 /* ---------- 좁은 화면 ---------- */

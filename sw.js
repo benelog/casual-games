@@ -4,7 +4,7 @@
 // - CDN 라이브러리(three.js 등): 주소에 버전이 박혀 있어 캐시에 있으면 그대로 쓴다
 // 껍데기 목록이나 캐시 방식을 바꾸면 VERSION 을 올린다.
 
-const VERSION = 'v1';
+const VERSION = 'v2';
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 const CDN = `cdn-${VERSION}`;
@@ -16,6 +16,7 @@ const SHELL_FILES = [
   'icons/icon-192.png',
   'icons/icon-512.png',
   'icons/maskable-512.png',
+  'shared/theme.css',
   'shared/i18n.js',
   'shared/pwa.js',
 ];

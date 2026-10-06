@@ -15,7 +15,7 @@ const params = new URLSearchParams(location.search);
 
 applyI18n(t);
 for (const el of document.querySelectorAll('[data-shortcut]')) el.title = t('shortcut', { key: el.dataset.shortcut });
-mountLangToggle(document.querySelector('.top nav'), { className: 'back' });
+mountLangToggle($('lang-controls'), { className: 'chip' });
 
 const scene = new TableScene($('stage'));
 const CHIP_VALUES = [10, 50, 100, 500];

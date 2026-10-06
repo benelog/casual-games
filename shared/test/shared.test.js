@@ -85,11 +85,11 @@ test('mergeLowest 는 항목마다 작은 값을 남긴다', () => {
   });
 });
 
-test('LANGUAGES 의 언어마다 이름·라벨·로케일이 있다', () => {
+test('LANGUAGES 의 언어마다 이름·짧은 이름·라벨·로케일이 있다', () => {
   assert.deepEqual(LANGS, Object.keys(LANGUAGES));
   for (const code of LANGS) {
-    const { name, label, locale } = LANGUAGES[code];
-    assert.ok(name && label && locale, code);
+    const { name, short, label, locale } = LANGUAGES[code];
+    assert.ok(name && short && label && locale, code);
   }
 });
 

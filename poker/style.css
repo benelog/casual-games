@@ -1,38 +1,3 @@
-:root {
-  --ink: #f3ecdc;
-  --muted: #b9b09c;
-  --brass: #d9b46a;
-  --panel: rgba(12, 14, 19, 0.78);
-  --line: rgba(243, 236, 220, 0.16);
-}
-
-* {
-  box-sizing: border-box;
-}
-
-[hidden] {
-  display: none !important;
-}
-
-html,
-body {
-  height: 100%;
-  margin: 0;
-  overflow: hidden;
-  background: #0b0d12;
-  color: var(--ink);
-  font-family: 'Pretendard', 'Noto Sans KR', system-ui, sans-serif;
-}
-
-#stage {
-  position: fixed;
-  inset: 0;
-}
-
-#stage canvas {
-  display: block;
-}
-
 .labels {
   position: absolute;
   inset: 0;
@@ -83,9 +48,9 @@ body {
   right: 0;
   display: flex;
   z-index: 2;
-  justify-content: space-between;
   align-items: center;
-  padding: 14px 18px;
+  gap: 8px;
+  padding: max(10px, env(safe-area-inset-top)) 14px 8px;
   font-size: 14px;
   color: var(--muted);
   pointer-events: none;
@@ -96,27 +61,8 @@ body {
   gap: 8px;
 }
 
-.back {
-  pointer-events: auto;
-  color: var(--ink);
-  text-decoration: none;
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  white-space: nowrap;
-}
-
-.back:hover {
-  border-color: var(--brass);
-}
-
-/* 한/EN 전환 버튼. 옆의 링크와 같은 모양으로 */
-.lang-toggle {
-  font-weight: 400;
-}
-
 #info {
+  margin-left: auto;
   padding: 6px 12px;
   border-radius: 999px;
   background: var(--panel);
@@ -138,20 +84,6 @@ body {
   }
 }
 
-#loading {
-  position: fixed;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  background: #0b0d12;
-  color: var(--muted);
-  font-family: Georgia, 'Noto Serif KR', serif;
-  font-size: 18px;
-  padding: 24px;
-  text-align: center;
-  line-height: 1.6;
-}
-
 #menu {
   position: fixed;
   inset: 0;
@@ -168,7 +100,7 @@ body {
 
 #menu h1 {
   margin: 0;
-  font-family: Georgia, 'Noto Serif KR', serif;
+  font-family: var(--font-display);
   font-size: 38px;
   font-weight: 400;
 }
@@ -253,7 +185,7 @@ body {
 }
 
 #banner-title {
-  font-family: Georgia, 'Noto Serif KR', serif;
+  font-family: var(--font-display);
   font-size: 24px;
 }
 
@@ -337,11 +269,6 @@ button {
 
 button:hover:not(:disabled) {
   border-color: var(--brass);
-}
-
-button:focus-visible {
-  outline: 2px solid var(--brass);
-  outline-offset: 2px;
 }
 
 button:disabled {

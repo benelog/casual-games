@@ -7,10 +7,10 @@
 // HTML 의 고정 문구는 data-i18n="키" (textContent), data-i18n-html, data-i18n-title,
 // data-i18n-aria-label, data-i18n-placeholder 로 표시하고 applyI18n(t) 로 채운다.
 
-/** 지원 언어. name 은 그 언어로 쓴 이름, label 은 그 언어로 '언어', locale 은 숫자 표기에 쓴다 */
+/** 지원 언어. name 은 그 언어로 쓴 이름, short 는 좁은 화면의 버튼에 쓰는 짧은 이름, label 은 그 언어로 '언어', locale 은 숫자 표기에 쓴다 */
 export const LANGUAGES = {
-  ko: { name: '한국어', label: '언어', locale: 'ko-KR' },
-  en: { name: 'English', label: 'Language', locale: 'en-US' },
+  ko: { name: '한국어', short: '한', label: '언어', locale: 'ko-KR' },
+  en: { name: 'English', short: 'EN', label: 'Language', locale: 'en-US' },
 };
 export const LANGS = Object.keys(LANGUAGES);
 /** 브라우저 언어를 지원하지 않거나 사전에 문구가 없을 때 쓰는 언어 */
@@ -87,12 +87,17 @@ export function applyI18n(t, root = globalThis.document) {
 const MENU_STYLE = `
 .lang-toggle { display: inline-flex; align-items: center; gap: 0.35em; }
 .lang-toggle svg { flex: none; }
+.lang-toggle .lang-short { display: none; }
+@media (max-width: 480px) {
+  .lang-toggle .lang-name { display: none; }
+  .lang-toggle .lang-short { display: inline; }
+}
 .lang-menu {
   position: fixed; z-index: 10000; min-width: 140px; padding: 4px;
   border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 10px;
   background: rgba(20, 22, 28, 0.96); color: #f3ecdc;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
-  font: 14px/1.2 system-ui, sans-serif;
+  font: 14px/1.2 var(--font-body, system-ui, sans-serif);
 }
 .lang-menu[hidden] { display: none; }
 .lang-menu button {
@@ -100,7 +105,8 @@ const MENU_STYLE = `
   border: 0; border-radius: 6px; background: transparent; color: inherit;
   font: inherit; text-align: left; cursor: pointer;
 }
-.lang-menu button:hover, .lang-menu button:focus-visible { background: rgba(255, 255, 255, 0.1); outline: none; }
+.lang-menu button:hover, .lang-menu button:focus-visible { background: rgba(255, 255, 255, 0.1); }
+.lang-menu button:focus-visible { outline: 2px solid var(--focus, #f3ecdc); outline-offset: -2px; }
 .lang-menu button[aria-checked='true']::before { content: '✓'; position: absolute; left: 11px; }
 `;
 
@@ -127,8 +133,10 @@ export function mountLangToggle(container, { className = '' } = {}) {
   const button = document.createElement('button');
   button.type = 'button';
   button.className = `lang-toggle ${className}`.trim();
-  button.innerHTML = `${GLOBE}<span></span><span aria-hidden="true">▾</span>`;
-  button.children[1].textContent = current.name;
+  // 좁은 화면에서는 위쪽 막대에 버튼이 다 들어가도록 짧은 이름(한·EN)을 보인다
+  button.innerHTML = `${GLOBE}<span class="lang-name"></span><span class="lang-short"></span><span aria-hidden="true">▾</span>`;
+  button.querySelector('.lang-name').textContent = current.name;
+  button.querySelector('.lang-short').textContent = current.short;
   button.title = current.label;
   button.setAttribute('aria-label', `${current.label}: ${current.name}`);
   button.setAttribute('aria-haspopup', 'menu');

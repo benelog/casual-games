@@ -9,6 +9,11 @@
     <link rel="icon" href="../icons/icon-192.png" />
     <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png" />
     <script src="../shared/pwa.js" defer></script>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" crossorigin />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/hahmlet@5.3.0/index.css" crossorigin />
+    <link rel="stylesheet" href="../shared/theme.css" />
+    <link rel="stylesheet" href="../shared/game.css" />
     <link rel="stylesheet" href="style.css" />
     <script type="importmap">
       {
@@ -28,13 +33,16 @@
         <a class="back" id="change" href="index.html" hidden data-i18n="change">종목 변경</a>
       </nav>
       <span id="info"></span>
+      <div class="controls" id="lang-controls"></div>
     </header>
 
     <div id="loading" data-i18n="loading">테이블을 준비하는 중…</div>
     <script>
       // file:// 로 열면 브라우저가 모듈 스크립트와 에셋 로딩을 막아 아래 main.js 가 실행되지 않는다
       if (location.protocol === 'file:') {
-        document.getElementById('loading').textContent =
+        const box = document.getElementById('loading');
+        box.dataset.problem = '';
+        box.textContent =
           '파일을 직접 열면 실행되지 않습니다. 저장소 루트에서 npm start 를 실행한 뒤 http://localhost:8000 으로 접속하세요. / ' +
           'This page does not work when opened as a file. Run npm start from the repository root and visit http://localhost:8000.';
       }

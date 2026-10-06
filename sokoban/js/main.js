@@ -8,7 +8,7 @@ import { SokobanScene } from './scene.js';
 import { Sound } from './sound.js';
 import { t } from './i18n.js';
 import { applyI18n, formatNumber, mountLangToggle } from '../../shared/i18n.js';
-import { createToast } from '../../shared/ui.js';
+import { createToast, focusForKeyboard } from '../../shared/ui.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -86,7 +86,7 @@ function setState(next) {
 function openSelect() {
   renderSelect();
   setState('select');
-  $('btn-continue').focus();
+  focusForKeyboard($('btn-continue'));
 }
 
 /** 판만 새로 놓는다 (레벨 선택 뒤 배경으로도 쓴다) */
@@ -126,7 +126,7 @@ function showResult() {
   $('result').dataset.tone = improved ? 'win' : '';
   show('btn-next', !last);
   show('result', true);
-  (last ? $('btn-result-levels') : $('btn-next')).focus();
+  focusForKeyboard(last ? $('btn-result-levels') : $('btn-next'));
 }
 
 // ---------- HUD ----------

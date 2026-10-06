@@ -2,39 +2,46 @@
 <html lang="ko">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Casual Games</title>
     <meta name="theme-color" content="#0b0d12" />
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="icon" href="icons/icon-192.png" />
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
     <script src="shared/pwa.js" defer></script>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" crossorigin />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/hahmlet@5.3.0/index.css" crossorigin />
+    <link rel="stylesheet" href="shared/theme.css" />
     <style>
+      /* 색·글꼴·포커스 표시는 shared/theme.css 에 있다 */
       :root {
-        --ink: #f3ecdc;
-        --muted: #b9b09c;
-        --brass: #d9b46a;
-      }
-      * {
-        box-sizing: border-box;
+        --bg: #0b0d12;
       }
       body {
         margin: 0;
         min-height: 100vh;
-        padding: 64px 20px;
-        background: radial-gradient(circle at 50% 0%, #1b2a24, #0b0d12 60%);
+        padding: max(40px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(64px, env(safe-area-inset-bottom))
+          max(20px, env(safe-area-inset-left));
+        background: radial-gradient(circle at 50% 0%, #1b2a24, var(--bg) 60%);
         color: var(--ink);
-        font-family: 'Pretendard', 'Noto Sans KR', system-ui, sans-serif;
+        font-family: var(--font-body);
       }
       main {
-        position: relative;
-        max-width: 880px;
+        max-width: 920px;
         margin: 0 auto;
       }
+      header {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+      }
+      .heading {
+        flex: 1;
+        min-width: 0;
+      }
       .lang-toggle {
-        position: absolute;
-        top: -44px;
-        right: 0;
+        flex: none;
         padding: 6px 14px;
         border: 1px solid rgba(243, 236, 220, 0.24);
         border-radius: 999px;
@@ -44,16 +51,15 @@
         font-size: 13px;
         cursor: pointer;
       }
-      .lang-toggle:hover,
-      .lang-toggle:focus-visible {
+      .lang-toggle:hover {
         border-color: var(--brass);
-        outline: none;
       }
       h1 {
         margin: 0 0 6px;
-        font-family: Georgia, 'Noto Serif KR', serif;
+        font-family: var(--font-display);
         font-size: 40px;
         font-weight: 400;
+        line-height: 1.15;
       }
       p {
         margin: 0;
@@ -74,10 +80,8 @@
         font-size: 15px;
         cursor: pointer;
       }
-      .tabs button:hover,
-      .tabs button:focus-visible {
+      .tabs button:hover {
         border-color: var(--brass);
-        outline: none;
       }
       .tabs button[aria-selected='true'] {
         border-color: var(--brass);
@@ -100,10 +104,8 @@
         font-size: 13px;
         cursor: pointer;
       }
-      .filters button:hover,
-      .filters button:focus-visible {
+      .filters button:hover {
         border-color: var(--brass);
-        outline: none;
       }
       .filters button[aria-pressed='true'] {
         border-color: var(--brass);
@@ -116,7 +118,7 @@
       }
       .games {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
         gap: 18px;
         margin: 20px 0 0;
         padding: 0;
@@ -131,22 +133,25 @@
         background: rgba(243, 236, 220, 0.04);
         color: inherit;
         text-decoration: none;
-        transition: border-color 0.15s, transform 0.15s;
+        transition:
+          border-color 0.15s,
+          transform 0.15s;
       }
-      .games a:hover,
-      .games a:focus-visible {
+      .games a:hover {
         border-color: var(--brass);
         transform: translateY(-3px);
-        outline: none;
       }
-      .art {
-        display: grid;
-        place-items: center;
-        height: 150px;
-        font-size: 64px;
+      /* 썸네일은 실제 게임 장면. 받기 전에는 판 색으로 자리를 잡아 둔다 */
+      .shot {
+        display: block;
+        width: 100%;
+        height: auto;
+        aspect-ratio: 16 / 10;
+        object-fit: cover;
+        background: #1b2a24;
       }
       .text {
-        padding: 16px 18px 20px;
+        padding: 14px 18px 18px;
       }
       h2 {
         margin: 0 0 6px;
@@ -156,17 +161,80 @@
         font-size: 14px;
         line-height: 1.5;
       }
-      .text .tags {
-        margin: 10px 0 0;
-        color: var(--brass);
-        font-size: 12px;
+      /* 손가락으로 누르는 화면: 탭과 분류 버튼을 누르기 쉬운 높이로 */
+      @media (pointer: coarse) {
+        .tabs button,
+        .filters button,
+        .lang-toggle {
+          min-height: 40px;
+        }
+      }
+      /* 좁은 화면: 카드 대신 썸네일이 왼쪽에 붙은 한 줄 목록으로 촘촘하게 */
+      @media (max-width: 560px) {
+        body {
+          padding-top: max(28px, env(safe-area-inset-top));
+        }
+        h1 {
+          font-size: 32px;
+        }
+        .tabs {
+          margin-top: 22px;
+        }
+        .games {
+          grid-template-columns: 1fr;
+          gap: 10px;
+          margin-top: 16px;
+        }
+        .games a {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          padding: 10px;
+          border-radius: 14px;
+        }
+        .games a:hover {
+          transform: none;
+        }
+        .shot {
+          flex: none;
+          width: 104px;
+          border-radius: 8px;
+        }
+        .text {
+          min-width: 0;
+          padding: 0;
+        }
+        h2 {
+          margin-bottom: 3px;
+          font-size: 17px;
+        }
+        .text p {
+          display: -webkit-box;
+          overflow: hidden;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 2;
+          font-size: 13px;
+          line-height: 1.45;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .games a {
+          transition: none;
+        }
+        .games a:hover {
+          transform: none;
+        }
       }
     </style>
   </head>
   <body>
     <main>
-      <h1>Casual Games</h1>
-      <p data-i18n="tagline">브라우저에서 바로 즐기는 게임 모음</p>
+      <header>
+        <div class="heading">
+          <h1>Casual Games</h1>
+          <p data-i18n="tagline">브라우저에서 바로 즐기는 게임 모음</p>
+        </div>
+      </header>
       <div class="tabs" role="tablist">
         <button type="button" role="tab" id="tab-solo" data-tab="solo" aria-controls="games" data-i18n="tabSolo">혼자서</button>
         <button type="button" role="tab" id="tab-multi" data-tab="multi" aria-controls="games" data-i18n="tabMulti">여럿이</button>
@@ -180,6 +248,7 @@
       // 새 게임은 디렉토리를 만들고 여기에 한 줄 추가한다.
       // modes: 'solo' 는 혼자서(컴퓨터와 1:1 포함), 'multi' 는 여러 사람이 할 수 있는 게임. 둘 다면 두 탭에 모두 나온다
       // tags: 분류 필터에 쓰는 TAGS 의 키. 여러 개를 달 수 있다
+      // 카드 그림은 thumbs/<디렉토리>.webp 를 쓴다. npm run thumbs -- <디렉토리> 로 게임 화면을 찍어 만든다
       const TAGS = {
         sports: { ko: '스포츠', en: 'Sports' },
         puzzle: { ko: '퍼즐', en: 'Puzzle' },
@@ -197,8 +266,6 @@
             ko: '컴퓨터와 1:1로 겨루는 텍사스 홀덤 · 오마하 · 파이브 카드 드로우 · 세븐 카드 스터드',
             en: "Heads-up against the computer: Texas Hold'em · Omaha · Five-Card Draw · Seven-Card Stud",
           },
-          art: '♠',
-          background: 'radial-gradient(circle at 50% 40%, #1f8a55, #0b4a2c)',
         },
         {
           path: 'darts/index.html',
@@ -209,8 +276,6 @@
             ko: '흔들리는 조준점을 맞춰 던지는 3D 다트. 컴퓨터나 친구보다 먼저 301점을 0으로',
             en: 'Time your throw against a wobbling aim. Bring 301 down to zero before the computer or a friend',
           },
-          art: '🎯',
-          background: 'radial-gradient(circle at 50% 40%, #8a4a2a, #3a1c10)',
         },
         {
           path: 'bowling/index.html',
@@ -221,8 +286,6 @@
             ko: '위치·방향·세기를 맞춰 굴리는 3D 텐핀 볼링. 컴퓨터나 친구와 10프레임 승부',
             en: 'Line up position, direction and power in 3D ten-pin bowling. Ten frames against the computer or a friend',
           },
-          art: '🎳',
-          background: 'radial-gradient(circle at 50% 40%, #b07a3a, #4a2c12)',
         },
         {
           path: 'blackjack/index.html',
@@ -233,8 +296,6 @@
             ko: '6덱 슈로 딜러와 겨루는 블랙잭. 히트 · 스탠드 · 더블 · 스플릿 · 인슈어런스, 블랙잭 3:2',
             en: 'Beat the dealer from a six-deck shoe. Hit · Stand · Double · Split · Insurance, blackjack pays 3:2',
           },
-          art: '🂡',
-          background: 'radial-gradient(circle at 50% 40%, #1f6f8a, #0b3a4a)',
         },
         {
           path: 'defense/index.html',
@@ -245,8 +306,6 @@
             ko: '길목에 궁수탑·대포·빙결탑을 세워 20웨이브의 UFO 침공을 막아내는 3D 타워 디펜스',
             en: 'Build archer, cannon and frost towers along the path to hold off 20 waves of UFOs',
           },
-          art: '🏰',
-          background: 'radial-gradient(circle at 50% 40%, #3f8a5a, #16402a)',
         },
         {
           path: 'blocks3d/index.html',
@@ -257,8 +316,6 @@
             ko: '입체 조각을 세 축으로 돌려 우물 바닥을 채우는 3D 블록 퍼즐. 한 층이 꽉 차면 사라진다',
             en: '3D block puzzle: rotate pieces on three axes to fill the pit. Complete layers vanish',
           },
-          art: '🧊',
-          background: 'radial-gradient(circle at 50% 40%, #4a5fb0, #1c2350)',
         },
         {
           path: 'archery/index.html',
@@ -269,8 +326,6 @@
             ko: '바람을 읽고 70m 과녁을 노리는 리커브 양궁. 컴퓨터와 8강·4강·결승을 이겨 금메달, 또는 친구와 1:1',
             en: 'Read the wind and shoot at 70 m. Beat the computer from the quarterfinal to the final for gold, or face a friend',
           },
-          art: '🏹',
-          background: 'radial-gradient(circle at 50% 40%, #2f7fb8, #10324d)',
         },
         {
           path: 'sokoban/index.html',
@@ -281,8 +336,6 @@
             ko: '창고의 상자를 밀어 모두 목표 칸에 넣는 상자 밀기 퍼즐. 되돌리기와 최소 이동 기록',
             en: 'Push every crate onto its goal in a 3D warehouse. Undo freely and chase the fewest moves',
           },
-          art: '📦',
-          background: 'radial-gradient(circle at 50% 40%, #a8743a, #3d2812)',
         },
         {
           path: 'pipes/index.html',
@@ -293,8 +346,6 @@
             ko: '파이프 조각을 돌려 수원에서 모든 칸까지 물길을 잇는 퍼즐. 매번 새 퍼즐과 오늘의 퍼즐',
             en: 'Rotate pipe pieces until water reaches every tile. Endless new puzzles plus a daily one',
           },
-          art: '🚰',
-          background: 'radial-gradient(circle at 50% 40%, #2a9aa8, #0e3d48)',
         },
         {
           path: 'fruitpop/index.html',
@@ -305,8 +356,6 @@
             ko: '같은 과일 4개를 이어 터뜨리는 대전 퍼즐. 연쇄로 코코넛을 보내 컴퓨터나 친구의 판을 먼저 채운다',
             en: 'Versus puzzle: connect four of a fruit to pop them and chain pops to bury the computer or a friend in coconuts',
           },
-          art: '🍎',
-          background: 'radial-gradient(circle at 50% 40%, #c8553f, #4a1a1c)',
         },
         {
           path: 'memory/index.html',
@@ -317,8 +366,6 @@
             ko: '카드를 두 장씩 뒤집어 같은 동물 짝을 찾는 기억력 게임. 혼자서 시간·턴 수 신기록에 도전하거나 친구와 1:1',
             en: 'Flip two cards at a time to find matching animals. Chase your best time and fewest turns, or play a friend',
           },
-          art: '🃏',
-          background: 'radial-gradient(circle at 50% 40%, #2f9a6a, #123d2c)',
         },
         {
           path: 'billiards/index.html',
@@ -329,8 +376,6 @@
             ko: '4구 · 3쿠션 · 포켓볼(8볼). 회전(당점)까지 계산하는 물리로 컴퓨터나 친구와 1:1',
             en: 'Four-ball · Three-cushion · 8-ball pool with real spin physics. Play the computer or a friend',
           },
-          art: '🎱',
-          background: 'radial-gradient(circle at 50% 40%, #2a6fc4, #0e2c5a)',
         },
         {
           path: 'curling/index.html',
@@ -341,8 +386,6 @@
             ko: '회전을 걸어 휘어 들어가는 스톤을 하우스에 붙이고 스위핑으로 거리를 맞추는 3D 컬링. 컴퓨터나 친구와 엔드 승부',
             en: 'Curl stones into the house and sweep them the last few feet in 3D curling. Play ends against the computer or a friend',
           },
-          art: '🥌',
-          background: 'radial-gradient(circle at 50% 40%, #5fb3c9, #143e4f)',
         },
         {
           path: 'yut/index.html',
@@ -353,8 +396,6 @@
             ko: '윷가락을 던져 말을 옮기는 전통 놀이. 업기·잡기·지름길로 네 말을 먼저 내보내기, 컴퓨터나 친구와 2~4편',
             en: 'The traditional Korean stick-toss board game. Stack, capture and take shortcuts to bring four pieces home first, 2–4 sides vs computer or friends',
           },
-          art: '🐎',
-          background: 'radial-gradient(circle at 50% 40%, #b8452f, #4a1a12)',
         },
         {
           path: 'alkkagi/index.html',
@@ -365,8 +406,6 @@
             ko: '바둑판 위의 바둑돌을 손가락으로 튕겨 상대 돌을 판 밖으로 떨어뜨리는 놀이. 컴퓨터나 친구와 1:1',
             en: "Flick Go stones across the board to knock your opponent's stones off the edge. Play the computer or a friend",
           },
-          art: '⚫',
-          background: 'radial-gradient(circle at 50% 40%, #d9a55a, #5a3a14)',
         },
         {
           path: 'basketball/index.html',
@@ -377,8 +416,6 @@
             ko: '화면을 밀어 올려 던지는 3D 농구 슛. 자유투에서 3점 슛까지, 60초·12구 기록 도전 또는 친구와 번갈아 대결',
             en: 'Swipe up to shoot in 3D basketball. From the free-throw line out to the three-point arc: chase 60-second and 12-ball records or take turns with a friend',
           },
-          art: '🏀',
-          background: 'radial-gradient(circle at 50% 40%, #e0782f, #5a2410)',
         },
         {
           path: 'othello/index.html',
@@ -389,8 +426,6 @@
             ko: '상대 돌을 내 돌 사이에 끼워 뒤집는 3D 오델로. 놓을 곳 표시·무르기, 컴퓨터(쉬움·보통·어려움)나 친구와 1:1',
             en: "3D Othello: trap your opponent's discs between yours to flip them. Legal-move hints and undo; play the computer (easy to hard) or a friend",
           },
-          art: '◐',
-          background: 'radial-gradient(circle at 50% 40%, #3fa463, #0f3a1f)',
         },
         {
           path: 'connect6/index.html',
@@ -401,8 +436,6 @@
             ko: '19줄 바둑판에 한 번에 두 개씩 돌을 놓아 먼저 6개를 한 줄로 잇는 3D 육목. 컴퓨터(쉬움·보통·어려움)나 친구와 1:1',
             en: 'Place two stones per turn on a 19×19 Go board and be first to line up six in 3D Connect6. Play the computer (easy to hard) or a friend',
           },
-          art: '⚪',
-          background: 'radial-gradient(circle at 50% 40%, #e6b86a, #6b4316)',
         },
         {
           path: 'tuho/index.html',
@@ -413,8 +446,6 @@
             ko: '항아리에 화살을 던져 넣는 3D 전통 놀이. 입은 2점·귀는 5점, 혼자서 10발 기록 도전, 컴퓨터와 1:1 또는 친구 2~4명과 번갈아 대결',
             en: 'The traditional Korean arrow-tossing game in 3D. Land arrows in the mouth (2) or the ears (5) of a brass pot: chase a 10-arrow record, take on the computer, or play 2–4 friends on one device',
           },
-          art: '🏺',
-          background: 'radial-gradient(circle at 50% 40%, #c8995a, #4a2c14)',
         },
         {
           path: 'minigolf/index.html',
@@ -425,8 +456,6 @@
             ko: '벽에 튕기고 언덕을 넘고 풍차 날개를 피해 컵에 넣는 3D 미니 골프 9홀. 혼자서 기록 도전 또는 2~4명이 번갈아 대결',
             en: 'Nine holes of 3D mini golf: bank off walls, roll over hills and slip past the windmill. Chase your best round or take turns with 2 to 4 players',
           },
-          art: '⛳',
-          background: 'radial-gradient(circle at 50% 40%, #5cc46a, #1d5a26)',
         },
         {
           path: 'unblock/index.html',
@@ -437,8 +466,6 @@
             ko: '꽉 막힌 주차장에서 차를 앞뒤로 밀어 빨간 내 차를 출구로 빼내는 퍼즐. 입문부터 전문가까지 60단계와 오늘의 퍼즐',
             en: 'Slide cars back and forth in a jammed parking lot to get your red car out. 60 levels from beginner to expert plus a daily puzzle',
           },
-          art: '🚗',
-          background: 'radial-gradient(circle at 50% 40%, #e0503f, #4a1410)',
         },
         {
           path: 'parking/index.html',
@@ -449,8 +476,6 @@
             ko: '핸들과 페달로 차를 몰아 표시된 칸에 반듯하게 세우는 3D 주차. 기능시험 직각·평행 주차부터 지하주차장까지 14단계',
             en: 'Steer and pedal your car into the marked bay in 3D. 14 levels from driving-test T and parallel parking to a packed underground garage',
           },
-          art: '🅿️',
-          background: 'radial-gradient(circle at 50% 40%, #3f6fb0, #14243f)',
         },
       ];
 
@@ -467,7 +492,7 @@
       const pick = (text) => text[lang] ?? text.en ?? text.ko;
 
       applyI18n(t);
-      mountLangToggle(document.querySelector('main'));
+      mountLangToggle(document.querySelector('header'));
 
       const list = document.getElementById('games');
       const tabs = [...document.querySelectorAll('.tabs button')];
@@ -495,25 +520,27 @@
       const savedTag = load(TAG_KEY);
       let tag = Object.hasOwn(TAGS, savedTag ?? '') ? savedTag : 'all';
 
+      // 썸네일은 thumbs/<디렉토리>.webp. npm run thumbs 로 게임 화면을 찍어 만든다
       function createCard(game) {
         const item = document.createElement('li');
         const link = document.createElement('a');
         link.href = game.path;
-        const art = document.createElement('div');
-        art.className = 'art';
-        art.style.background = game.background;
-        art.textContent = game.art;
+        const shot = document.createElement('img');
+        shot.className = 'shot';
+        shot.src = `thumbs/${game.path.split('/')[0]}.webp`;
+        shot.alt = '';
+        shot.width = 640;
+        shot.height = 400;
+        shot.loading = 'lazy';
+        shot.decoding = 'async';
         const text = document.createElement('div');
         text.className = 'text';
         const title = document.createElement('h2');
         title.textContent = pick(game.title);
         const description = document.createElement('p');
         description.textContent = pick(game.description);
-        const tags = document.createElement('p');
-        tags.className = 'tags';
-        tags.textContent = game.tags.map((key) => `#${pick(TAGS[key])}`).join(' ');
-        text.append(title, description, tags);
-        link.append(art, text);
+        text.append(title, description);
+        link.append(shot, text);
         item.append(link);
         return item;
       }

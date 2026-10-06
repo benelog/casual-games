@@ -4,11 +4,16 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title data-i18n="pageTitle">투호 · Casual Games</title>
-    <meta name="theme-color" content="#0b0d12" />
+    <meta name="theme-color" content="#0c0a08" />
     <link rel="manifest" href="../manifest.webmanifest" />
     <link rel="icon" href="../icons/icon-192.png" />
     <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png" />
     <script src="../shared/pwa.js" defer></script>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" crossorigin />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/hahmlet@5.3.0/index.css" crossorigin />
+    <link rel="stylesheet" href="../shared/theme.css" />
+    <link rel="stylesheet" href="../shared/game.css" />
     <link rel="stylesheet" href="style.css" />
     <script type="importmap">
       {
@@ -54,7 +59,9 @@
     <script>
       // file:// 로 열면 브라우저가 모듈 스크립트와 에셋 로딩을 막아 아래 main.js 가 실행되지 않는다
       if (location.protocol === 'file:') {
-        document.getElementById('loading').textContent =
+        const box = document.getElementById('loading');
+        box.dataset.problem = '';
+        box.textContent =
           '파일을 직접 열면 실행되지 않습니다. 저장소 루트에서 npm start 를 실행한 뒤 http://localhost:8000 으로 접속하세요. ' +
           '/ This page does not run from a file. Run npm start in the repository root and open http://localhost:8000.';
       }

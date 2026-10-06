@@ -16,7 +16,7 @@ import { Sound } from './sound.js';
 import { SaveStore, browserStorage, OPPONENTS, GUIDES } from './save.js';
 import { t } from './i18n.js';
 import { applyI18n, mountLangToggle } from '../../shared/i18n.js';
-import { segmented, createToast } from '../../shared/ui.js';
+import { segmented, createToast, focusForKeyboard } from '../../shared/ui.js';
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
@@ -167,7 +167,7 @@ function openMenu() {
   show('result', false);
   updateChrome();
   renderMenu();
-  $('btn-start').focus();
+  focusForKeyboard($('btn-start'));
 }
 
 function resume() {
@@ -422,7 +422,7 @@ function finish() {
   after(1.2, () => {
     if (state !== 'done') return;
     show('result', true);
-    $('btn-again').focus();
+    focusForKeyboard($('btn-again'));
   });
 }
 

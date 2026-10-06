@@ -10,7 +10,7 @@ import { SaveStore, browserStorage, CAMERAS, SETTINGS_KEY } from './save.js';
 import { Sound } from './sound.js';
 import { t } from './i18n.js';
 import { applyI18n, mountLangToggle } from '../../shared/i18n.js';
-import { segmented, createToast } from '../../shared/ui.js';
+import { segmented, createToast, focusForKeyboard } from '../../shared/ui.js';
 
 const $ = (id) => document.getElementById(id);
 const show = (id, on) => {
@@ -105,7 +105,7 @@ function openMenu() {
   show('result', false);
   show('scorecard', false);
   updateChrome();
-  $('btn-start').focus();
+  focusForKeyboard($('btn-start'));
 }
 
 function start() {
@@ -250,7 +250,7 @@ function openCard() {
   show('btn-next', false);
   show('btn-card-close', true);
   show('scorecard', true);
-  $('btn-card-close').focus();
+  focusForKeyboard($('btn-card-close'));
 }
 
 function closeCard() {
@@ -613,7 +613,7 @@ function holeSummary(token) {
   show('btn-next', true);
   show('btn-card-close', false);
   show('scorecard', true);
-  $('btn-next').focus();
+  focusForKeyboard($('btn-next'));
   return new Promise((resolve) => {
     proceed = () => {
       proceed = null;
@@ -653,7 +653,7 @@ function endRound() {
   $('result-record').textContent = record;
   renderTable($('result-table'));
   show('result', true);
-  $('btn-again').focus();
+  focusForKeyboard($('btn-again'));
 }
 
 $('btn-start').addEventListener('click', start);

@@ -11,7 +11,7 @@ import { YutScene } from './scene.js';
 import { Sound } from './sound.js';
 import { t } from './i18n.js';
 import { applyI18n, mountLangToggle } from '../../shared/i18n.js';
-import { segmented, createToast } from '../../shared/ui.js';
+import { segmented, createToast, focusForKeyboard } from '../../shared/ui.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -158,7 +158,7 @@ function openMenu() {
   setState('menu');
   scene.setPreview(null);
   scene.setTurn(-1);
-  $('btn-start').focus();
+  focusForKeyboard($('btn-start'));
 }
 
 function newGame(first) {
@@ -210,7 +210,7 @@ function finished(team) {
 
 function showResult() {
   show('result', true);
-  $('btn-next').focus();
+  focusForKeyboard($('btn-next'));
 }
 
 // ---------- HUD ----------

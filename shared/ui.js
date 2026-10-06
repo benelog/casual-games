@@ -37,3 +37,16 @@ export function createToast(el, duration = 1.4) {
     },
   };
 }
+
+// 마지막 입력이 손가락이었는지. 터치 화면은 입력 전에도 손가락으로 본다
+let touchInput = globalThis.matchMedia?.('(pointer: coarse)').matches ?? false;
+globalThis.addEventListener?.('pointerdown', (event) => (touchInput = event.pointerType !== 'mouse'), true);
+globalThis.addEventListener?.('keydown', () => (touchInput = false), true);
+
+/**
+ * 메뉴·결과 화면이 열릴 때 기본 버튼으로 포커스를 옮긴다. 키보드 사용자는 바로 Enter·Space 로 누를 수 있고,
+ * 손가락으로 쓰는 중에는 옮기지 않아 버튼에 포커스 테두리가 생기지 않는다.
+ */
+export function focusForKeyboard(el) {
+  if (!touchInput) el?.focus();
+}
