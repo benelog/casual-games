@@ -7,6 +7,7 @@ import { VARIANTS } from './variants.js';
 import { TableScene } from './scene.js';
 import { applyI18n, formatNumber, mountLangToggle } from '../../shared/i18n.js';
 import { t } from './i18n.js';
+import { focusForKeyboard } from '../../shared/ui.js';
 
 const $ = (id) => document.getElementById(id);
 const fmt = formatNumber;
@@ -169,6 +170,7 @@ async function handle(ev) {
       }
       $('btn-next').textContent = t(ev.gameOver ? 'newGame' : 'nextHand');
       $('btn-next').hidden = false;
+      focusForKeyboard($('btn-next'));
       break;
   }
 }
@@ -276,8 +278,29 @@ for (const button of document.querySelectorAll('[data-preset]')) {
   });
 }
 
+// ---------- 도움말 ----------
+
+function openHelp() {
+  $('help').hidden = false;
+  focusForKeyboard($('btn-help-close'));
+}
+
+function closeHelp() {
+  if ($('help').hidden) return;
+  $('help').hidden = true;
+  $('btn-help').focus({ preventScroll: true });
+}
+
+$('btn-help').addEventListener('click', openHelp);
+$('btn-help-close').addEventListener('click', closeHelp);
+$('help').addEventListener('click', (e) => e.target === $('help') && closeHelp());
+
 window.addEventListener('keydown', (e) => {
-  if (e.target instanceof HTMLInputElement || e.metaKey || e.ctrlKey) return;
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.key === 'Escape') return closeHelp();
+  if (e.key === '?') return openHelp();
+  // 도움말이 열려 있는 동안은 게임 단축키를 받지 않는다
+  if (!$('help').hidden || e.target instanceof HTMLInputElement) return;
   const key = e.key.toLowerCase();
   if (legal) {
     if (key === 'f' && !legal.canCheck) playerAct({ type: 'fold' });
@@ -303,6 +326,7 @@ function showMenu() {
     $('menu-list').append(link);
   }
   $('menu').hidden = false;
+  focusForKeyboard($('menu-list').querySelector('a'));
 }
 
 // ?debug 로 열면 콘솔에서 씬과 게임 상태를 들여다볼 수 있다

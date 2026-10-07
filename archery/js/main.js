@@ -12,6 +12,7 @@ import { swayAmplitude, swayOffset, SHOT_CLOCK, HAND_SPREAD } from './aim.js';
 import { ArcheryScene } from './scene.js';
 import { Sound } from './sound.js';
 import { t } from './i18n.js';
+import { focusForKeyboard } from '../../shared/ui.js';
 
 const $ = (id) => document.getElementById(id);
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -458,7 +459,7 @@ function showPanel({ title, detail = '', tone = '', bracket = false, buttons = [
     }),
   );
   $('panel').hidden = false;
-  $('panel-buttons').querySelector('button')?.focus({ preventScroll: true });
+  focusForKeyboard($('panel-buttons').querySelector('button'));
 }
 
 function hidePanel() {
@@ -466,6 +467,7 @@ function hidePanel() {
 }
 
 function showModes() {
+  $('btn-new').hidden = true;
   const golds = readGolds();
   showPanel({
     title: t('intro.title'),
@@ -493,6 +495,7 @@ function startTournament() {
   stopPlay();
   mode = 'tournament';
   tournament = new Tournament();
+  $('btn-new').hidden = false;
   $('hud').hidden = true;
   $('gauges').hidden = true;
   setStatus('');
@@ -510,8 +513,44 @@ function startVersus() {
   sound.unlock();
   mode = 'versus';
   tournament = null;
+  $('btn-new').hidden = false;
   startMatch();
 }
+
+/** 진행 중인 경기(시상식 포함)를 그만두고 경기 방식 고르기로 돌아간다 */
+function abandonGame() {
+  if ($('btn-new').hidden) return;
+  stopPlay();
+  mode = null;
+  tournament = null;
+  match = null;
+  $('hud').hidden = true;
+  $('gauges').hidden = true;
+  setStatus('');
+  setClock(null);
+  scene.showWide();
+  showModes();
+}
+
+$('btn-new').addEventListener('click', abandonGame);
+
+// ---------- 도움말 ----------
+
+function openHelp() {
+  loose(true); // 시위를 당기고 있었다면 쏘지 않고 푼다
+  $('help').hidden = false;
+  focusForKeyboard($('btn-help-close'));
+}
+
+function closeHelp() {
+  if ($('help').hidden) return;
+  $('help').hidden = true;
+  $('btn-help').focus({ preventScroll: true });
+}
+
+$('btn-help').addEventListener('click', openHelp);
+$('btn-help-close').addEventListener('click', closeHelp);
+$('help').addEventListener('click', (e) => e.target === $('help') && closeHelp());
 
 async function startMatch() {
   sound.unlock();
@@ -563,7 +602,11 @@ const NUDGE = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, 1], ArrowDo
 
 window.addEventListener('keydown', (e) => {
   if (e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key === 'Escape' && !e.repeat) return closeHelp();
+  if (e.key === '?' && !e.repeat) return openHelp();
+  if (!$('help').hidden) return; // 도움말이 열려 있으면 게임 키는 듣지 않는다
   if (e.code === 'KeyM' && !e.repeat) toggleSound();
+  else if (e.code === 'KeyN' && !e.repeat) return abandonGame();
   if (!shot) return;
   if (e.code === 'Space') {
     e.preventDefault();
@@ -575,11 +618,14 @@ window.addEventListener('keydown', (e) => {
   }
 });
 window.addEventListener('keyup', (e) => {
-  if (e.code === 'Space' && shot) {
+  if (e.code === 'Space' && shot && $('help').hidden) {
     e.preventDefault();
     loose();
   }
 });
+
+// 창을 벗어나면 당기고 있던 시위를 놓은 것으로 본다 (쏘지는 않는다)
+window.addEventListener('blur', () => loose(true));
 
 // ?debug 로 열면 콘솔에서 씬과 경기 상태를 들여다볼 수 있다
 if (params.has('debug')) {

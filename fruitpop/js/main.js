@@ -71,6 +71,7 @@ mountLangToggle($('lang-controls'), { className: 'chip' });
 const scene = new DuelScene($('stage'));
 const store = new SaveStore(browserStorage());
 const sound = new Sound(new URL('../assets/sounds/', import.meta.url));
+$('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 
 let settings = store.loadSettings();
 let match = null; // 진행 중인 대전. 메뉴에서는 뒤에서 도는 시범 대전
@@ -431,7 +432,7 @@ for (const playerPad of $('pad').querySelectorAll('.player-pad')) {
 }
 
 function toggleSound() {
-  sound.enabled = !sound.enabled;
+  sound.setEnabled(!sound.enabled);
   $('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 }
 
@@ -458,7 +459,6 @@ function runMatch(dt) {
 }
 
 scene.onFrame = (dt) => {
-  toast.tick(dt);
   for (const i of [0, 1]) {
     if (chainTimers[i] > 0 && (chainTimers[i] -= dt) <= 0) $(`chain-${i}`).classList.remove('show');
   }

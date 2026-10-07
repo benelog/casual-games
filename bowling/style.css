@@ -50,6 +50,14 @@ button.chip:hover {
   border-color: var(--brass);
 }
 
+/* 도움말 카드의 규칙 요약 */
+.card .lead {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
 /* ---------- 점수표 ---------- */
 
 #hud {
@@ -449,6 +457,10 @@ button {
 }
 
 @media (max-width: 560px) {
+  /* 좁은 화면에서는 게임 이름을 숨겨 새 게임·도움말·소리·언어 버튼이 한 줄에 들어가게 한다 */
+  .title {
+    display: none;
+  }
   #hud {
     top: 54px;
     padding: 0 6px;

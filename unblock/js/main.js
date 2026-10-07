@@ -45,7 +45,6 @@ let padHeight = 0;
 let outcome = null; // 방금 깬 기록을 저장한 결과
 let dailyPending = null; // 오늘의 퍼즐을 만드는 중인 Promise
 
-sound.enabled = store.loadSettings().sound;
 $('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 
 const indexOfId = (id) => Math.max(0, LEVELS.findIndex((level) => level.id === id));
@@ -531,8 +530,7 @@ stage.addEventListener('pointercancel', endDrag);
 // ---------- 버튼 ----------
 
 function toggleSound() {
-  sound.enabled = !sound.enabled;
-  store.saveSettings({ sound: sound.enabled });
+  sound.setEnabled(!sound.enabled);
   $('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 }
 
@@ -560,7 +558,6 @@ window.addEventListener('blur', cancelDrag);
 // ---------- 프레임 ----------
 
 scene.onFrame = (dt) => {
-  toast.tick(dt);
   if (state === 'cleared' && resultTimer > 0 && (resultTimer -= dt) <= 0) showResult();
 };
 

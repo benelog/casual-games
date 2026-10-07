@@ -321,8 +321,8 @@ test('컴퓨터의 떨림은 실력이 높을수록 작다', () => {
 test('설정을 검증해 저장하고 읽는다', () => {
   const store = new SaveStore(memoryStorage());
   assert.deepEqual(store.loadSettings(), DEFAULT_SETTINGS);
-  store.saveSettings({ opponent: 'versus', level: 'hard', ends: 6, stones: 8, sound: false });
-  assert.deepEqual(store.loadSettings(), { opponent: 'versus', level: 'hard', ends: 6, stones: 8, sound: false });
+  store.saveSettings({ opponent: 'versus', level: 'hard', ends: 6, stones: 8 });
+  assert.deepEqual(store.loadSettings(), { opponent: 'versus', level: 'hard', ends: 6, stones: 8 });
   const broken = new SaveStore(memoryStorage({ [SETTINGS_KEY]: '{"ends":5,"stones":"8","level":"pro"}' }));
   assert.deepEqual(broken.loadSettings(), DEFAULT_SETTINGS);
 });

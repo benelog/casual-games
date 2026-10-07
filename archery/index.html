@@ -2,7 +2,7 @@
 <html lang="ko">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title data-i18n="doc.title">양궁 · Casual Games</title>
     <meta name="theme-color" content="#0b0d12" />
     <link rel="manifest" href="../manifest.webmanifest" />
@@ -31,6 +31,8 @@
       <a class="back" href="../index.html" data-i18n="back">← 게임 목록</a>
       <div class="actions" id="actions">
         <span class="title" data-i18n="title">양궁</span>
+        <button type="button" class="chip" id="btn-new" hidden data-i18n="newGame" data-i18n-title="newGame.title">새 게임</button>
+        <button type="button" class="chip" id="btn-help" data-i18n="help" data-i18n-title="help.title" aria-haspopup="dialog">도움말</button>
         <button type="button" class="chip" id="btn-sound" aria-pressed="true" data-i18n="sound" data-i18n-title="sound.title">소리</button>
       </div>
     </header>
@@ -92,6 +94,30 @@
       </div>
       <div id="status" role="status" aria-live="polite"></div>
     </footer>
+
+    <div id="help" class="overlay" role="dialog" aria-modal="true" aria-labelledby="help-title" hidden>
+      <div class="card">
+        <h1 id="help-title" data-i18n="help.heading">양궁</h1>
+        <p class="lead" data-i18n="help.rules">70m 과녁에 한 세트 3발씩 번갈아 쏘고, 합계가 높은 쪽이 세트 점수 2점(같으면 1점씩)을 얻어 6점을 먼저 채우면 이깁니다. 토너먼트는 컴퓨터와 8강 → 4강 → 결승을 치르고, 모두 이기면 금메달을 받습니다.</p>
+        <div class="help">
+          <dl>
+            <dt data-i18n="help.pointerKey">마우스 · 터치</dt>
+            <dd data-i18n="help.pointer">누르면 시위를 당기고, 움직여 겨눈 뒤 손을 떼면 쏩니다</dd>
+            <dt><kbd>Space</kbd></dt>
+            <dd data-i18n="help.space">누르고 있으면 당기기, 떼면 쏘기</dd>
+            <dt><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd></dt>
+            <dd data-i18n-html="help.nudge">조준점 미세 이동 (<kbd>Shift</kbd> 와 함께 누르면 더 미세하게)</dd>
+            <dt data-i18n="help.windKey">바람 · 시간</dt>
+            <dd data-i18n="help.wind">오른쪽 위 계기의 바람 방향과 세기를 보고 조준점을 옮기세요. 한 발에 20초 제한이고, 넘기면 0점입니다</dd>
+            <dt><kbd>N</kbd></dt>
+            <dd data-i18n="help.new">새 게임 (진행 중인 경기를 그만두고 경기 방식 고르기)</dd>
+            <dt><kbd>M</kbd> · <kbd>?</kbd></dt>
+            <dd data-i18n="help.other">소리 · 이 도움말</dd>
+          </dl>
+        </div>
+        <button type="button" id="btn-help-close"><span data-i18n="close">닫기</span> <kbd>Esc</kbd></button>
+      </div>
+    </div>
 
     <script type="module" src="js/main.js"></script>
   </body>

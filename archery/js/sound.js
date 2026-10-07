@@ -21,7 +21,7 @@ const SOUNDS = {
 
 export class Sound extends BaseSound {
   constructor(baseUrl) {
-    super(baseUrl, SOUNDS, { storageKey: 'casual-games.archery.sound', jitter: 0.06 });
+    super(baseUrl, SOUNDS, { jitter: 0.06 });
     this.long = new Set(); // 끌 수 있게 들고 있는 긴 소리 (박수·팡파르)
   }
 

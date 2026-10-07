@@ -38,7 +38,6 @@ const toast = createToast($('toast'), 1.6);
 
 let settings = store.loadSettings();
 if (VARIANT_IDS.includes(params.get('game'))) settings.variant = params.get('game');
-sound.enabled = settings.sound;
 $('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 
 let game = null;
@@ -786,8 +785,6 @@ window.addEventListener('keydown', (e) => {
 function toggleSound() {
   sound.unlock();
   sound.setEnabled(!sound.enabled);
-  settings = { ...settings, sound: sound.enabled };
-  store.saveSettings({ ...store.loadSettings(), sound: sound.enabled });
   $('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 }
 
@@ -870,7 +867,6 @@ function runCpu(dt) {
 }
 
 scene.onFrame = (dt) => {
-  toast.tick(dt);
   if (timers.length && state !== 'menu') {
     const due = [];
     timers = timers.filter((timer) => {

@@ -46,7 +46,6 @@ let aim = null; // 사람이 화살을 들고 있는 동안 { resolve, drag, yaw
 let cpuAim = null; // 컴퓨터가 겨누는 동안 흔들림 보여 주기 { t }
 let flight = null; // 결과를 기다리는 화살 { arrow, resolve }
 
-sound.enabled = settings.sound;
 $('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 
 // ---------- 메뉴 ----------
@@ -489,8 +488,6 @@ for (const type of ['pointerdown', 'keydown']) window.addEventListener(type, () 
 function toggleSound() {
   sound.unlock();
   sound.setEnabled(!sound.enabled);
-  settings = { ...settings, sound: sound.enabled };
-  store.saveSettings(settings);
   $('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 }
 
@@ -555,7 +552,6 @@ window.addEventListener('blur', () => {
 
 /** 손 흔들림을 움직이고 손에 든 화살·조준선에 보여 준다. 움직이는 것이 있으면 true */
 scene.onFrame = (dt) => {
-  toast.tick(dt);
   if (cpuAim) {
     cpuAim.t += dt;
     const off = swayOffset(cpuAim.t);

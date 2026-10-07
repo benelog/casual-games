@@ -127,11 +127,11 @@ test('2인 대전: 점수가 같으면 무승부', () => {
 // ---------- 저장 ----------
 
 test('설정을 검증해 읽고 쓴다', () => {
-  const storage = memoryStorage({ [SETTINGS_KEY]: '{"mode":"nope","sound":3}' });
+  const storage = memoryStorage({ [SETTINGS_KEY]: '{"mode":"nope"}' });
   const store = new SaveStore(storage);
   assert.deepEqual(store.loadSettings(), DEFAULT_SETTINGS);
-  store.saveSettings({ mode: 'versus', sound: false });
-  assert.deepEqual(store.loadSettings(), { mode: 'versus', sound: false });
+  store.saveSettings({ mode: 'versus' });
+  assert.deepEqual(store.loadSettings(), { mode: 'versus' });
 });
 
 test('모드별 최고 점수와 최고 연속 성공을 따로 겨룬다', () => {

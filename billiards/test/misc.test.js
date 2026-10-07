@@ -45,7 +45,7 @@ test('이름과 숫자 자리를 채운다', () => {
 
 test('설정: 잘못된 값은 기본값으로', () => {
   assert.deepEqual(validateSettings(null), DEFAULT_SETTINGS);
-  const s = validateSettings({ variant: 'snooker', opponent: 'friend', level: 'hard', targets: { fourball: 30, threecushion: 7 }, guide: 'short', camera: 'cue', sound: 'x' });
+  const s = validateSettings({ variant: 'snooker', opponent: 'friend', level: 'hard', targets: { fourball: 30, threecushion: 7 }, guide: 'short', camera: 'cue' });
   assert.equal(s.variant, 'fourball');
   assert.equal(s.opponent, 'friend');
   assert.equal(s.level, 'hard');
@@ -54,7 +54,6 @@ test('설정: 잘못된 값은 기본값으로', () => {
   assert.equal(s.targets.eightball, VARIANTS.eightball.defaultTarget);
   assert.equal(s.guide, 'short');
   assert.equal(s.camera, 'cue');
-  assert.equal(s.sound, true);
 });
 
 test('설정과 전적을 저장하고 깨진 데이터는 버린다', () => {

@@ -168,10 +168,10 @@ test('인원은 1~4명', () => {
 // ---------- 저장 ----------
 
 test('설정: 잘못된 값은 기본값으로', () => {
-  const store = new SaveStore(memoryStorage({ [SETTINGS_KEY]: JSON.stringify({ players: 7, camera: 'drone', sound: 'yes' }) }));
+  const store = new SaveStore(memoryStorage({ [SETTINGS_KEY]: JSON.stringify({ players: 7, camera: 'drone' }) }));
   assert.deepEqual(store.loadSettings(), DEFAULT_SETTINGS);
-  store.saveSettings({ players: 3, camera: 'follow', sound: false });
-  assert.deepEqual(store.loadSettings(), { players: 3, camera: 'follow', sound: false });
+  store.saveSettings({ players: 3, camera: 'follow' });
+  assert.deepEqual(store.loadSettings(), { players: 3, camera: 'follow' });
 });
 
 test('기록: 홀마다 가장 적은 타수와 9홀 최저 합계만 남는다', () => {

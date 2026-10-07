@@ -9,13 +9,12 @@ export { browserStorage };
 export const BEST_KEY = 'casual-games.basketball.best.v1';
 export const SETTINGS_KEY = 'casual-games.basketball.settings.v1';
 export const SOLO_MODES = MODES.filter((mode) => mode !== 'versus');
-export const DEFAULT_SETTINGS = { mode: 'time', sound: true };
+export const DEFAULT_SETTINGS = { mode: 'time' };
 
 export function validateSettings(data) {
   if (!data || typeof data !== 'object') return { ...DEFAULT_SETTINGS };
   return {
     mode: MODES.includes(data.mode) ? data.mode : DEFAULT_SETTINGS.mode,
-    sound: typeof data.sound === 'boolean' ? data.sound : DEFAULT_SETTINGS.sound,
   };
 }
 

@@ -322,9 +322,10 @@ button:disabled {
   position: fixed;
   inset: 0;
   display: grid;
-  place-items: center;
-  padding: 20px;
+  place-items: safe center;
+  padding: 60px 20px 20px; /* 위쪽 막대 아래에서 시작, 조작법을 펼쳐 길어지면 스크롤 */
   background: rgba(8, 12, 16, 0.55);
+  overflow-y: auto;
 }
 
 .card {
@@ -348,6 +349,12 @@ button:disabled {
 
 .card .best:empty {
   display: none;
+}
+
+/* 조작법(game.css 의 .help)은 카드의 가운데 정렬·문단 여백을 따르지 않는다 */
+.card .help p {
+  margin: 10px 0 0;
+  font-size: 13px;
 }
 
 .card button {

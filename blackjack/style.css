@@ -104,6 +104,14 @@
   display: none;
 }
 
+/* 도움말 카드의 규칙 요약 */
+.card .lead {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
 .bottom {
   position: fixed;
   left: 0;

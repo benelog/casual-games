@@ -40,7 +40,6 @@ let cpuChoice = null; // 컴퓨터가 고른 수(미리 보여 주는 중)
 let resultTimer = 0;
 let speed = 1; // ?debug 에서 판을 빨리 돌릴 때
 
-sound.enabled = settings.sound;
 $('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 
 const seatOf = (team) => settings.seats[team];
@@ -585,9 +584,7 @@ window.addEventListener('keydown', (e) => {
 
 function toggleSound() {
   sound.unlock();
-  sound.enabled = !sound.enabled;
-  settings = { ...settings, sound: sound.enabled };
-  store.saveSettings({ ...store.loadSettings(), sound: sound.enabled });
+  sound.setEnabled(!sound.enabled);
   $('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 }
 
@@ -635,7 +632,6 @@ function driveCpu(dt) {
 // ---------- 프레임 ----------
 
 scene.onFrame = (dt) => {
-  toast.tick(dt);
   if (!game || state === 'menu') return;
   if (resultTimer > 0 && (resultTimer -= dt) <= 0) showResult();
   while (queue.length && !scene.busy && state !== 'menu') present(queue.shift());

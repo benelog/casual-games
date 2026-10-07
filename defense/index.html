@@ -35,6 +35,7 @@
         <span class="stat lives" title="목숨" data-i18n-title="lives"><small data-i18n="lives">목숨</small><b id="lives">20</b></span>
       </div>
       <div class="controls" id="controls" hidden>
+        <button type="button" class="chip" id="btn-menu" title="메뉴 (Esc)" data-i18n-title="menuTitle" data-i18n="menu">메뉴</button>
         <button type="button" class="chip" id="btn-pause" title="일시정지 (Space)" data-i18n-title="pauseTitle" data-i18n="pause">일시정지</button>
         <button type="button" class="chip" id="btn-speed" title="배속 (F)" data-i18n-title="speedTitle">1x</button>
         <button type="button" class="chip" id="btn-sound" title="소리 (M)" data-i18n-title="soundTitle" aria-pressed="true" data-i18n="sound">소리</button>
@@ -61,6 +62,25 @@
         <p class="best" id="menu-best"></p>
         <button type="button" id="btn-continue"></button>
         <button type="button" class="secondary" id="btn-menu-new" data-i18n="newGame">새 게임</button>
+        <details class="help">
+          <summary data-i18n="help">조작법</summary>
+          <p data-i18n="helpTowers">궁수탑은 빠른 단일 공격, 대포는 범위 피해, 빙결탑은 둔화. 각각 3레벨까지 올릴 수 있고 5·10·15·20 웨이브에는 보스가 나옵니다.</p>
+          <dl>
+            <dt><kbd>1</kbd>~<kbd>3</kbd> · <span data-i18n="helpTowerKey">타워 버튼</span></dt>
+            <dd data-i18n="helpBuild">타워를 고른 뒤 길 옆 빈 칸을 클릭해 짓기 (터치는 빈 칸을 탭한 뒤 타워 버튼)</dd>
+            <dt data-i18n="helpTowerClickKey">타워 클릭</dt>
+            <dd data-i18n="helpTowerClick">사거리와 업그레이드·판매 패널 보기</dd>
+            <dt><kbd>U</kbd> · <kbd>X</kbd></dt>
+            <dd data-i18n="helpUpgrade">고른 타워 업그레이드 · 판매 (투자액의 70% 환급)</dd>
+            <dt><kbd>Space</kbd></dt>
+            <dd data-i18n="helpWave">웨이브 시작 · 전투 중 일시정지</dd>
+            <dt><kbd>F</kbd> · <kbd>M</kbd></dt>
+            <dd data-i18n="helpSpeed">2배속 · 소리</dd>
+            <dt><kbd>Esc</kbd></dt>
+            <dd data-i18n="helpEsc">선택 취소 · 메뉴</dd>
+          </dl>
+          <p data-i18n="helpSave">진행 상태는 자동 저장됩니다. 전투 중에 새로고침하면 그 웨이브 시작 직전으로 돌아갑니다.</p>
+        </details>
       </div>
     </div>
 

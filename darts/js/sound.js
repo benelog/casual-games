@@ -16,6 +16,6 @@ const SOUNDS = {
 
 export class Sound extends BaseSound {
   constructor(baseUrl) {
-    super(baseUrl, SOUNDS, { storageKey: 'casual-games.darts.sound' });
+    super(baseUrl, SOUNDS);
   }
 }

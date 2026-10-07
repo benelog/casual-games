@@ -29,7 +29,6 @@ let resultTimer = 0; // 결과 창을 띄우기까지 남은 시간
 const toast = createToast($('toast'));
 let keyCursor = -1; // 키보드로 고른 칸
 
-sound.enabled = settings.sound;
 $('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 
 // ---------- 메뉴 ----------
@@ -310,9 +309,7 @@ window.addEventListener('keydown', (e) => {
 });
 
 function toggleSound() {
-  sound.enabled = !sound.enabled;
-  settings = { ...settings, sound: sound.enabled };
-  store.saveSettings({ ...store.loadSettings(), sound: sound.enabled });
+  sound.setEnabled(!sound.enabled);
   $('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 }
 
@@ -328,7 +325,6 @@ $('btn-sound').addEventListener('click', toggleSound);
 // ---------- 프레임 ----------
 
 scene.onFrame = (dt) => {
-  toast.tick(dt);
   if (!game) return;
   if (state === 'playing') {
     game.update(dt);

@@ -45,6 +45,7 @@ mountLangToggle($('lang-controls'), { className: 'chip' });
 const scene = new TetrisScene($('stage'));
 const store = new SaveStore(browserStorage());
 const sound = new Sound(new URL('../assets/sounds/', import.meta.url));
+$('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 scene.setPreview($('next-view'));
 
 let settings = store.loadSettings();
@@ -345,7 +346,7 @@ for (const button of $('pad').querySelectorAll('[data-action]')) {
 }
 
 function toggleSound() {
-  sound.enabled = !sound.enabled;
+  sound.setEnabled(!sound.enabled);
   $('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 }
 
@@ -366,7 +367,6 @@ document.addEventListener('visibilitychange', () => {
 // ---------- 프레임 ----------
 
 scene.onFrame = (dt) => {
-  toast.tick(dt);
   if (!game) {
     // 메뉴 뒤에서 빈 우물이 천천히 돈다
     scene.viewTarget.azimuth += dt * 0.15;

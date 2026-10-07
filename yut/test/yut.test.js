@@ -512,7 +512,7 @@ test('설정: 없거나 잘못된 값은 기본값으로', () => {
 
 test('설정을 저장하고 다시 읽는다', () => {
   const store = new SaveStore(memoryStorage());
-  const settings = { players: 4, seats: ['human', 'human', 'cpu', 'cpu'], level: 'hard', backdo: false, sound: false };
+  const settings = { players: 4, seats: ['human', 'human', 'cpu', 'cpu'], level: 'hard', backdo: false };
   assert.equal(store.saveSettings(settings), true);
   assert.deepEqual(store.loadSettings(), settings);
 });

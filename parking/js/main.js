@@ -32,7 +32,6 @@ const sound = new Sound(new URL('../assets/sounds/', import.meta.url));
 const driver = new Driver();
 const toast = createToast($('toast'));
 const settings = store.loadSettings();
-sound.enabled = settings.sound;
 
 let index = 0; // 지금 단계 (LEVELS 의 위치)
 let run = null;
@@ -308,8 +307,7 @@ function toggleGuide() {
 }
 
 function toggleSound() {
-  settings.sound = !settings.sound;
-  sound.setEnabled(settings.sound);
+  sound.setEnabled(!sound.enabled);
   applySettings();
 }
 
@@ -318,7 +316,7 @@ function applySettings() {
   scene.setGuide(settings.guide);
   $('camera-label').textContent = t(`camera.${settings.camera}`);
   $('btn-guide').setAttribute('aria-pressed', String(settings.guide));
-  $('btn-sound').setAttribute('aria-pressed', String(settings.sound));
+  $('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
   store.saveSettings(settings);
 }
 
@@ -461,7 +459,6 @@ for (const type of ['pointerup', 'pointercancel']) {
 // ---------- 프레임 ----------
 
 scene.onFrame = (dt) => {
-  toast.tick(dt);
   if (bannerTimer > 0 && (bannerTimer -= dt) <= 0) $('banner').classList.remove('show');
   if (resultTimer > 0 && (resultTimer -= dt) <= 0) {
     if (state === 'parked') showResult();

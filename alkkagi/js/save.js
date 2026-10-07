@@ -10,7 +10,7 @@ export { browserStorage };
 export const RECORD_KEY = 'casual-games.alkkagi.record.v1';
 export const SETTINGS_KEY = 'casual-games.alkkagi.settings.v1';
 export const OPPONENTS = ['computer', 'versus'];
-export const DEFAULT_SETTINGS = { opponent: 'computer', level: 'normal', stones: 5, sound: true };
+export const DEFAULT_SETTINGS = { opponent: 'computer', level: 'normal', stones: 5 };
 
 export function validateSettings(data) {
   if (!data || typeof data !== 'object') return { ...DEFAULT_SETTINGS };
@@ -18,7 +18,6 @@ export function validateSettings(data) {
     opponent: OPPONENTS.includes(data.opponent) ? data.opponent : DEFAULT_SETTINGS.opponent,
     level: LEVEL_IDS.includes(data.level) ? data.level : DEFAULT_SETTINGS.level,
     stones: STONE_OPTIONS.includes(data.stones) ? data.stones : DEFAULT_SETTINGS.stones,
-    sound: typeof data.sound === 'boolean' ? data.sound : DEFAULT_SETTINGS.sound,
   };
 }
 

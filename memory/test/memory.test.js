@@ -260,9 +260,9 @@ test('최고 기록: 잘못된 값은 남기지도 읽지도 않는다', () => {
 test('설정: 저장하고 읽으며, 잘못된 값은 기본값으로 바꾼다', () => {
   const store = new SaveStore(memoryStorage());
   assert.deepEqual(store.loadSettings(), DEFAULT_SETTINGS);
-  store.saveSettings({ players: 2, size: 30, sound: false });
-  assert.deepEqual(store.loadSettings(), { players: 2, size: 30, sound: false });
-  const broken = new SaveStore(memoryStorage({ [SETTINGS_KEY]: '{"players":5,"size":13,"sound":"yes"}' }));
+  store.saveSettings({ players: 2, size: 30 });
+  assert.deepEqual(store.loadSettings(), { players: 2, size: 30 });
+  const broken = new SaveStore(memoryStorage({ [SETTINGS_KEY]: '{"players":5,"size":13}' }));
   assert.deepEqual(broken.loadSettings(), DEFAULT_SETTINGS);
 });
 

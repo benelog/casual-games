@@ -168,7 +168,31 @@ kbd {
   }
 }
 
-/* ---------- 시작·결과 메뉴 카드 ---------- */
+/* ---------- 시작·결과·도움말 카드 ---------- */
+
+/* 화면을 덮는 반투명 바탕 위에 카드를 가운데 놓는다. 카드가 화면보다 길면 바탕이 굴러간다 */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: safe center;
+  padding: 64px 16px 20px;
+  background: rgba(8, 10, 16, 0.5);
+  overflow-y: auto;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(420px, 100%);
+  padding: 24px 22px 20px;
+  border-radius: 18px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  text-align: center;
+}
 
 .card h1 {
   margin: 0;

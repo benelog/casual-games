@@ -411,9 +411,9 @@ test('실력 차이: 어려움은 쉬움을 이긴다', () => {
 test('설정: 잘못된 값은 기본값으로', () => {
   const store = new SaveStore(memoryStorage({ [SETTINGS_KEY]: JSON.stringify({ opponent: 'x', level: 'hard', color: 'white', hints: 'yes' }) }));
   assert.deepEqual(store.loadSettings(), { ...DEFAULT_SETTINGS, level: 'hard', color: 'white' });
-  store.saveSettings({ ...DEFAULT_SETTINGS, opponent: 'versus', sound: false });
+  store.saveSettings({ ...DEFAULT_SETTINGS, opponent: 'versus', hints: false });
   assert.equal(store.loadSettings().opponent, 'versus');
-  assert.equal(store.loadSettings().sound, false);
+  assert.equal(store.loadSettings().hints, false);
   assert.deepEqual(new SaveStore(memoryStorage({ [SETTINGS_KEY]: '{깨진' })).loadSettings(), DEFAULT_SETTINGS);
   assert.deepEqual(new SaveStore(null).loadSettings(), DEFAULT_SETTINGS);
 });

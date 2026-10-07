@@ -1,4 +1,4 @@
-// localStorage 에 단계별 최고 기록(점수·별·시간·전환·접촉)과 마지막으로 하던 단계, 화면 설정(카메라·가이드·소리)을 남긴다.
+// localStorage 에 단계별 최고 기록(점수·별·시간·전환·접촉)과 마지막으로 하던 단계, 화면 설정(카메라·가이드)을 남긴다.
 // storage 는 바깥에서 주입한다 (테스트에서는 가짜 storage). 저장소 접근이 예외를 던져도 게임은 저장 없이 계속된다.
 
 import { browserStorage, JsonStore, isInt, isTime } from '../../shared/storage.js';
@@ -8,14 +8,13 @@ export { browserStorage };
 export const PROGRESS_KEY = 'casual-games.parking.progress.v1';
 export const SETTINGS_KEY = 'casual-games.parking.settings.v1';
 export const CAMERAS = ['top', 'chase', 'rear'];
-export const DEFAULT_SETTINGS = { camera: 'top', guide: true, sound: true };
+export const DEFAULT_SETTINGS = { camera: 'top', guide: true };
 
 export function validateSettings(data) {
   if (!data || typeof data !== 'object') return { ...DEFAULT_SETTINGS };
   return {
     camera: CAMERAS.includes(data.camera) ? data.camera : DEFAULT_SETTINGS.camera,
     guide: typeof data.guide === 'boolean' ? data.guide : DEFAULT_SETTINGS.guide,
-    sound: typeof data.sound === 'boolean' ? data.sound : DEFAULT_SETTINGS.sound,
   };
 }
 

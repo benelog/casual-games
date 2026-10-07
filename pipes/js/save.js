@@ -11,7 +11,7 @@ export const BEST_KEY = 'casual-games.pipes.best.v1';
 export const DAILY_KEY = 'casual-games.pipes.daily.v1';
 export const SETTINGS_KEY = 'casual-games.pipes.settings.v1';
 export const MODES = ['free', 'daily'];
-export const DEFAULT_SETTINGS = { mode: 'free', size: 5, sound: true };
+export const DEFAULT_SETTINGS = { mode: 'free', size: 5 };
 
 const isDay = (v) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v);
 
@@ -26,7 +26,6 @@ export function validateSettings(data) {
   return {
     mode: MODES.includes(data.mode) ? data.mode : DEFAULT_SETTINGS.mode,
     size: SIZES.includes(data.size) ? data.size : DEFAULT_SETTINGS.size,
-    sound: typeof data.sound === 'boolean' ? data.sound : DEFAULT_SETTINGS.sound,
   };
 }
 

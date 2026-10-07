@@ -411,13 +411,13 @@ test('저장: 깨진 데이터와 모르는 단계는 버리고, 설정은 검�
       best: { [ids[0]]: { score: 101, stars: 3, time: 1, switches: 0, contacts: 0 }, [ids[1]]: { score: 90, stars: 3, time: 12, switches: 0, contacts: 0 }, gone: {} },
       last: 'gone',
     }),
-    [SETTINGS_KEY]: JSON.stringify({ camera: 'drone', guide: false, sound: 'yes' }),
+    [SETTINGS_KEY]: JSON.stringify({ camera: 'drone', guide: false }),
   });
   const store = new SaveStore(storage, ids);
   const data = store.load();
   assert.deepEqual(Object.keys(data.best), [ids[1]]);
   assert.equal(data.last, null);
-  assert.deepEqual(store.loadSettings(), { camera: DEFAULT_SETTINGS.camera, guide: false, sound: true });
+  assert.deepEqual(store.loadSettings(), { camera: DEFAULT_SETTINGS.camera, guide: false });
   assert.deepEqual(validateSettings(null), DEFAULT_SETTINGS);
   const broken = new SaveStore(memoryStorage({ [PROGRESS_KEY]: '{oops' }), ids);
   assert.deepEqual(broken.load(), { best: {}, last: null });

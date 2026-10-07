@@ -9,6 +9,7 @@ import { BowlingScene } from './scene.js';
 import { Sound } from './sound.js';
 import { t } from './i18n.js';
 import { applyI18n, mountLangToggle, formatNumber } from '../../shared/i18n.js';
+import { focusForKeyboard } from '../../shared/ui.js';
 
 const $ = (id) => document.getElementById(id);
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -27,10 +28,13 @@ const tap = t(matchMedia('(pointer: coarse)').matches ? 'tap' : 'click');
 
 const scene = new BowlingScene($('stage'), $('pin-cam'));
 const sound = new Sound(new URL('../assets/sounds/', import.meta.url));
+$('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 let game;
 let spins = [0, 0]; // 사람마다 고른 스핀
 let lastX = [0, 0]; // 사람마다 마지막으로 고른 출발 위치. 다음 투구에서 그대로 시작한다
 let aim = null; // 사람이 조준하는 동안의 상태 { player, phase, startX, angle, power, t, resolve }
+// 새 게임을 시작하거나 그만둘 때마다 늘린다. 기다리던 이전 판의 흐름은 자기 번호가 아니면 멈춘다
+let session = 0;
 
 /** 점수표·배너에 쓰는 이름. 컴퓨터 대전은 나/컴퓨터, 2인 대전은 플레이어 1/2 */
 function nameOf(player) {
@@ -211,13 +215,39 @@ $('btn-sound').addEventListener('click', (event) => {
   toggleSound();
   event.currentTarget.blur(); // 스페이스로 조준을 확정할 때 버튼이 다시 눌리지 않게
 });
+$('btn-new').addEventListener('click', (event) => {
+  event.currentTarget.blur();
+  abandonGame();
+});
+
+// ---------- 도움말 ----------
+
+function openHelp() {
+  $('help').hidden = false;
+  focusForKeyboard($('btn-help-close'));
+}
+
+function closeHelp() {
+  if ($('help').hidden) return;
+  $('help').hidden = true;
+  $('btn-help').focus({ preventScroll: true });
+}
+
+$('btn-help').addEventListener('click', openHelp);
+$('btn-help-close').addEventListener('click', closeHelp);
+$('help').addEventListener('click', (event) => event.target === $('help') && closeHelp());
 
 scene.physics.onImpact = (kind, speed) => sound.impact(kind, speed);
 scene.physics.onGutter = () => sound.play('gutter');
 
 document.addEventListener('keydown', (event) => {
   if (event.ctrlKey || event.metaKey || event.altKey) return;
+  // 도움말이 열려 있는 동안에는 Esc 가 닫기이고, 게임 키는 듣지 않는다
+  if (event.key === 'Escape' && !$('help').hidden) return closeHelp();
+  if (event.key === '?') return openHelp();
+  if (!$('help').hidden) return;
   if (event.key === 'm' || event.key === 'M') return toggleSound();
+  if (event.key === 'n' || event.key === 'N') return abandonGame();
   if (['1', '2', '3'].includes(event.key) && !$('controls').hidden) return setSpin(Number(event.key) - 2);
   if (!aim) return;
   if (event.key === ' ' || event.key === 'Enter') {
@@ -240,15 +270,19 @@ $('spin').addEventListener('click', (event) => {
 
 // ---------- 컴퓨터 ----------
 
+/** 컴퓨터가 조준해 던질 공. 기다리는 사이 판이 바뀌었으면 null */
 async function computerShot(standing) {
+  const id = session;
   setStatus(t('computerTurn'), 1);
   const shot = computerThrow(standing);
   await sleep(600);
+  if (id !== session) return null;
   scene.placeBall(1, shot.startX);
   await sleep(500);
+  if (id !== session) return null;
   scene.setGuide(shot);
   await sleep(900);
-  return shot;
+  return id === session ? shot : null;
 }
 
 // ---------- 진행 ----------
@@ -260,7 +294,9 @@ function resultText(result, knocked, gutter) {
   return [t('pins', { n: knocked }), false];
 }
 
+/** 게임이 끝날 때까지 투구를 이어 간다. 새 게임으로 판이 바뀌면 조용히 멈춘다 */
 async function play() {
+  const id = session;
   while (!game.over) {
     updateHud();
     const player = game.current;
@@ -270,12 +306,14 @@ async function play() {
     $('controls').hidden = !human;
     scene.placeBall(player, human ? lastX[player] : 0);
     const shot = human ? await playerShot(player) : await computerShot(before);
+    if (id !== session || !shot) return;
 
     $('controls').hidden = true;
     $('pin-cam').hidden = true;
     setStatus('');
     sound.play('release', 1, { volume: 0.6 + 0.4 * ((shot.speed - SPEED_MIN) / (SPEED_MAX - SPEED_MIN)) });
     const { standing, gutter } = await scene.roll(player, shot);
+    if (id !== session) return;
     // 물리에서 센 핀 수가 규칙상 가능한 범위를 벗어나지 않게 한 번 더 막는다
     const knocked = clamp(before.length - standing.length, 0, game.next.standing);
     const result = game.roll(knocked);
@@ -284,6 +322,7 @@ async function play() {
     if (result.strike) sound.play('strike');
     else if (result.spare) sound.play('spare');
     await sleep(1600);
+    if (id !== session) return;
     if (result.gameOver) break;
     if (result.rerack) scene.rack();
     else scene.sweep();
@@ -297,6 +336,7 @@ async function play() {
           updateHud();
           scene.placeBall(game.current, lastX[game.current]);
           await sleep(1000);
+          if (id !== session) return;
         }
       }
     }
@@ -334,9 +374,12 @@ function showMenu(again = false) {
   $('menu').hidden = false;
   $('controls').hidden = true;
   $('pin-cam').hidden = true;
+  $('btn-new').hidden = true;
+  focusForKeyboard($('menu').querySelector('button[data-mode]'));
 }
 
 function newGame(mode) {
+  session += 1;
   game = new BowlingGame(mode);
   spins = [0, 0];
   lastX = [0, 0];
@@ -344,7 +387,23 @@ function newGame(mode) {
   scene.rack();
   $('banner').hidden = true;
   $('menu').hidden = true;
+  $('btn-new').hidden = false;
   play();
+}
+
+/** 진행 중인 판을 그만두고 대전 방식 고르기로 돌아간다 */
+function abandonGame() {
+  if ($('btn-new').hidden) return;
+  session += 1;
+  aim = null; // 조준 중이던 Promise 는 영영 기다리지만, play() 는 번호가 달라 이어 가지 않는다
+  scene.setGuide(null);
+  scene.rack();
+  game = new BowlingGame();
+  updateHud();
+  $('power').hidden = true;
+  $('banner').hidden = true;
+  setStatus('');
+  showMenu();
 }
 
 $('menu').addEventListener('click', (event) => {

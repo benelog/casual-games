@@ -48,7 +48,6 @@ let press = null; // 누르고 있는 손가락·버튼 { pointerId, touch, cell
 let pinch = null; // 두 손가락 확대·끌기 { dist, zoom, anchor, x, y, moved }
 const pointers = new Map(); // 화면에 닿은 포인터 id → { x, y }
 
-sound.enabled = settings.sound;
 $('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 scene.setView(settings.view);
 
@@ -530,8 +529,6 @@ window.addEventListener('blur', () => {
 function toggleSound() {
   sound.unlock();
   sound.setEnabled(!sound.enabled);
-  settings = { ...settings, sound: sound.enabled };
-  store.saveSettings(settings);
   $('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 }
 
@@ -624,7 +621,6 @@ document.addEventListener('keydown', (event) => {
 // ---------- 프레임 ----------
 
 scene.onFrame = (dt) => {
-  toast.tick(dt);
   return false;
 };
 

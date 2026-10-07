@@ -2,7 +2,7 @@
 <html lang="ko">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title data-i18n="doc.title">다트 301 · Casual Games</title>
     <meta name="theme-color" content="#0b0d12" />
     <link rel="manifest" href="../manifest.webmanifest" />
@@ -31,6 +31,8 @@
       <a class="back" href="../index.html" data-i18n="back">← 게임 목록</a>
       <div class="actions" id="actions">
         <span class="title" data-i18n="title">다트 301</span>
+        <button type="button" class="chip" id="btn-new" hidden data-i18n="newGame" data-i18n-title="newGame.title">새 게임</button>
+        <button type="button" class="chip" id="btn-help" data-i18n="help" data-i18n-title="help.title" aria-haspopup="dialog">도움말</button>
         <button type="button" class="chip" id="btn-sound" aria-pressed="true" data-i18n="sound" data-i18n-title="sound.title">소리</button>
       </div>
     </header>
@@ -73,6 +75,24 @@
         <button type="button" class="ghost" data-mode="versus" data-i18n="mode.versus" data-i18n-title="mode.versus.title">2인 대전</button>
       </div>
     </footer>
+
+    <div id="help" class="overlay" role="dialog" aria-modal="true" aria-labelledby="help-title" hidden>
+      <div class="card">
+        <h1 id="help-title" data-i18n="help.heading">다트 301</h1>
+        <p class="lead" data-i18n="help.rules">301점에서 시작해 한 턴에 다트 3개를 던지고, 남은 점수를 정확히 0으로 만들면 이깁니다. 남은 점수보다 많이 맞히면 버스트로 그 턴의 점수가 무효가 됩니다.</p>
+        <div class="help">
+          <dl>
+            <dt data-i18n="help.throwKey">클릭 · 탭</dt>
+            <dd data-i18n="help.throw">흔들리는 조준점이 원하는 구역에 왔을 때 던지기 (터치는 누른 채 움직이다 손을 뗄 때)</dd>
+            <dt><kbd>N</kbd></dt>
+            <dd data-i18n="help.new">새 게임 (진행 중인 판을 그만두고 대전 방식 고르기)</dd>
+            <dt><kbd>M</kbd> · <kbd>?</kbd></dt>
+            <dd data-i18n="help.other">소리 · 이 도움말</dd>
+          </dl>
+        </div>
+        <button type="button" id="btn-help-close"><span data-i18n="close">닫기</span> <kbd>Esc</kbd></button>
+      </div>
+    </div>
 
     <script type="module" src="js/main.js"></script>
   </body>

@@ -48,7 +48,6 @@ let lastPick = [null, null]; // 편마다 마지막으로 고른 돌. 다음 차
 let outs = []; // 이번 수에 떨어진 돌
 let starter = 0; // 먼저 튕기는 편. 한 판 더 하면 바뀐다
 
-sound.enabled = settings.sound;
 $('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 
 /** 점수판·안내에 쓰는 이름. 컴퓨터 대전은 나/컴퓨터, 2인 대전은 흑/백 */
@@ -346,8 +345,6 @@ window.addEventListener('blur', () => {
 function toggleSound() {
   sound.unlock();
   sound.setEnabled(!sound.enabled);
-  settings = { ...settings, sound: sound.enabled };
-  store.saveSettings(settings);
   $('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 }
 
@@ -421,7 +418,6 @@ document.addEventListener('keydown', (event) => {
 // ---------- 프레임 ----------
 
 scene.onFrame = (dt) => {
-  toast.tick(dt);
   // 가장 빠른 돌의 속도에 맞춰 미끄러지는 소리
   let fastest = 0;
   if (state === 'run' && match) {

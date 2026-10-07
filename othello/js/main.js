@@ -42,7 +42,6 @@ let cursorByKey = false; // 키보드로 옮긴 커서는 마우스가 판 밖�
 let shown = [2, 2]; // 점수판의 돌 수. 돌이 놓이고 뒤집힐 때마다 하나씩 바뀐다
 let mover = BLACK; // 점수판·안내에 차례로 보이는 사람. 돌이 움직이는 동안에는 방금 둔 사람이다
 
-sound.enabled = settings.sound;
 $('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 
 /** 점수판·안내에 쓰는 이름. 컴퓨터 대전은 나/컴퓨터, 2인 대전은 흑/백 */
@@ -284,8 +283,6 @@ for (const type of ['pointerdown', 'keydown']) window.addEventListener(type, () 
 function toggleSound() {
   sound.unlock();
   sound.setEnabled(!sound.enabled);
-  settings = { ...settings, sound: sound.enabled };
-  store.saveSettings(settings);
   $('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 }
 
@@ -356,7 +353,6 @@ document.addEventListener('keydown', (event) => {
 // ---------- 프레임 ----------
 
 scene.onFrame = (dt) => {
-  toast.tick(dt);
   return false;
 };
 

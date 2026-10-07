@@ -2,7 +2,7 @@
 <html lang="ko">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title data-i18n="title">3D 포커 · Casual Games</title>
     <meta name="theme-color" content="#0b0d12" />
     <link rel="manifest" href="../manifest.webmanifest" />
@@ -33,7 +33,9 @@
         <a class="back" id="change" href="index.html" hidden data-i18n="change">종목 변경</a>
       </nav>
       <span id="info"></span>
-      <div class="controls" id="lang-controls"></div>
+      <div class="controls" id="lang-controls">
+        <button type="button" class="chip" id="btn-help" data-i18n="help" data-i18n-title="help.title" aria-haspopup="dialog">도움말</button>
+      </div>
     </header>
 
     <div id="loading" data-i18n="loading">테이블을 준비하는 중…</div>
@@ -60,7 +62,7 @@
         <span id="banner-detail"></span>
       </div>
       <div class="status">
-        <span id="status"></span>
+        <span id="status" role="status" aria-live="polite"></span>
         <span id="my-hand"></span>
       </div>
       <div id="controls" hidden>
@@ -82,6 +84,32 @@
       </div>
       <button type="button" id="btn-next" class="primary" hidden data-i18n="nextHand">다음 핸드</button>
     </footer>
+
+    <div id="help" class="overlay" role="dialog" aria-modal="true" aria-labelledby="help-title" hidden>
+      <div class="card">
+        <h1 id="help-title" data-i18n="help.heading">3D 포커</h1>
+        <p class="lead" data-i18n="help.rules">컴퓨터와 1:1로 겨루는 텍사스 홀덤·오마하·파이브 카드 드로우·세븐 카드 스터드. 시작 칩 1,000, 블라인드 10/20 (스터드는 앤티 10). 한쪽 칩이 모두 떨어지면 게임이 끝납니다.</p>
+        <div class="help">
+          <dl>
+            <dt><kbd>F</kbd> · <kbd>C</kbd> · <kbd>R</kbd></dt>
+            <dd data-i18n="help.act">폴드 · 체크/콜 · 벳/레이즈</dd>
+            <dt data-i18n="help.betKey">슬라이더</dt>
+            <dd data-i18n="help.bet">베팅 금액 고르기. 최소 · ½ 팟 · 팟 · 올인 버튼으로 바로 맞출 수 있습니다</dd>
+            <dt><kbd>1</kbd>~<kbd>5</kbd> · <kbd>Enter</kbd></dt>
+            <dd data-i18n="help.draw">드로우에서 바꿀 카드 고르기(카드를 클릭해도 됩니다) · 확정</dd>
+            <dt><kbd>Enter</kbd></dt>
+            <dd data-i18n="help.next">다음 핸드 · 새 게임</dd>
+            <dt data-i18n="help.zoomKey">카드 클릭 · 탭</dt>
+            <dd data-i18n="help.zoom">카드 근처를 누르면 테이블의 카드를 크게 봅니다</dd>
+            <dt data-i18n="help.changeKey">종목 변경</dt>
+            <dd data-i18n="help.change">머리글의 링크로 다른 종목을 고릅니다</dd>
+            <dt><kbd>?</kbd></dt>
+            <dd data-i18n="help.other">이 도움말</dd>
+          </dl>
+        </div>
+        <button type="button" id="btn-help-close"><span data-i18n="close">닫기</span> <kbd>Esc</kbd></button>
+      </div>
+    </div>
 
     <script type="module" src="js/main.js"></script>
   </body>

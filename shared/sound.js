@@ -5,13 +5,17 @@
 //   class Sound extends BaseSound { constructor(baseUrl) { super(baseUrl, SOUNDS); } }
 // 파일 없이 만드는 소리(잡음 등)가 있으면 prepare() 를 덮어써 AudioContext 가 생긴 뒤 준비한다.
 
+/** 소리 켜고 끈 상태를 남기는 공용 키 */
+export const SOUND_KEY = 'casual-games.sound';
+
 export class Sound {
   /**
    * @param sounds 소리 이름 → { volume, gap }. gap 초 안에는 같은 소리를 다시 내지 않는다
-   * @param storageKey 주면 켜고 끈 상태를 localStorage 에 남긴다
+   * @param storageKey 켜고 끈 상태를 남기는 localStorage 키. 기본은 모든 게임이 같이 쓰는 키라
+   *   한 게임에서 끄면 다른 게임도 꺼진 채 시작한다. null 이면 남기지 않는다
    * @param jitter 매번 재생 속도를 이 폭만큼 흔들어 같은 소리가 덜 단조롭게 들리게 한다
    */
-  constructor(baseUrl, sounds, { storageKey = null, jitter = 0.08 } = {}) {
+  constructor(baseUrl, sounds, { storageKey = SOUND_KEY, jitter = 0.08 } = {}) {
     this.baseUrl = baseUrl;
     this.sounds = sounds;
     this.storageKey = storageKey;

@@ -19,7 +19,7 @@ export function segmented(container, options, current, onPick) {
 
 /**
  * 잠깐 떴다 사라지는 알림. el 에 .show 클래스를 붙였다 duration 초 뒤 뗀다.
- * 시간은 게임 프레임(tick)으로 재므로 창이 포커스를 잃어 그리기가 멈추면 알림도 그대로 머문다.
+ * 창이 포커스를 잃어 게임 프레임이 멈춰도 알림은 제때 사라진다.
  */
 export function createToast(el, duration = 1.4) {
   let timer = 0;
@@ -30,10 +30,8 @@ export function createToast(el, duration = 1.4) {
       el.classList.remove('show');
       void el.offsetWidth; // 애니메이션을 처음부터 다시
       el.classList.add('show');
-      timer = duration;
-    },
-    tick(dt) {
-      if (timer > 0 && (timer -= dt) <= 0) el.classList.remove('show');
+      clearTimeout(timer);
+      timer = setTimeout(() => el.classList.remove('show'), duration * 1000);
     },
   };
 }

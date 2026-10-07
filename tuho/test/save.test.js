@@ -14,14 +14,13 @@ function memoryStorage() {
 
 test('설정: 잘못된 값은 기본값으로 바꾼다', () => {
   assert.deepEqual(validateSettings(null), DEFAULT_SETTINGS);
-  assert.deepEqual(validateSettings({ mode: 'cpu', level: 'hard', players: 4, arrows: 5, sound: false }), {
+  assert.deepEqual(validateSettings({ mode: 'cpu', level: 'hard', players: 4, arrows: 5 }), {
     mode: 'cpu',
     level: 'hard',
     players: 4,
     arrows: 5,
-    sound: false,
   });
-  assert.deepEqual(validateSettings({ mode: 'online', level: 'god', players: 9, arrows: 7, sound: 'yes' }), DEFAULT_SETTINGS);
+  assert.deepEqual(validateSettings({ mode: 'online', level: 'god', players: 9, arrows: 7 }), DEFAULT_SETTINGS);
   const store = new SaveStore(memoryStorage());
   store.saveSettings({ ...DEFAULT_SETTINGS, mode: 'multi', players: 3 });
   assert.equal(store.loadSettings().players, 3);

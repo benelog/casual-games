@@ -16,7 +16,6 @@ export const DEFAULT_SETTINGS = {
   seats: ['human', 'cpu', 'cpu', 'cpu'],
   level: 'normal',
   backdo: true,
-  sound: true,
 };
 
 export function validateSettings(data) {
@@ -27,7 +26,6 @@ export function validateSettings(data) {
     seats,
     level: LEVEL_IDS.includes(data.level) ? data.level : DEFAULT_SETTINGS.level,
     backdo: typeof data.backdo === 'boolean' ? data.backdo : DEFAULT_SETTINGS.backdo,
-    sound: typeof data.sound === 'boolean' ? data.sound : DEFAULT_SETTINGS.sound,
   };
 }
 

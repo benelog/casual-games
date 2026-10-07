@@ -33,7 +33,6 @@ let keyCursor = -1; // 키보드로 고른 카드
 const playerName = (player) => t('player', { n: player + 1 });
 for (const player of [0, 1]) $(`player-${player}`).querySelector('.name').textContent = playerName(player);
 
-sound.enabled = settings.sound;
 $('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 
 // ---------- 메뉴 ----------
@@ -328,9 +327,7 @@ window.addEventListener('keydown', (e) => {
 });
 
 function toggleSound() {
-  sound.enabled = !sound.enabled;
-  settings = { ...settings, sound: sound.enabled };
-  store.saveSettings({ ...store.loadSettings(), sound: sound.enabled });
+  sound.setEnabled(!sound.enabled);
   $('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 }
 
@@ -345,7 +342,6 @@ $('btn-sound').addEventListener('click', toggleSound);
 // ---------- 프레임 ----------
 
 scene.onFrame = (dt) => {
-  toast.tick(dt);
   if (!game) return;
   if (state === 'playing') {
     game.update(dt);

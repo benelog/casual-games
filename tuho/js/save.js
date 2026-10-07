@@ -11,7 +11,7 @@ export const BEST_KEY = 'casual-games.tuho.best.v1';
 export const RECORD_KEY = 'casual-games.tuho.record.v1';
 export const SETTINGS_KEY = 'casual-games.tuho.settings.v1';
 export const MODES = ['solo', 'cpu', 'multi'];
-export const DEFAULT_SETTINGS = { mode: 'solo', level: 'normal', players: 2, arrows: 10, sound: true };
+export const DEFAULT_SETTINGS = { mode: 'solo', level: 'normal', players: 2, arrows: 10 };
 
 export function validateSettings(data) {
   if (!data || typeof data !== 'object') return { ...DEFAULT_SETTINGS };
@@ -20,7 +20,6 @@ export function validateSettings(data) {
     level: LEVEL_IDS.includes(data.level) ? data.level : DEFAULT_SETTINGS.level,
     players: PLAYER_COUNTS.includes(data.players) ? data.players : DEFAULT_SETTINGS.players,
     arrows: ARROW_OPTIONS.includes(data.arrows) ? data.arrows : DEFAULT_SETTINGS.arrows,
-    sound: typeof data.sound === 'boolean' ? data.sound : DEFAULT_SETTINGS.sound,
   };
 }
 

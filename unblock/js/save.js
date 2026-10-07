@@ -1,5 +1,5 @@
 // localStorage 에 단계별 최고 기록(가장 적은 수, 힌트를 썼는지), 마지막으로 하던 단계, 오늘의 퍼즐 결과와
-// 연속 일수, 소리 설정을 남긴다. storage 는 바깥에서 주입한다 (테스트에서는 가짜 storage).
+// 연속 일수를 남긴다. storage 는 바깥에서 주입한다 (테스트에서는 가짜 storage).
 // 저장소 접근이 예외를 던져도 게임은 저장 없이 계속된다.
 
 import { browserStorage, JsonStore, isInt } from '../../shared/storage.js';
@@ -8,8 +8,6 @@ export { browserStorage };
 
 export const PROGRESS_KEY = 'casual-games.unblock.progress.v1';
 export const DAILY_KEY = 'casual-games.unblock.daily.v1';
-export const SETTINGS_KEY = 'casual-games.unblock.settings.v1';
-export const DEFAULT_SETTINGS = { sound: true };
 export const UNLOCK_AHEAD = 3; // 깬 단계 수보다 이만큼 더 열어 둔다. 막힌 단계를 건너뛸 수 있다
 
 const isDay = (v) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v);
@@ -34,25 +32,12 @@ export function better(a, b) {
   return a.moves < b.moves || (a.moves === b.moves && b.hinted && !a.hinted);
 }
 
-export function validateSettings(data) {
-  if (!data || typeof data !== 'object') return { ...DEFAULT_SETTINGS };
-  return { sound: typeof data.sound === 'boolean' ? data.sound : DEFAULT_SETTINGS.sound };
-}
-
 /** 읽은 데이터를 검증해 잘못된 것은 버린다 */
 export class SaveStore extends JsonStore {
   /** @param levelIds 지금 있는 단계의 id 목록 (쉬운 순). 여기 없는 기록은 버린다 */
   constructor(storage, levelIds) {
     super(storage);
     this.levelIds = levelIds;
-  }
-
-  loadSettings() {
-    return validateSettings(this.read(SETTINGS_KEY));
-  }
-
-  saveSettings(settings) {
-    return this.write(SETTINGS_KEY, validateSettings(settings));
   }
 
   // ---------- 단계 ----------

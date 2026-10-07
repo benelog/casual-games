@@ -5,6 +5,7 @@ import { describeHand, isBust } from './rules.js';
 import { TableScene } from './scene.js';
 import { applyI18n, formatNumber, mountLangToggle } from '../../shared/i18n.js';
 import { t } from './i18n.js';
+import { focusForKeyboard } from '../../shared/ui.js';
 
 const $ = (id) => document.getElementById(id);
 const fmt = formatNumber;
@@ -226,6 +227,7 @@ async function run(events) {
   else if (game.phase === 'betting') promptBet();
   else if (game.phase === 'game-over') {
     $('btn-next').hidden = false;
+    focusForKeyboard($('btn-next'));
   }
 }
 
@@ -244,6 +246,7 @@ function updateBetControls() {
 
 function promptBet() {
   betting = true;
+  $('btn-new').disabled = false;
   if (game.lastBet) pendingBet = game.lastBet;
   updateBetControls();
   setStatus(t('placeBet', { min: fmt(game.rules.minBet) }));
@@ -265,6 +268,7 @@ function clearBet() {
 async function deal() {
   if (!betting || !game.canBet(pendingBet)) return;
   betting = false;
+  $('btn-new').disabled = true;
   $('bet-controls').hidden = true;
   $('banner').hidden = true;
   setStatus('');
@@ -311,10 +315,15 @@ function playerAct(type) {
   run(game.act(type));
 }
 
+/** 칩 1,000 으로 새 게임. 게임 오버 뒤(btn-next)와 베팅을 고르는 단계(머리글 btn-new)에서만 */
 function newGame() {
-  if ($('btn-next').hidden) return;
+  if ($('btn-next').hidden && !betting) return;
+  betting = false;
+  $('btn-new').disabled = true;
+  $('bet-controls').hidden = true;
   $('btn-next').hidden = true;
   $('banner').hidden = true;
+  setStatus('');
   game = new BlackjackGame();
   pendingBet = 50;
   scene.clearTable().then(() => {
@@ -337,9 +346,31 @@ $('btn-stand').addEventListener('click', () => playerAct('stand'));
 $('btn-double').addEventListener('click', () => playerAct('double'));
 $('btn-split').addEventListener('click', () => playerAct('split'));
 $('btn-next').addEventListener('click', newGame);
+$('btn-new').addEventListener('click', newGame);
+
+// ---------- 도움말 ----------
+
+function openHelp() {
+  $('help').hidden = false;
+  focusForKeyboard($('btn-help-close'));
+}
+
+function closeHelp() {
+  if ($('help').hidden) return;
+  $('help').hidden = true;
+  $('btn-help').focus({ preventScroll: true });
+}
+
+$('btn-help').addEventListener('click', openHelp);
+$('btn-help-close').addEventListener('click', closeHelp);
+$('help').addEventListener('click', (e) => e.target === $('help') && closeHelp());
 
 window.addEventListener('keydown', (e) => {
-  if (e.target instanceof HTMLInputElement || e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
+  if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
+  if (e.key === 'Escape') return closeHelp();
+  if (e.key === '?') return openHelp();
+  // 도움말이 열려 있는 동안은 게임 단축키를 받지 않는다
+  if (!$('help').hidden || e.target instanceof HTMLInputElement) return;
   const key = e.key.toLowerCase();
   let handled = true;
   if (legal) {
@@ -354,6 +385,7 @@ window.addEventListener('keydown', (e) => {
     if (key >= '1' && key <= '4') addChip(CHIP_VALUES[Number(key) - 1]);
     else if (key === 'backspace' || key === 'delete') clearBet();
     else if (key === 'enter' || key === ' ') deal();
+    else if (key === 'n') newGame();
     else handled = false;
   } else if (key === 'enter' || key === ' ') {
     newGame();

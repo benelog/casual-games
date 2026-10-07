@@ -10,14 +10,13 @@ export { browserStorage };
 export const RECORD_KEY = 'casual-games.minigolf.record.v1';
 export const SETTINGS_KEY = 'casual-games.minigolf.settings.v1';
 export const CAMERAS = ['overview', 'follow'];
-export const DEFAULT_SETTINGS = { players: 1, camera: 'overview', sound: true };
+export const DEFAULT_SETTINGS = { players: 1, camera: 'overview' };
 
 export function validateSettings(data) {
   if (!data || typeof data !== 'object') return { ...DEFAULT_SETTINGS };
   return {
     players: PLAYER_OPTIONS.includes(data.players) ? data.players : DEFAULT_SETTINGS.players,
     camera: CAMERAS.includes(data.camera) ? data.camera : DEFAULT_SETTINGS.camera,
-    sound: typeof data.sound === 'boolean' ? data.sound : DEFAULT_SETTINGS.sound,
   };
 }
 

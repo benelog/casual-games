@@ -357,9 +357,9 @@ test('설정: 저장하고 읽으며, 잘못된 값은 기본값으로', () => {
   const storage = memoryStorage();
   const store = new SaveStore(storage);
   assert.deepEqual(store.loadSettings(), DEFAULT_SETTINGS);
-  store.saveSettings({ opponent: 'versus', level: 'hard', stones: 7, sound: false });
-  assert.deepEqual(store.loadSettings(), { opponent: 'versus', level: 'hard', stones: 7, sound: false });
-  storage.setItem(SETTINGS_KEY, JSON.stringify({ opponent: 'alien', level: 'x', stones: 4, sound: 'yes' }));
+  store.saveSettings({ opponent: 'versus', level: 'hard', stones: 7 });
+  assert.deepEqual(store.loadSettings(), { opponent: 'versus', level: 'hard', stones: 7 });
+  storage.setItem(SETTINGS_KEY, JSON.stringify({ opponent: 'alien', level: 'x', stones: 4 }));
   assert.deepEqual(store.loadSettings(), DEFAULT_SETTINGS);
   storage.setItem(SETTINGS_KEY, '{broken');
   assert.deepEqual(store.loadSettings(), DEFAULT_SETTINGS);

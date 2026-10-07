@@ -19,7 +19,6 @@ export const DEFAULT_SETTINGS = {
   targets: Object.fromEntries(VARIANT_IDS.map((id) => [id, VARIANTS[id].defaultTarget])),
   guide: 'long',
   camera: 'top',
-  sound: true,
 };
 
 const pick = (value, allowed, fallback) => (allowed.includes(value) ? value : fallback);
@@ -37,7 +36,6 @@ export function validateSettings(data) {
     targets,
     guide: pick(data.guide, GUIDES, DEFAULT_SETTINGS.guide),
     camera: pick(data.camera, CAMERAS, DEFAULT_SETTINGS.camera),
-    sound: typeof data.sound === 'boolean' ? data.sound : DEFAULT_SETTINGS.sound,
   };
 }
 

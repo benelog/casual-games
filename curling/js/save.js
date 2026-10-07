@@ -10,7 +10,7 @@ export { browserStorage };
 export const RECORD_KEY = 'casual-games.curling.record.v1';
 export const SETTINGS_KEY = 'casual-games.curling.settings.v1';
 export const OPPONENTS = ['computer', 'versus'];
-export const DEFAULT_SETTINGS = { opponent: 'computer', level: 'normal', ends: 4, stones: 4, sound: true };
+export const DEFAULT_SETTINGS = { opponent: 'computer', level: 'normal', ends: 4, stones: 4 };
 
 export function validateSettings(data) {
   if (!data || typeof data !== 'object') return { ...DEFAULT_SETTINGS };
@@ -19,7 +19,6 @@ export function validateSettings(data) {
     level: LEVEL_IDS.includes(data.level) ? data.level : DEFAULT_SETTINGS.level,
     ends: END_OPTIONS.includes(data.ends) ? data.ends : DEFAULT_SETTINGS.ends,
     stones: STONE_OPTIONS.includes(data.stones) ? data.stones : DEFAULT_SETTINGS.stones,
-    sound: typeof data.sound === 'boolean' ? data.sound : DEFAULT_SETTINGS.sound,
   };
 }
 

@@ -10,7 +10,7 @@ export const RECORD_KEY = 'casual-games.othello.record.v1';
 export const SETTINGS_KEY = 'casual-games.othello.settings.v1';
 export const OPPONENTS = ['computer', 'versus'];
 export const COLORS = ['black', 'white']; // 컴퓨터 대전에서 내 돌 (흑이 먼저 둔다)
-export const DEFAULT_SETTINGS = { opponent: 'computer', level: 'normal', color: 'black', hints: true, sound: true };
+export const DEFAULT_SETTINGS = { opponent: 'computer', level: 'normal', color: 'black', hints: true };
 
 export function validateSettings(data) {
   if (!data || typeof data !== 'object') return { ...DEFAULT_SETTINGS };
@@ -19,7 +19,6 @@ export function validateSettings(data) {
     level: LEVEL_IDS.includes(data.level) ? data.level : DEFAULT_SETTINGS.level,
     color: COLORS.includes(data.color) ? data.color : DEFAULT_SETTINGS.color,
     hints: typeof data.hints === 'boolean' ? data.hints : DEFAULT_SETTINGS.hints,
-    sound: typeof data.sound === 'boolean' ? data.sound : DEFAULT_SETTINGS.sound,
   };
 }
 

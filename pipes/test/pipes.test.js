@@ -316,9 +316,9 @@ test('잘못된 크기는 거부한다', () => {
 test('설정은 저장했다 다시 읽고, 잘못된 값은 기본값으로', () => {
   const store = new SaveStore(memoryStorage());
   assert.deepEqual(store.loadSettings(), DEFAULT_SETTINGS);
-  store.saveSettings({ mode: 'daily', size: 9, sound: false });
-  assert.deepEqual(store.loadSettings(), { mode: 'daily', size: 9, sound: false });
-  store.saveSettings({ mode: 'zen', size: 6, sound: 'yes' });
+  store.saveSettings({ mode: 'daily', size: 9 });
+  assert.deepEqual(store.loadSettings(), { mode: 'daily', size: 9 });
+  store.saveSettings({ mode: 'zen', size: 6 });
   assert.deepEqual(store.loadSettings(), DEFAULT_SETTINGS);
 });
 

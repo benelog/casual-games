@@ -58,7 +58,6 @@ let sweeper = false; // 지금 가는 스톤을 사람이 쓸 수 있는지
 let throwing = null; // 스톤이 가는 동안 점수판에 차례로 표시할 팀
 let starter = 1; // 첫 엔드의 해머. 한 판 더 하면 바뀐다
 
-sound.enabled = settings.sound;
 $('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 
 /** 점수판·안내에 쓰는 이름. 컴퓨터 대전은 나/컴퓨터, 2인 대전은 플레이어 1/2 */
@@ -356,8 +355,6 @@ for (const type of ['pointerdown', 'keydown']) window.addEventListener(type, () 
 function toggleSound() {
   sound.unlock();
   sound.setEnabled(!sound.enabled);
-  settings = { ...settings, sound: sound.enabled };
-  store.saveSettings(settings);
   $('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 }
 
@@ -447,7 +444,6 @@ window.addEventListener('blur', () => {
 // ---------- 프레임 ----------
 
 scene.onFrame = (dt) => {
-  toast.tick(dt);
   // 스위핑: 누르고 있으면 세기가 빠르게 오르고, 떼면 곧 멈춘다
   const held = sweeper && (sweepHeld.pointer || sweepHeld.key || sweepHeld.button);
   sweepLevel += ((held ? 1 : 0) - sweepLevel) * damp(held ? 10 : 14, dt);

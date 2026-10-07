@@ -32,6 +32,7 @@ function reasonText(reason, fallback) {
 const scene = new DefenseScene($('stage'));
 const store = new SaveStore(browserStorage());
 const sound = new Sound(new URL('../assets/sounds/', import.meta.url));
+$('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 
 let game = null;
 let speed = 1;
@@ -41,6 +42,7 @@ let armed = null; // 건설하려고 고른 타워 종류
 let selected = null; // 선택한 타일 { col, row }
 let hover = null; // 마우스가 올라간 타일
 let statusTimer = 0;
+let menuPaused = false; // 메뉴를 열면서 전투를 멈췄으면 닫을 때 다시 돌린다
 
 // ---------- 상태 문구 ----------
 
@@ -255,7 +257,7 @@ function toggleSpeed() {
 
 function toggleSound() {
   sound.unlock();
-  sound.enabled = !sound.enabled;
+  sound.setEnabled(!sound.enabled);
   $('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 }
 
@@ -300,20 +302,28 @@ $('btn-sound').addEventListener('click', toggleSound);
 $('btn-upgrade').addEventListener('click', upgradeSelected);
 $('btn-sell').addEventListener('click', sellSelected);
 $('btn-new').addEventListener('click', () => newGame());
+$('btn-menu').addEventListener('click', openMenu);
 
 window.addEventListener('keydown', (e) => {
   if (!game || e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
-  if (!$('menu').hidden) return;
-  sound.unlock();
   const key = e.key.toLowerCase();
+  if (!$('menu').hidden) {
+    // 메뉴가 떠 있는 동안 게임 키는 무시한다. Esc 는 진행 중인 게임으로 돌아가기
+    if (key === 'escape' && !game.over) closeMenu();
+    return;
+  }
+  sound.unlock();
   const index = ['1', '2', '3'].indexOf(key);
   if (index >= 0) chooseTower(TOWER_TYPES[index]);
   else if (key === 'u') upgradeSelected();
   else if (key === 'x') sellSelected();
   else if (key === 'f') toggleSpeed();
   else if (key === 'm') toggleSound();
-  else if (key === 'escape') clearSelection();
-  else if (key === ' ') {
+  else if (key === 'escape') {
+    // 취소할 선택·무장이 있으면 그것부터, 없으면 메뉴
+    if (armed || selected) clearSelection();
+    else openMenu();
+  } else if (key === ' ') {
     e.preventDefault();
     if (e.target instanceof HTMLButtonElement) e.target.blur();
     if (game.phase === 'build') startWave();
@@ -423,6 +433,7 @@ function startGame(newGameInstance, savedSpeed = 1) {
   accumulator = 0;
   armed = null;
   selected = null;
+  menuPaused = false;
   $('menu').hidden = true;
   $('banner').hidden = true;
   $('stats').hidden = false;
@@ -438,29 +449,81 @@ function newGame() {
   save();
 }
 
-function showMenu(saved) {
+// ---------- 메뉴 ----------
+
+/**
+ * 메뉴를 띄운다. 로딩 직후(저장본 있을 때)와 게임 중(메뉴 chip·Esc) 둘 다 여기로 온다.
+ * 전투 중이면 멈춰 두고, '계속'으로 닫을 때 다시 돌린다.
+ */
+function openMenu() {
+  if (!$('menu').hidden) return; // 머리글 chip 은 메뉴 위에서도 눌리므로 두 번 열리지 않게
+  const playing = !!game && !game.over;
+  menuPaused = false;
+  if (playing) {
+    if (game.phase === 'combat' && !paused) {
+      paused = true;
+      menuPaused = true;
+    }
+    armed = null;
+    selected = null;
+    updateHud();
+  }
+
   const best = store.loadBest();
   $('menu-best').textContent = best
     ? best.won
       ? t('bestWon', { lives: best.lives })
       : t('bestWave', { n: best.wave })
     : '';
-  $('btn-continue').textContent = t('continue', {
-    wave: saved.wave + 1,
-    gold: formatNumber(saved.gold),
-    lives: saved.lives,
-  });
-  $('btn-continue').onclick = () => {
-    sound.unlock();
-    startGame(DefenseGame.fromSnapshot(saved), saved.speed);
-    setStatus(t('statusRestored', { n: saved.wave + 1 }), 3);
-  };
-  $('btn-menu-new').onclick = () => {
+
+  // 진행 중인 게임이 있으면 그대로 계속, 없으면 저장본에서 이어하기, 둘 다 없으면 새 게임만
+  const saved = playing ? null : store.load();
+  const resume = $('btn-continue');
+  if (playing) {
+    resume.hidden = false;
+    resume.innerHTML = `${t('resumeGame')} <kbd>Esc</kbd>`;
+    resume.onclick = () => {
+      sound.unlock();
+      closeMenu();
+    };
+  } else if (saved) {
+    resume.hidden = false;
+    resume.textContent = t('continue', {
+      wave: saved.wave + 1,
+      gold: formatNumber(saved.gold),
+      lives: saved.lives,
+    });
+    resume.onclick = () => {
+      sound.unlock();
+      startGame(DefenseGame.fromSnapshot(saved), saved.speed);
+      setStatus(t('statusRestored', { n: saved.wave + 1 }), 3);
+    };
+  } else {
+    resume.hidden = true;
+    resume.onclick = null;
+  }
+
+  const fresh = $('btn-menu-new');
+  fresh.textContent = playing ? t('newGameDiscard') : t('newGame');
+  fresh.onclick = () => {
     sound.unlock();
     newGame();
   };
+
   $('menu').hidden = false;
-  focusForKeyboard($('btn-continue'));
+  focusForKeyboard(resume.hidden ? fresh : resume);
+}
+
+/** 진행 중인 게임으로 돌아간다 */
+function closeMenu() {
+  $('menu').hidden = true;
+  if (menuPaused) {
+    paused = false;
+    accumulator = 0;
+    setStatus(t('statusResumed'), 2);
+  }
+  menuPaused = false;
+  updateHud();
 }
 
 const sideLayout = window.matchMedia('(max-height: 520px) and (min-aspect-ratio: 4/3)');
@@ -496,8 +559,7 @@ if (params.has('debug')) {
 try {
   await scene.load(MAP);
   $('loading').hidden = true;
-  const saved = store.load();
-  if (saved) showMenu(saved);
+  if (store.load()) openMenu();
   else newGame();
   fitInsets();
 } catch (error) {

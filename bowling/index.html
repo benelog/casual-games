@@ -2,7 +2,7 @@
 <html lang="ko">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title data-i18n="pageTitle">볼링 · Casual Games</title>
     <meta name="theme-color" content="#0b0d12" />
     <link rel="manifest" href="../manifest.webmanifest" />
@@ -32,6 +32,8 @@
       <a class="back" href="../index.html" data-i18n="back">← 게임 목록</a>
       <div class="tools" id="tools">
         <span class="title" data-i18n="title">볼링</span>
+        <button type="button" class="chip" id="btn-new" hidden data-i18n="newGame" data-i18n-title="newGameTitle">새 게임</button>
+        <button type="button" class="chip" id="btn-help" data-i18n="help" data-i18n-title="helpTitle" aria-haspopup="dialog">도움말</button>
         <button type="button" class="chip" id="btn-sound" aria-pressed="true" data-i18n="sound" data-i18n-title="soundTitle">
           소리
         </button>
@@ -79,7 +81,7 @@
           <span data-i18n="hard">강</span>
         </div>
       </div>
-      <div id="status"></div>
+      <div id="status" role="status" aria-live="polite"></div>
       <div id="menu" hidden>
         <strong id="menu-title" data-i18n="menuTitle">누구와 칠까요?</strong>
         <div class="modes">
@@ -94,6 +96,34 @@
         </div>
       </div>
     </footer>
+
+    <div id="help" class="overlay" role="dialog" aria-modal="true" aria-labelledby="help-title" hidden>
+      <div class="card">
+        <h1 id="help-title" data-i18n="helpHeading">볼링</h1>
+        <p class="lead" data-i18n="helpRules">
+          컴퓨터나 다른 사람과 번갈아 10프레임을 치는 텐핀 볼링입니다. 한 프레임에 두 번 굴려 핀 10개를 쓰러뜨리고, 첫 공에 다 쓰러뜨리면
+          스트라이크(다음 두 공 보너스), 두 번째 공에 다 쓰러뜨리면 스페어(다음 한 공 보너스)입니다. 10프레임에서 스트라이크·스페어를 하면
+          보너스 투구를 더 합니다.
+        </p>
+        <div class="help">
+          <dl>
+            <dt><span data-i18n="helpConfirmKey">클릭 · 탭</span> · <kbd>Space</kbd> · <kbd>Enter</kbd></dt>
+            <dd data-i18n="helpConfirm">① 공을 놓을 자리 → ② 좌우로 흔들리는 방향 → ③ 오르내리는 세기를 차례로 확정</dd>
+            <dt><kbd>←</kbd> <kbd>→</kbd></dt>
+            <dd data-i18n="helpMove">① 단계에서 공을 놓을 자리 옮기기</dd>
+            <dt><kbd>Esc</kbd></dt>
+            <dd data-i18n="helpBack">① 자리 고르기로 되돌리기</dd>
+            <dt><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></dt>
+            <dd data-i18n="helpSpin">스핀 고르기 (왼쪽 훅 · 직구 · 오른쪽 훅)</dd>
+            <dt><kbd>N</kbd></dt>
+            <dd data-i18n="helpNew">새 게임 (진행 중인 판을 그만두고 대전 방식 고르기)</dd>
+            <dt><kbd>M</kbd> · <kbd>?</kbd></dt>
+            <dd data-i18n="helpOther">소리 · 이 도움말</dd>
+          </dl>
+        </div>
+        <button type="button" id="btn-help-close"><span data-i18n="close">닫기</span> <kbd>Esc</kbd></button>
+      </div>
+    </div>
 
     <script type="module" src="js/main.js"></script>
   </body>

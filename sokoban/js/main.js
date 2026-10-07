@@ -26,6 +26,7 @@ const store = new SaveStore(
   LEVELS.map((level) => level.id),
 );
 const sound = new Sound(new URL('../assets/sounds/', import.meta.url));
+$('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 
 let index = 0; // 지금 레벨 (LEVELS 의 위치)
 let game = null;
@@ -289,7 +290,7 @@ for (const type of ['pointerup', 'pointercancel']) {
 }
 
 function toggleSound() {
-  sound.enabled = !sound.enabled;
+  sound.setEnabled(!sound.enabled);
   $('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 }
 
@@ -309,7 +310,6 @@ window.addEventListener('blur', () => held.clear());
 // ---------- 프레임 ----------
 
 scene.onFrame = (dt) => {
-  toast.tick(dt);
   if (state === 'cleared' && resultTimer > 0 && (resultTimer -= dt) <= 0) showResult();
   if (state !== 'playing') return;
   for (const [action, wait] of held) {

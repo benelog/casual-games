@@ -50,7 +50,6 @@ let charge = null; // Space 를 누르고 있는 중 { t }
 let introTimer = 0;
 let proceed = null; // 홀을 마친 점수표에서 [다음 홀] 을 누르면 부른다
 
-sound.enabled = settings.sound;
 $('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 
 const solo = () => round?.players === 1;
@@ -363,8 +362,6 @@ window.addEventListener('blur', () => {
 function toggleSound() {
   sound.unlock();
   sound.setEnabled(!sound.enabled);
-  settings = { ...settings, sound: sound.enabled };
-  store.saveSettings(settings);
   $('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 }
 
@@ -453,7 +450,6 @@ document.addEventListener('keyup', (event) => {
 // ---------- 프레임 ----------
 
 scene.onFrame = (dt) => {
-  toast.tick(dt);
   if (state !== 'run') sound.setRoll(0);
   if (!charge || !aim) return false;
   // 세기가 0 → 1 → 0 으로 오르내린다

@@ -10,14 +10,13 @@ export { browserStorage };
 export const BEST_KEY = 'casual-games.memory.best.v1';
 export const SETTINGS_KEY = 'casual-games.memory.settings.v1';
 export const PLAYER_COUNTS = [1, 2];
-export const DEFAULT_SETTINGS = { players: 1, size: 20, sound: true };
+export const DEFAULT_SETTINGS = { players: 1, size: 20 };
 
 export function validateSettings(data) {
   if (!data || typeof data !== 'object') return { ...DEFAULT_SETTINGS };
   return {
     players: PLAYER_COUNTS.includes(data.players) ? data.players : DEFAULT_SETTINGS.players,
     size: SIZES.includes(data.size) ? data.size : DEFAULT_SETTINGS.size,
-    sound: typeof data.sound === 'boolean' ? data.sound : DEFAULT_SETTINGS.sound,
   };
 }
 

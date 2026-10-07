@@ -47,7 +47,6 @@ let lastTick = 0;
 const playerName = (player) => t('player', { n: player + 1 });
 for (const player of [0, 1]) $(`player-${player}`).querySelector('.name').textContent = playerName(player);
 
-sound.enabled = settings.sound;
 $('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 
 // ---------- 메뉴 ----------
@@ -394,8 +393,6 @@ for (const type of ['pointerdown', 'keydown']) window.addEventListener(type, () 
 function toggleSound() {
   sound.unlock();
   sound.setEnabled(!sound.enabled);
-  settings = { ...settings, sound: sound.enabled };
-  store.saveSettings(settings);
   $('btn-sound').setAttribute('aria-pressed', String(sound.enabled));
 }
 
@@ -467,7 +464,6 @@ function catchRebounds() {
 }
 
 scene.onFrame = (dt) => {
-  toast.tick(dt);
   catchRebounds();
   if (game && state === 'playing' && clockRunning) {
     const up = game.tick(dt);
